@@ -1,0 +1,36 @@
+#!/bin/sh                                                                                       
+
+PID="org.webosinternals.lumberjack"
+
+APPS=/media/cryptofs/apps
+
+[ -d $APPS ] || { echo "Requires webOS 1.3.5 or later" ; exit 1 ; }
+
+# Install the upstart script
+rm -f /var/palm/event.d/${PID}
+[ -d /var/palm/event.d ] || exit 1
+cp $APPS/usr/palm/applications/${PID}/upstart/${PID} /var/palm/event.d/${PID}
+
+# Install the dbus service
+rm -f /var/palm/system-services/${PID}.service
+[ -d /var/palm/system-services ] || exit 1
+cp $APPS/usr/palm/applications/${PID}/dbus/${PID}.service /var/palm/system-services/${PID}.service
+
+# Stop any existing service
+/sbin/stop ${PID} || true
+
+# Install the executable
+rm -f /var/usr/sbin/${PID}
+mkdir -p /var/usr/sbin/
+install -m 755 $APPS/usr/palm/applications/${PID}/bin/${PID} /var/usr/sbin/${PID}
+
+# Start the service
+/sbin/start ${PID}
+
+# Check the upstart script is installed
+[ -f /var/palm/event.d/${PID} ] || exit 1
+
+# Check the dbus service is installed
+[ -f /var/palm/system-services/${PID}.service ] || exit 1
+
+exit 0
