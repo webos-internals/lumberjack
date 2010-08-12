@@ -1,4 +1,4 @@
-a/*=============================================================================
+/*=============================================================================
  Copyright (C) 2010 WebOS Internals <support@webos-internals.org>
 
  This program is free software; you can redistribute it and/or
@@ -20,11 +20,11 @@ a/*=============================================================================
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/stat.h>
-#include <dirent.h>
 
 #include "luna_service.h"
 #include "luna_methods.h"
+
+#define ALLOWED_CHARS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-"
 
 #define API_VERSION "1"
 
@@ -36,6 +36,8 @@ static char buffer[MAXBUFLEN];
 static char esc_buffer[MAXBUFLEN];
 static char run_command_buffer[MAXBUFLEN];
 static char read_file_buffer[CHUNKSIZE+CHUNKSIZE+1];
+
+static bool kill_command = false;
 
 //
 // Escape a string so that it can be used directly in a JSON response.
@@ -167,42 +169,22 @@ bool version_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
 }
 
 //
-// A function pointer, used to filter output messages from commands.
-// The input string is assumed to be a buffer large enough to hold
-// the filtered output string, and is forcibly overwritten.
-// The return value says whether this message should be considered
-// to be an immediate terminating error condition from the command.
-//
-typedef bool (*subscribefun)(char *);
-
-//
-// Pass through all messages unchanged.
-//
-static bool passthrough(char *message) {
-  return true;
-}
-
-//
-// Run a shell command, and return the output in-line in a buffer for returning to webOS.
-// If lshandle, message and subscriber are defined, then also send back status messages.
-// The global run_command_buffer must be initialised before calling this function.
+// Run a shell command and send back status messages.
 // The return value says whether the command executed successfully or not.
 //
-static bool run_command(char *command, bool escape) {
+static bool run_command(char *command, LSHandle* lshandle, LSMessage *message) {
   LSError lserror;
   LSErrorInit(&lserror);
 
-  // Local buffers to store the current and previous lines.
+  // Local buffer to store the current line.
   char line[MAXLINLEN];
 
+  // Has an early termination error been detected?
+  bool error = false;
+
+  kill_command = false;
+
   fprintf(stderr, "Running command %s\n", command);
-
-  // run_command_buffer is assumed to be initialised, ready for strcat to append.
-
-  // Is this the first line of output?
-  bool first = true;
-
-  bool array = false;
 
   // Start execution of the command, and read the output.
   FILE *fp = popen(command, "r");
@@ -213,44 +195,31 @@ static bool run_command(char *command, bool escape) {
   }
 
   // Loop through the output lines
-  while (fgets(line, sizeof line, fp)) {
+  while (fgets(line, sizeof line, fp) && !kill_command) {
 
     // Chomp the newline
     char *nl = strchr(line,'\n'); if (nl) *nl = 0;
 
-    // Add formatting breaks between lines
-    if (first) {
-      if (run_command_buffer[strlen(run_command_buffer)-1] == '[') {
-	array = true;
-      }
-      first = false;
+    // Have status updates been requested?
+    if (lshandle && message) {
+
+      // Send it as a status message.
+      strcpy(buffer, "{\"returnValue\": true, \"stage\": \"status\", \"status\": \"");
+      strcat(buffer, json_escape_str(line));
+      strcat(buffer, "\"}");
+
+      // %%% Should we break out of the loop here, or just ignore the error? %%%
+      if (!LSMessageReply(lshandle, message, buffer, &lserror)) goto error;
+
     }
-    else {
-      if (array) {
-	strcat(run_command_buffer, ", ");
-      }
-      else {
-	strcat(run_command_buffer, "<br>");
-      }
-    }
-    
-    // Append the unfiltered output to the run_command_buffer.
-    if (escape) {
-      if (array) {
-	strcat(run_command_buffer, "\"");
-      }
-      strcat(run_command_buffer, json_escape_str(line));
-      if (array) {
-	strcat(run_command_buffer, "\"");
-      }
-    }
-    else {
-      strcat(run_command_buffer, line);
-    }
+
+    // If a termination failure has been detected, then break out of the loop.
+    if (error) break;
+
   }
-  
-  // Check the close status of the process
-  if (pclose(fp)) {
+
+  // Check the close status of the process, and return the combined error status
+  if (pclose(fp) || error) {
     return false;
   }
 
@@ -265,42 +234,31 @@ static bool run_command(char *command, bool escape) {
 }
 
 //
-// Send a standard format command failure message back to webOS.
-// The command will be escaped.  The output argument should be a JSON array and is not escaped.
-// The additional text  will not be escaped.
-// The return value is from the LSMessageReply call, not related to the command execution.
+// Run tail -f /var/log/messages and provide the output back to Mojo
 //
-static bool report_command_failure(LSHandle* lshandle, LSMessage *message, char *command, char *stdErrText, char *additional) {
+bool tail_messages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   LSError lserror;
   LSErrorInit(&lserror);
 
-  // Include the command that was executed, in escaped form.
-  snprintf(buffer, MAXBUFLEN,
-	   "{\"errorText\": \"Unable to run command: %s\"",
-	   json_escape_str(command));
+  // Local buffer to store the update command
+  char command[MAXLINLEN];
 
-  // Include any stderr fields from the command.
-  if (stdErrText) {
-    strcat(buffer, ", \"stdErr\": ");
-    strcat(buffer, stdErrText);
+  // Capture any errors
+  bool error = false;
+
+  // Report that the update operaton has begun
+  if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"stage\": \"start\"}", &lserror)) goto error;
+
+  // Store the command, so it can be used in the error report if necessary
+  strcpy(command, "/usr/bin/tail -f /var/log/messages 2>&1");
+
+  // Run the command
+  if (!run_command(command, lshandle, message)) {
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
   }
-
-  // Report that an error occurred.
-  strcat(buffer, ", \"returnValue\": false, \"errorCode\": -1");
-
-  // Add any additional JSON fields.
-  if (additional) {
-    strcat(buffer, ", ");
-    strcat(buffer, additional);
+  else {
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"stage\": \"completed\"}", &lserror)) goto error;
   }
-
-  // Terminate the JSON reply message ...
-  strcat(buffer, "}");
-
-  fprintf(stderr, "Message is %s\n", buffer);
-
-  // and send it.
-  if (!LSMessageReply(lshandle, message, buffer, &lserror)) goto error;
 
   return true;
  error:
@@ -311,36 +269,111 @@ static bool report_command_failure(LSHandle* lshandle, LSMessage *message, char 
 }
 
 //
-// Run a simple shell command, and return the output to webOS.
+// Kill the currently running command
 //
-static bool simple_command(LSHandle* lshandle, LSMessage *message, char *command) {
+bool kill_command_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   LSError lserror;
   LSErrorInit(&lserror);
 
-  // Initialise the output buffer
-  strcpy(run_command_buffer, "{\"stdOut\": [");
+  kill_command = true;
 
-  // Run the command
-  if (run_command(command, true)) {
+  // Report that the update operaton has begun
+  if (!LSMessageReply(lshandle, message, "{\"returnValue\": true}", &lserror)) goto error;
 
-    // Finalise the message ...
-    strcat(run_command_buffer, "], \"returnValue\": true}");
+  return true;
+ error:
+  LSErrorPrint(&lserror, stderr);
+  LSErrorFree(&lserror);
+ end:
+  return false;
+}
 
-    fprintf(stderr, "Message is %s\n", run_command_buffer);
+static bool read_file(LSHandle* lshandle, LSMessage *message, char *filename, bool subscribed) {
+  LSError lserror;
+  LSErrorInit(&lserror);
 
-    // and send it to webOS.
-    if (!LSMessageReply(lshandle, message, run_command_buffer, &lserror)) goto error;
+  FILE * file = fopen(filename, "r");
+  if (!file) {
+    sprintf(read_file_buffer,
+	    "{\"returnValue\": false, \"errorCode\": -1, \"errorText\": \"Cannot open %s\"}",
+	    filename);
+    
+    if (!LSMessageReply(lshandle, message, read_file_buffer, &lserror)) goto error;
+    return true;
+  }
+  
+  char chunk[CHUNKSIZE];
+  int chunksize = CHUNKSIZE;
+
+  fprintf(stderr, "Reading file %s\n", filename);
+
+  fseek(file, 0, SEEK_END);
+  int filesize = ftell(file);
+  fseek(file, 0, SEEK_SET);
+
+  if (subscribed) {
+    if (sprintf(read_file_buffer,
+		"{\"returnValue\": true, \"filesize\": %d, \"chunksize\": %d, \"stage\": \"start\"}",
+		filesize, chunksize)) {
+
+      if (!LSMessageReply(lshandle, message, read_file_buffer, &lserror)) goto error;
+
+    }
+  }
+  else if (filesize < chunksize) {
+    chunksize = filesize;
+  }
+
+  int size;
+  int datasize = 0;
+  while ((size = fread(chunk, 1, chunksize, file)) > 0) {
+    datasize += size;
+    chunk[size] = '\0';
+    sprintf(read_file_buffer, "{\"returnValue\": true, \"size\": %d, \"contents\": \"", size);
+    strcat(read_file_buffer, json_escape_str(chunk));
+    strcat(read_file_buffer, "\"");
+    if (subscribed) {
+      strcat(read_file_buffer, ", \"stage\": \"middle\"");
+    }
+    strcat(read_file_buffer, "}");
+
+    if (!LSMessageReply(lshandle, message, read_file_buffer, &lserror)) goto error;
+
+  }
+
+  if (!fclose(file)) {
+    if (subscribed) {
+      sprintf(read_file_buffer, "{\"returnValue\": true, \"datasize\": %d, \"stage\": \"end\"}", datasize);
+
+      if (!LSMessageReply(lshandle, message, read_file_buffer, &lserror)) goto error;
+
+    }
   }
   else {
+    sprintf(read_file_buffer, "{\"returnValue\": false, \"errorCode\": -1, \"errorText\": \"Cannot close file\"}");
 
-    // Finalise the command output ...
-    strcat(run_command_buffer, "]");
+    if (!LSMessageReply(lshandle, message, read_file_buffer, &lserror)) goto error;
 
-    // and use it in a failure report message.
-    if (!report_command_failure(lshandle, message, command, run_command_buffer+11, NULL)) goto end;
   }
 
   return true;
+ error:
+  LSErrorPrint(&lserror, stderr);
+  LSErrorFree(&lserror);
+ end:
+  return false;
+}
+
+bool get_messages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
+  LSError lserror;
+  LSErrorInit(&lserror);
+
+  char filename[MAXLINLEN];
+
+  strcpy(filename, "/var/log/messages");
+
+  return read_file(lshandle, message, filename, true);
+
  error:
   LSErrorPrint(&lserror, stderr);
   LSErrorFree(&lserror);
@@ -351,6 +384,11 @@ static bool simple_command(LSHandle* lshandle, LSMessage *message, char *command
 LSMethod luna_methods[] = {
   { "status",		dummy_method },
   { "version",		version_method },
+
+  { "getMessages",	get_messages_method },
+  { "tailMessages",	tail_messages_method },
+
+  { "killCommand",	kill_command_method },
 
   { 0, 0 }
 };
