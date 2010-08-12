@@ -2,22 +2,44 @@ LumberjackService.identifier = 'palm://org.webosinternals.lumberjack';
 
 function LumberjackService() {}
 
-LumberjackService.request = function(callback)
+LumberjackService.status = function(callback)
 {
     var request = new Mojo.Service.Request(LumberjackService.identifier,
 	{
-	    method: 'request',
+	    method: 'status',
 	    onSuccess: callback,
 	    onFailure: callback
 	});
     return request;
 };
 
-LumberjackService.subscribe = function(callback, pkg, filename, url)
+LumberjackService.version = function(callback)
 {
     var request = new Mojo.Service.Request(LumberjackService.identifier,
 	{
-	    method: 'subscribe',
+	    method: 'version',
+	    onSuccess: callback,
+	    onFailure: callback
+	});
+    return request;
+};
+
+LumberjackService.getMessages = function(callback)
+{
+    var request = new Mojo.Service.Request(LumberjackService.identifier,
+	{
+	    method: 'getMessages',
+	    onSuccess: callback,
+	    onFailure: callback
+	});
+    return request;
+};
+
+LumberjackService.tailMessages = function(callback)
+{
+    var request = new Mojo.Service.Request(LumberjackService.identifier,
+	{
+	    method: 'tailMessages',
 		parameters:
 		{
 			"subscribe":true
