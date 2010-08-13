@@ -4,9 +4,9 @@ function MainAssistant()
     this.randomSub = 
 	[
 		{weight: 30, text: $L('Always Watching The Log')},
-		{weight: 10, text: $L('Sleep All Night, Work All Day')},
-		{weight: 10, text: $L('Leap From Tree to Tree')},
-		{weight: 2,  text: $L('Is A Logger... Get it?')}
+		{weight: 20, text: $L('Sleep All Night, Work All Day')},
+		{weight: 10, text: $L('I\'m OK')},
+		{weight: 1,  text: $L('Is A Logger... Get it?')}
 	];
 
     // setup list model
