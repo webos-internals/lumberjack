@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <pthread.h>
 
 #include "luna_service.h"
 #include "luna_methods.h"
@@ -37,7 +38,9 @@ static char esc_buffer[MAXBUFLEN];
 static char run_command_buffer[MAXBUFLEN];
 static char read_file_buffer[CHUNKSIZE+CHUNKSIZE+1];
 
-static bool kill_command = false;
+pthread_t tailMessagesThread;
+LSHandle *tailMessagesHandle;
+LSMessage*tailMessagesMessage;
 
 //
 // Escape a string so that it can be used directly in a JSON response.
@@ -182,8 +185,6 @@ static bool run_command(char *command, LSHandle* lshandle, LSMessage *message) {
   // Has an early termination error been detected?
   bool error = false;
 
-  kill_command = false;
-
   fprintf(stderr, "Running command %s\n", command);
 
   // Start execution of the command, and read the output.
@@ -195,7 +196,7 @@ static bool run_command(char *command, LSHandle* lshandle, LSMessage *message) {
   }
 
   // Loop through the output lines
-  while (fgets(line, sizeof line, fp) && !kill_command) {
+  while (fgets(line, sizeof line, fp)) {
 
     // Chomp the newline
     char *nl = strchr(line,'\n'); if (nl) *nl = 0;
@@ -233,12 +234,13 @@ static bool run_command(char *command, LSHandle* lshandle, LSMessage *message) {
   return false;
 }
 
-//
-// Run tail -f /var/log/messages and provide the output back to Mojo
-//
-bool tail_messages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
+void *tail_messages(void *ctx) {
   LSError lserror;
   LSErrorInit(&lserror);
+
+  LSHandle* lshandle = tailMessagesHandle;
+  LSMessage *message = tailMessagesMessage;
+
 
   // Local buffer to store the update command
   char command[MAXLINLEN];
@@ -246,18 +248,52 @@ bool tail_messages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   // Capture any errors
   bool error = false;
 
-  // Report that the update operaton has begun
-  if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"stage\": \"start\"}", &lserror)) goto error;
-
+  fprintf(stderr, "Created thread\n");
+  
   // Store the command, so it can be used in the error report if necessary
   strcpy(command, "/usr/bin/tail -f /var/log/messages 2>&1");
 
   // Run the command
   if (!run_command(command, lshandle, message)) {
+    fprintf(stderr, "Command failed\n");
     if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
   }
   else {
+    fprintf(stderr, "Command passed\n");
     if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"stage\": \"completed\"}", &lserror)) goto error;
+  }
+
+  fprintf(stderr, "Thread exiting\n");
+  
+  return;
+ error:
+  LSErrorPrint(&lserror, stderr);
+  LSErrorFree(&lserror);
+ end:
+  return;
+}
+
+//
+// Run tail -f /var/log/messages and provide the output back to Mojo
+//
+bool tail_messages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
+  LSError lserror;
+  LSErrorInit(&lserror);
+
+  tailMessagesHandle = lshandle;
+  tailMessagesMessage = message;
+
+  fprintf(stderr, "Creating thread\n");
+  
+  if (pthread_create(&tailMessagesThread, NULL, tail_messages, NULL)) {
+    fprintf(stderr, "Creating thread failed\n");
+    // Report that the update operaton was not able to start
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"stage\": \"failed\"}", &lserror)) goto error;
+  }
+  else {
+    fprintf(stderr, "Creating thread successful\n");
+    // Report that the update operaton has begun
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"stage\": \"start\"}", &lserror)) goto error;
   }
 
   return true;
@@ -275,11 +311,15 @@ bool kill_command_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   LSError lserror;
   LSErrorInit(&lserror);
 
-  kill_command = true;
+  fprintf(stderr, "Killing thread\n");
+  
+  pthread_cancel(tailMessagesThread);
 
   // Report that the update operaton has begun
   if (!LSMessageReply(lshandle, message, "{\"returnValue\": true}", &lserror)) goto error;
 
+  fprintf(stderr, "Exiting kill\n");
+  
   return true;
  error:
   LSErrorPrint(&lserror, stderr);
