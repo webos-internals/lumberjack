@@ -135,7 +135,6 @@ MainAssistant.prototype.handleCommand = function(event)
 MainAssistant.prototype.activate = function(event)
 {
 };
-
 MainAssistant.prototype.deactivate = function(event)
 {
 };
