@@ -18,5 +18,9 @@
     {
         "scenes": "help",
         "source": "app/assistants/help-assistant.js"
+    },
+    {
+        "scenes": "tail-log",
+        "source": "app/assistants/tail-log-assistant.js"
     }
 ]
