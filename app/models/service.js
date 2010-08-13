@@ -50,6 +50,17 @@ LumberjackService.tailMessages = function(callback)
     return request;
 };
 
+LumberjackService.killCommand = function(callback)
+{
+    var request = new Mojo.Service.Request(LumberjackService.identifier,
+	{
+	    method: 'killCommand',
+	    onSuccess: callback,
+	    onFailure: callback
+	});
+    return request;
+};
+
 LumberjackService.listApps = function(callback)
 {
     var request = new Mojo.Service.Request(LumberjackService.identifier,
