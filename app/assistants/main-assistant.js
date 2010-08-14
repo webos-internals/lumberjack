@@ -57,9 +57,9 @@ MainAssistant.prototype.setup = function()
 	
     this.mainModel.items.push(
 	{
-	    name:     $L('Something'),
-		style:    'disabled',
-		//scene:  'something',
+	    name:	$L('Tail Log'),
+		//style:	'disabled',
+		scene:	'tail-log'
 	});
     
     // setup widget

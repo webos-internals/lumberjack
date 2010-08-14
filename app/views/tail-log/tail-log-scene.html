@@ -2,14 +2,15 @@
 	
 	<div class="scene-fade-top" x-mojo-scroll-fade="top"></div>
 	
-	<div class="palm-page-header multi-line">
-		<div class="palm-page-header-wrapper">
-			<div class="icon"></div>
-			<div class="title" id="tail-log-title">Tail Log</div>
-		</div>
+	<div class="palm-header left">
+		<!--<div id="popButton" x-mojo-tap-highlight="momentary"><div class="icon"></div></div>-->
+        <div x-mojo-element="ToggleButton" id="followToggle"></div>
+		<div class="title" id="tail-log-title">Tail Log</div>
 	</div>
 	
+	<div class="palm-header-spacer" style="height: 50px;"></div>
 	
+	<div id="messages" class="log-messages"></div>
 	
 	<div class="scene-fade-bottom" x-mojo-scroll-fade="bottom"></div>
 	

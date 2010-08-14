@@ -96,6 +96,28 @@ body.palm-dark .scene-fade-bottom
 }
 
 
+/*
+ * Tail Scene Styles
+ */
+.tail #followToggle
+{
+	position: absolute;
+	right: -24px;
+}
+
+
+
+/*
+ * Generic Log Styles
+ */
+.log .log-messages
+{
+	font-size: 10px;
+}
+
+
+
+
 
 /*
  * Generic Form Styles
