@@ -209,18 +209,20 @@ tailHandler.prototype.parseMojo = function(msg)
 	var l = false;
 	
 	// (mojo.log)	2010-08-15T01:47:25.448852Z [175956] palm-webos-device user.notice LunaSysMgr: {LunaSysMgrJS}: org.webosinternals.lumberjack: Info: start, palmInitFramework346:2520
-	var LogRegExpMojo =		new RegExp(/^([^\s]*) \[(.*)\] palm-webos-device user.([^\s]*) LunaSysMgr: {LunaSysMgrJS}: ([^:]*): ([^:]*): (.*), palmInitFramework(.*)$/);
+	var LogRegExpMojo =		new RegExp(/^([^\s]*) \[(.*)\] palm-webos-device user.([^\s]*) LunaSysMgr: {LunaSysMgrJS}: ([^:]*): ([^:]*): (.*)$/);
 	
 	var match = LogRegExpMojo.exec(msg);
 	if (match)
 	{
+		
+		
 		l =
 		{
-			app: appsList.get(match[4]),
+			app: (appsList.get(match[4])?appsList.get(match[4]):match[4]),
 			id: match[4],
 			type: match[5],
-			rowClass: match[5],
-			message: match[6]
+			rowClass: match[3],
+			message: match[6].replace(/, palmInitFramework346:2520/, '')
 		};
 	}
 	

@@ -231,7 +231,7 @@ TailLogAssistant.prototype.handleCommand = function(event)
 				Mojo.Log.info('Test Info Message');
 				Mojo.Log.warn('Test Warn Message');
 				Mojo.Log.error('Test Error Message');
-				Mojo.Log.info(appsList.toObject().toJSON());
+				Mojo.Log.info(Object.toJSON(appsList.toObject()));
 				break;
 		}
 	}
