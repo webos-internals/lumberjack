@@ -93,7 +93,7 @@ tailHandler.prototype.startScene = function(log)
 	scene.status = true;
 	this.scenes.update(log, scene);
 	
-	this.started++;
+	this.started = this.getStartedScenes();
 	if (this.started > 0 && !this.status)
 	{
 		this.start();
@@ -105,7 +105,7 @@ tailHandler.prototype.stopScene = function(log)
 	scene.status = false;
 	this.scenes.update(log, scene);
 	
-	this.started--;
+	this.started = this.getStartedScenes();
 	if (this.started < 1 && this.status)
 	{
 		this.stop();
