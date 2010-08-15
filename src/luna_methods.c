@@ -172,10 +172,216 @@ bool version_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
 }
 
 //
+// Run a shell command, and return the output in-line in a buffer for returning to webOS.
+// The global run_command_buffer must be initialised before calling this function.
+// The return value says whether the command executed successfully or not.
+//
+static bool run_command(char *command, bool escape) {
+  LSError lserror;
+  LSErrorInit(&lserror);
+
+  // Local buffers to store the current and previous lines.
+  char line[MAXLINLEN];
+
+  // fprintf(stderr, "Running command %s\n", command);
+
+  // run_command_buffer is assumed to be initialised, ready for strcat to append.
+
+  // Is this the first line of output?
+  bool first = true;
+
+  bool array = false;
+
+  // Start execution of the command, and read the output.
+  FILE *fp = popen(command, "r");
+
+  // Return immediately if we cannot even start the command.
+  if (!fp) {
+    return false;
+  }
+
+  // Loop through the output lines
+  while (fgets(line, sizeof line, fp)) {
+
+    // Chomp the newline
+    char *nl = strchr(line,'\n'); if (nl) *nl = 0;
+
+    // Add formatting breaks between lines
+    if (first) {
+      if (run_command_buffer[strlen(run_command_buffer)-1] == '[') {
+	array = true;
+      }
+      first = false;
+    }
+    else {
+      if (array) {
+	strcat(run_command_buffer, ", ");
+      }
+      else {
+	strcat(run_command_buffer, "<br>");
+      }
+    }
+    
+    // Append the unfiltered output to the run_command_buffer.
+    if (escape) {
+      if (array) {
+	strcat(run_command_buffer, "\"");
+      }
+      strcat(run_command_buffer, json_escape_str(line));
+      if (array) {
+	strcat(run_command_buffer, "\"");
+      }
+    }
+    else {
+      strcat(run_command_buffer, line);
+    }
+  }
+  
+  // Check the close status of the process
+  if (pclose(fp)) {
+    return false;
+  }
+
+  return true;
+ error:
+  LSErrorPrint(&lserror, stderr);
+  LSErrorFree(&lserror);
+ end:
+  // %%% We need a way to distinguish command failures from LSMessage failures %%%
+  // %%% This may need to be true if we just want to ignore LSMessage failures %%%
+  return false;
+}
+
+//
+// Send a standard format command failure message back to webOS.
+// The command will be escaped.  The output argument should be a JSON array and is not escaped.
+// The additional text  will not be escaped.
+// The return value is from the LSMessageReply call, not related to the command execution.
+//
+static bool report_command_failure(LSHandle* lshandle, LSMessage *message, char *command, char *stdErrText, char *additional) {
+  LSError lserror;
+  LSErrorInit(&lserror);
+
+  // Include the command that was executed, in escaped form.
+  snprintf(buffer, MAXBUFLEN,
+	   "{\"errorText\": \"Unable to run command: %s\"",
+	   json_escape_str(command));
+
+  // Include any stderr fields from the command.
+  if (stdErrText) {
+    strcat(buffer, ", \"stdErr\": ");
+    strcat(buffer, stdErrText);
+  }
+
+  // Report that an error occurred.
+  strcat(buffer, ", \"returnValue\": false, \"errorCode\": -1");
+
+  // Add any additional JSON fields.
+  if (additional) {
+    strcat(buffer, ", ");
+    strcat(buffer, additional);
+  }
+
+  // Terminate the JSON reply message ...
+  strcat(buffer, "}");
+
+  // fprintf(stderr, "Message is %s\n", buffer);
+
+  // and send it.
+  if (!LSMessageReply(lshandle, message, buffer, &lserror)) goto error;
+
+  return true;
+ error:
+  LSErrorPrint(&lserror, stderr);
+  LSErrorFree(&lserror);
+ end:
+  return false;
+}
+
+//
+// Run a simple shell command, and return the output to webOS.
+//
+static bool simple_command(LSHandle* lshandle, LSMessage *message, char *command) {
+  LSError lserror;
+  LSErrorInit(&lserror);
+
+  // Initialise the output buffer
+  strcpy(run_command_buffer, "{\"stdOut\": [");
+
+  // Run the command
+  if (run_command(command, true)) {
+
+    // Finalise the message ...
+    strcat(run_command_buffer, "], \"returnValue\": true}");
+
+    // fprintf(stderr, "Message is %s\n", run_command_buffer);
+
+    // and send it to webOS.
+    if (!LSMessageReply(lshandle, message, run_command_buffer, &lserror)) goto error;
+  }
+  else {
+
+    // Finalise the command output ...
+    strcat(run_command_buffer, "]");
+
+    // and use it in a failure report message.
+    if (!report_command_failure(lshandle, message, command, run_command_buffer+11, NULL)) goto end;
+  }
+
+  return true;
+ error:
+  LSErrorPrint(&lserror, stderr);
+  LSErrorFree(&lserror);
+ end:
+  return false;
+}
+
+//
+// Run command to save or restore.
+//
+bool setLogging_method(LSHandle* lshandle, LSMessage *message, void *ctx, char *subcommand) {
+  LSError lserror;
+  LSErrorInit(&lserror);
+
+  // Local buffer to store the update command
+  char command[MAXLINLEN];
+
+  // Extract the context argument from the message
+  json_t *object = LSMessageGetPayloadJSON(message);
+  json_t *context = json_find_first_label(object, "context");
+  if (!context || (context->child->type != JSON_STRING) || (strspn(context->child->text, ALLOWED_CHARS) != strlen(context->child->text))) {
+    if (!LSMessageReply(lshandle, message,
+			"{\"returnValue\": false, \"errorCode\": -1, \"errorText\": \"Invalid or missing context\"}",
+			&lserror)) goto error;
+    return true;
+  }
+
+  // Extract the level argument from the message
+  json_t *level = json_find_first_label(object, "level");
+  if (!level || (level->child->type != JSON_STRING) || (strspn(level->child->text, ALLOWED_CHARS) != strlen(level->child->text))) {
+    if (!LSMessageReply(lshandle, message,
+			"{\"returnValue\": false, \"errorCode\": -1, \"errorText\": \"Invalid or missing level\"}",
+			&lserror)) goto error;
+    return true;
+  }
+
+  // Store the command, so it can be used in the error report if necessary
+  sprintf(command, "PmLogCtl set %s %s 2>&1", context->child->text, level->child->text);
+  
+  return simple_command(lshandle, message, command);
+
+ error:
+  LSErrorPrint(&lserror, stderr);
+  LSErrorFree(&lserror);
+ end:
+  return false;
+}
+
+//
 // Run a shell command and send back status messages.
 // The return value says whether the command executed successfully or not.
 //
-static bool run_command(char *command, LSHandle* lshandle, LSMessage *message) {
+static bool run_long_command(char *command, LSHandle* lshandle, LSMessage *message) {
   LSError lserror;
   LSErrorInit(&lserror);
 
@@ -254,7 +460,7 @@ void *tail_messages(void *ctx) {
   strcpy(command, "/usr/bin/tail -f /var/log/messages 2>&1");
 
   // Run the command
-  if (!run_command(command, lshandle, message)) {
+  if (!run_long_command(command, lshandle, message)) {
     fprintf(stderr, "Command failed\n");
     if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
   }
@@ -276,7 +482,7 @@ void *tail_messages(void *ctx) {
 //
 // Run tail -f /var/log/messages and provide the output back to Mojo
 //
-bool tail_messages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
+bool tailMessages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   LSError lserror;
   LSErrorInit(&lserror);
 
@@ -307,7 +513,7 @@ bool tail_messages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
 //
 // Kill the currently running command
 //
-bool kill_command_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
+bool killCommand_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   LSError lserror;
   LSErrorInit(&lserror);
 
@@ -404,7 +610,7 @@ static bool read_file(LSHandle* lshandle, LSMessage *message, char *filename, bo
   return false;
 }
 
-bool get_messages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
+bool getMessages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   LSError lserror;
   LSErrorInit(&lserror);
 
@@ -459,10 +665,12 @@ LSMethod luna_methods[] = {
   { "status",		dummy_method },
   { "version",		version_method },
 
-  { "getMessages",	get_messages_method },
-  { "tailMessages",	tail_messages_method },
+  { "setLogging",	setLogging_method },
 
-  { "killCommand",	kill_command_method },
+  { "getMessages",	getMessages_method },
+  { "tailMessages",	tailMessages_method },
+
+  { "killCommand",	killCommand_method },
 
   { "listApps",		listApps_method },
 
