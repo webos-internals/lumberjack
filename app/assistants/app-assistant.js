@@ -7,6 +7,7 @@ var mainStageName = 'lumberjack-main';
 var dashStageName = 'lumberjack-dash';
 
 var appsList = $H();
+var tail = new tailHandler();
 
 function AppAssistant() {}
 

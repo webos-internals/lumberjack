@@ -135,17 +135,17 @@ body.palm-dark .scene-fade-bottom
 	padding-left: 7px;
 	word-wrap: break-word !important;
 }
-.log .log-messages .id
+.log .log-messages .app
 {
 	display: none;
 }
 .log .log-messages .palm-row.selected .type,
 .log .log-messages .palm-row.selected .message,
-body.palm-default .log .log-messages .palm-row.selected .id
+body.palm-default .log .log-messages .palm-row.selected .app
 {
 	color: #fff;
 }
-.log .log-messages .showid .id
+.log .log-messages .showapp .app
 {
 	display: block;
 	float: right;
@@ -154,7 +154,7 @@ body.palm-default .log .log-messages .palm-row.selected .id
 	color: #666;
 	margin-top: -1px;
 }
-body.palm-dark .log .log-messages .showid .id
+body.palm-dark .log .log-messages .showapp .app
 {
 	color: #ccc;
 }
