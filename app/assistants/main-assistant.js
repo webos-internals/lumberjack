@@ -52,6 +52,7 @@ MainAssistant.prototype.setup = function()
 
     // handlers
     this.listAppsHandler =		this.listApps.bindAsEventListener(this);
+	this.appChangedHandler = 	this.appChanged.bindAsEventListener(this);
     this.tailTapHandler =		this.tailTap.bindAsEventListener(this);
 	
 	this.controller.setupWidget
@@ -60,7 +61,7 @@ MainAssistant.prototype.setup = function()
 		{},
 		this.toShowModel =
 		{
-			value: 'all',
+			value: prefs.get().lastLog,
 			choices: 
 			[
 				{label:'Mojo.Log'},
@@ -70,6 +71,8 @@ MainAssistant.prototype.setup = function()
 			]
 		}
 	);
+	
+	this.controller.listen('toShow', Mojo.Event.propertyChange, this.appChangedHandler);
 	
 	this.controller.setupWidget
 	(
@@ -108,6 +111,7 @@ MainAssistant.prototype.listApps = function(payload)
 		
 		this.toShowModel.choices.push({label:'Mojo.Log'});
 		this.toShowModel.choices.push({label:'<b>'+$L('All Applications')+'</b>', value:'all'});
+		appsList.set('all', 1);
 		
 		for (var a = 0; a < payload.apps.length; a++)
 		{
@@ -128,10 +132,25 @@ MainAssistant.prototype.listApps = function(payload)
 		
 		this.toShowModel.choices.push({label:'Other'});
 		this.toShowModel.choices.push({label:'<i>'+$L('Alert()s')+'</i>', value:'alert'});
+		appsList.set('alert', 1);
+		
+		if (!appsList.get(prefs.get().lastLog))
+		{
+			this.toShowModel.value = 'all';
+		}
 		
 		this.controller.modelChanged(this.toShowModel);
 	}
 };
+
+MainAssistant.prototype.appChanged = function(event)
+{
+	var cookie = new preferenceCookie();
+	var tprefs = cookie.get();
+	tprefs.lastLog = event.value;
+	cookie.put(tprefs);
+	var tmp = prefs.get(true);
+}
 
 MainAssistant.prototype.tailTap = function(event)
 {

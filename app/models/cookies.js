@@ -17,6 +17,7 @@ preferenceCookie.prototype.get = function(reload)
 				theme: 'palm-default',
 				
 				// Main Group
+				lastLog: 'all',
 				listStockApps: false
 				
 			};
