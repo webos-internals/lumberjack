@@ -154,7 +154,7 @@ MainAssistant.prototype.appChanged = function(event)
 
 MainAssistant.prototype.tailTap = function(event)
 {
-	tail.newScene(this, this.toShowModel.value, prefs.get().statusPop);
+	tail.newScene(this, this.toShowModel.value, prefs.get().popLog);
 };
     
 MainAssistant.prototype.getRandomSubTitle = function()
