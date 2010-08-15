@@ -16,6 +16,38 @@ tailHandler.prototype.registerScene = function(log, assistant)
 	};
 	this.scenes.set(log, scene);
 };
+tailHandler.prototype.unregisterScene = function(log)
+{
+	this.scenes.unset(log);
+	this.started = this.getStartedScenes();
+	
+	if (this.started > 0 && !this.status)
+	{
+		this.start();
+	}
+	if (this.started < 1 && this.status)
+	{
+		this.stop();
+	}
+};
+tailHandler.prototype.getStartedScenes = function()
+{
+	var keys = this.scenes.keys();
+	if (keys.length > 0)
+	{
+		var started = 0;
+		for (var k = 0; k < keys.length; k++)
+		{
+			var scene = this.scenes.get(keys[k]);
+			if (scene.status)
+			{
+				started++;
+			}
+		}
+		return started;
+	}
+	return 0;
+}
 
 tailHandler.prototype.startScene = function(log)
 {
@@ -148,11 +180,16 @@ tailHandler.prototype.stop = function()
 tailHandler.prototype.stopped = function(payload)
 {
 	this.status = false;
-	this.scenes.each(function(scene)
+	var keys = this.scenes.keys();
+	if (keys.length > 0)
 	{
-		if (scene.value.assistant.controller)
+		for (var k = 0; k < keys.length; k++)
 		{
-			scene.value.assistant.stopped();
+			var scene = this.scenes.get(keys[k]);
+			if (scene.assistant.controller)
+			{
+				scene.assistant.stopped();
+			}
 		}
-	}.bind(this));
+	}
 }

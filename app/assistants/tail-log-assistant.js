@@ -221,5 +221,6 @@ TailLogAssistant.prototype.activate = function(event)
 TailLogAssistant.prototype.deactivate = function(event) {}
 TailLogAssistant.prototype.cleanup = function(event)
 {
-	this.stop();
+	// unregister scene!
+	tail.unregisterScene(this.toShow);
 }
