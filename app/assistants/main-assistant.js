@@ -45,35 +45,42 @@ MainAssistant.prototype.setup = function()
     this.versionElement = 	this.controller.get('version');
     this.subTitleElement =	this.controller.get('subTitle');
 	this.toShowElement =	this.controller.get('toShow');
-	this.tailRow =			this.controller.get('tailRow');
+	this.tailButton =		this.controller.get('tailButton');
 	
     this.versionElement.innerHTML = "v" + Mojo.Controller.appInfo.version;
     this.subTitleElement.innerHTML = this.getRandomSubTitle();
 
     // handlers
     this.listAppsHandler =		this.listApps.bindAsEventListener(this);
-    this.tailRowTapHandler =	this.tailRowTap.bindAsEventListener(this);
+    this.tailTapHandler =		this.tailTap.bindAsEventListener(this);
 	
 	this.controller.setupWidget
 	(
 		'toShow',
-		{
-			label: $L('Log')
-		},
+		{},
 		this.toShowModel =
 		{
 			value: 'all',
 			choices: 
 			[
-				//{label:'Applications'},
-				{label:'<b>'+$L('All')+'</b>', value:'all'},
-				//{label:'Other'},
+				{label:'Mojo.Log'},
+				{label:'<b>'+$L('All Applications')+'</b>', value:'all'},
+				{label:'Other'},
 				{label:$L('Alert()s'), value:'alert'}
 			]
 		}
 	);
 	
-	this.controller.listen(this.tailRow, Mojo.Event.tap, this.tailRowTapHandler);
+	this.controller.setupWidget
+	(
+		'tailButton',
+		{},
+		{
+			buttonLabel: $L("Tail Log")
+		}
+	);
+	
+	this.controller.listen(this.tailButton, Mojo.Event.tap, this.tailTapHandler.bindAsEventListener(this));
 	
 	this.request = LumberjackService.listApps(this.listAppsHandler);
 };
@@ -99,8 +106,8 @@ MainAssistant.prototype.listApps = function(payload)
 			}
 		});
 		
-		//this.toShowModel.choices.push({label:'Applications'});
-		this.toShowModel.choices.push({label:'<b>'+$L('All')+'</b>', value:'all'});
+		this.toShowModel.choices.push({label:'Mojo.Log'});
+		this.toShowModel.choices.push({label:'<b>'+$L('All Applications')+'</b>', value:'all'});
 		
 		for (var a = 0; a < payload.apps.length; a++)
 		{
@@ -122,14 +129,14 @@ MainAssistant.prototype.listApps = function(payload)
 			}
 		}
 		
-		//this.toShowModel.choices.push({label:'Other'});
+		this.toShowModel.choices.push({label:'Other'});
 		this.toShowModel.choices.push({label:'<i>'+$L('Alert()s')+'</i>', value:'alert'});
 		
 		this.controller.modelChanged(this.toShowModel);
 	}
 };
 
-MainAssistant.prototype.tailRowTap = function(event)
+MainAssistant.prototype.tailTap = function(event)
 {
 	this.controller.stageController.pushScene('tail-log', this.toShowModel.value);
 };

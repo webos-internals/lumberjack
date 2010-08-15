@@ -1,4 +1,4 @@
-<div class="main form">
+<div class="main">
 	
 	<div class="scene-fade-top" x-mojo-scroll-fade="top"></div>
 	
@@ -13,21 +13,20 @@
 		</div>
 	</div>
 	
-	<div class="palm-list" id="list">
-		
-		<div class="palm-row first" x-mojo-tap-highlight="momentary">
-			<div class="palm-row-wrapper">
-				<div id="toShow" x-mojo-element="ListSelector"></div>
+	<div class="palm-group">
+		<div class="palm-group-title" id="preferences-global">What To Log</div>
+		<div class="palm-list">
+			
+			<div class="palm-row single">
+				<div class="palm-row-wrapper">
+					<div id="toShow" x-mojo-element="ListSelector"></div>
+				</div>
 			</div>
+			
 		</div>
-		
-		<div class="palm-row last" id="tailRow" x-mojo-tap-highlight="momentary">
-			<div class="palm-row-wrapper">
-				<div class="title">Tail Log</div>
-			</div>
-		</div>
-		
 	</div>
+	
+	<div x-mojo-element="Button" id="tailButton"></div>
     
 	<div class="scene-fade-bottom" x-mojo-scroll-fade="bottom"></div>
 	
