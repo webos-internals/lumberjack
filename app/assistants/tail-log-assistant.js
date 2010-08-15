@@ -213,11 +213,13 @@ TailLogAssistant.prototype.start = function()
 	this.followToggleModel.value = true;
 	this.controller.modelChanged(this.followToggleModel);
 }
-TailLogAssistant.prototype.addMessage = function(msg)
+TailLogAssistant.prototype.addMessage = function(theMsg)
 {
-	if (msg)
+	if (theMsg)
 	{
+		var msg = Object.clone(theMsg);
 		msg.select = '';
+		if (this.toShow == 'all') msg.rowClass += ' showapp';
 		this.listModel.items.push(msg);
 		var start = this.messagesElement.mojo.getLength();
 		this.messagesElement.mojo.noticeUpdatedItems(start, [msg]);

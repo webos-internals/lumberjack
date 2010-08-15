@@ -158,13 +158,8 @@ tailHandler.prototype.handleMessages = function(payload)
 						if (scene.assistant.controller)
 							scene.assistant.addMessage(alertMsg);
 					}
-					else if (keys[k] == 'all')
-					{
-						mojoMsg.rowClass += ' showapp';
-						if (scene.assistant.controller)
-							scene.assistant.addMessage(mojoMsg);
-					}
-					else if (mojoMsg.id && keys[k].toLowerCase() == mojoMsg.id.toLowerCase())
+					else if ((keys[k] == 'all') ||
+							(mojoMsg.id && keys[k].toLowerCase() == mojoMsg.id.toLowerCase()))
 					{
 						if (scene.assistant.controller)
 							scene.assistant.addMessage(mojoMsg);
