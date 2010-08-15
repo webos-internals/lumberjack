@@ -126,7 +126,7 @@ MainAssistant.prototype.listApps = function(payload)
 			}
 			else
 			{
-				if (payload.apps[a].userInstalled)
+				if (payload.apps[a].size > 0)
 				{
 					this.toShowModel.choices.push({label:payload.apps[a].title, value:payload.apps[a].id});
 				}

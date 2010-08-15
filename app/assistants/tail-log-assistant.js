@@ -18,11 +18,11 @@ function TailLogAssistant(toShow, popped)
 			{
 				label: $L("Help"),
 				command: 'do-help'
-			},
+			}/*,
 			{
 				label: $L("Log Crap"),
 				command: 'do-logcrap'
-			}
+			}*/
 		]
 	}
 	
