@@ -7,6 +7,8 @@ function TailLogAssistant(toShow, popped)
 	
 	this.unregister =	true;
 	
+	this.showBanners =	false;
+	
 	this.copyStart =	-1;
 	
     this.isVisible = true;
@@ -17,17 +19,7 @@ function TailLogAssistant(toShow, popped)
 	this.menuModel =
 	{
 		visible: true,
-		items:
-		[
-			{
-				label: $L("Help"),
-				command: 'do-help'
-			}/*,
-			{
-				label: $L("Log Crap"),
-				command: 'do-logcrap'
-			}*/
-		]
+		items: []
 	}
 	
 }
@@ -40,6 +32,7 @@ TailLogAssistant.prototype.setup = function()
 	    this.controller.document.body.className = prefs.get().theme;
 		
 		// setup menu
+        this.updateAppMenu(true);
 		this.controller.setupWidget(Mojo.Menu.appMenu, { omitDefaultItems: true }, this.menuModel);
 		
         this.documentElement =			this.controller.stageController.document;
@@ -148,13 +141,13 @@ TailLogAssistant.prototype.messageTap = function(event)
 		var popupList = [];
 		if (this.copyStart > -1)
 		{
-			popupList.push({label: 'Copy This',			command: 'copy-this'});
-			popupList.push({label: 'Copy To here...',	command: 'copy-to-here'});
+			popupList.push({label: 'Copy This',				command: 'copy-this'});
+			popupList.push({label: '... Copy To here',		command: 'copy-to-here'});
 		}
 		else
 		{
-			popupList.push({label: 'Copy This',			command: 'copy-this'});
-			popupList.push({label: 'Copy From here...',	command: 'copy-from-here'});
+			popupList.push({label: 'Copy This',				command: 'copy-this'});
+			popupList.push({label: 'Copy From here ...',	command: 'copy-from-here'});
 		}
 		
 		this.controller.popupSubmenu(
@@ -235,15 +228,21 @@ TailLogAssistant.prototype.addMessage = function(theMsg)
 		this.messagesElement.mojo.setLength(start + 1);
 		this.revealBottom();
 		
-		 if (!this.isVisible && this.lastFocusMessage && !this.lastFocusMessage.hasClassName('lostFocus'))
-		 {
-            if (this.lastFocusMarker && this.lastFocusMarker.hasClassName('lostFocus'))
+		if (!this.isVisible && this.lastFocusMessage && !this.lastFocusMessage.hasClassName('lostFocus'))
+		{
+			if (this.lastFocusMarker && this.lastFocusMarker.hasClassName('lostFocus'))
 			{
-                this.lastFocusMarker.removeClassName('lostFocus');
-                this.lastFocusMarker = false;
-            }
-            this.lastFocusMessage.addClassName('lostFocus');
+				this.lastFocusMarker.removeClassName('lostFocus');
+				this.lastFocusMarker = false;
+			}
+			this.lastFocusMessage.addClassName('lostFocus');
         }
+		
+		if (!this.isVisible && this.showBanners)
+		{
+			Mojo.Controller.appController.removeBanner('tail-log-message');
+			Mojo.Controller.getAppController().showBanner({messageText: theMsg.type+': '+theMsg.message, icon: 'icon.png'}, {source: 'tail-log-message', log: this.toShow});
+		}
 	}
 }
 TailLogAssistant.prototype.stop = function()
@@ -289,6 +288,7 @@ TailLogAssistant.prototype.revealBottom = function()
 
 TailLogAssistant.prototype.visibleWindow = function(event)
 {
+	Mojo.Controller.appController.removeBanner('tail-log-message');
     if (!this.isVisible)
 	{
         this.isVisible = true;
@@ -304,12 +304,60 @@ TailLogAssistant.prototype.invisibleWindow = function(event)
     this.lastFocusMessage = this.messagesElement.mojo.getNodeByIndex(this.messagesElement.mojo.getLength() - 1);
 }
 
+
+TailLogAssistant.prototype.updateAppMenu = function(skipUpdate)
+{
+    this.menuModel.items = [];
+    
+	/*
+	this.menuModel.items.push({
+		label: $L("Log Crap"),
+		command: 'do-logcrap'
+	});
+	*/
+	
+	if (this.showBanners)
+	{
+		this.menuModel.items.push({
+			label: $L("Banner Logs: On"),
+			command: 'do-banner-off'
+		});
+	}
+	else
+	{
+		this.menuModel.items.push({
+			label: $L("Banner Logs: Off"),
+			command: 'do-banner-on'
+		});
+	}
+	
+	this.menuModel.items.push({
+		label: $L("Help"),
+		command: 'do-help'
+	});
+    
+    if (!skipUpdate)
+	{
+        this.controller.modelChanged(this.menuModel);
+    }
+}
+
 TailLogAssistant.prototype.handleCommand = function(event)
 {
 	if (event.type == Mojo.Event.command)
 	{
 		switch (event.command)
 		{
+			case 'do-banner-on':
+				this.showBanners = true;
+				this.updateAppMenu();
+				break;
+				
+			case 'do-banner-off':
+				this.showBanners = false;
+				this.updateAppMenu();
+				break;
+			
 			case 'do-help':
 				this.controller.stageController.pushScene('help');
 				break;
@@ -332,6 +380,7 @@ TailLogAssistant.prototype.orientationChanged = function(orientation)
 }
 TailLogAssistant.prototype.activate = function(event)
 {
+	Mojo.Controller.appController.removeBanner('tail-log-message');
 	if (!this.alreadyActivated)
 	{
 		this.start();

@@ -183,6 +183,7 @@ body.palm-dark .log .log-messages .palm-row.selected.lostFocus
 {
 	font-size: 14px;
 	padding-left: 7px;
+	padding-right: 7px;
 	word-wrap: break-word !important;
 }
 .log .log-messages .app
