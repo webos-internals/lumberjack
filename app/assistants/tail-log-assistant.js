@@ -38,7 +38,6 @@ TailLogAssistant.prototype.setup = function()
 		this.scrollHandler =			this.onScrollStarted.bindAsEventListener(this);
 		this.toggleChangeHandler =		this.toggleChanged.bindAsEventListener(this);
 		
-		
 		Mojo.Event.listen(this.sceneScroller, Mojo.Event.scrollStarting, this.scrollHandler);
 		
 		
@@ -55,8 +54,23 @@ TailLogAssistant.prototype.setup = function()
 		this.controller.listen('followToggle', Mojo.Event.propertyChange, this.toggleChangeHandler);
 		
 		
-		
+		this.controller.setupWidget
+		(
+			'messages',
+			{
+				itemTemplate: "log/message-row",
+				swipeToDelete: false,
+				reorderable: false,
+				renderLimit: 50,
+			},
+			this.listModel =
+			{
+				items: []
+			}
+		);
 		this.revealBottom();
+		//Mojo.Event.listen(this.messagesElement, Mojo.Event.listTap, this.messageTapHandler);
+		
 	}
 	catch (e)
 	{
@@ -88,12 +102,16 @@ TailLogAssistant.prototype.handleMessages = function(payload)
 {
 	if (payload.returnValue)
 	{
+		var newMessages = [];
 		if (payload.status)
 		{
 			var msg = this.parseMessage(payload.status);
 			if (msg)
 			{
-				this.messagesElement.innerHTML += msg+'<br>';
+				this.listModel.items.push(msg);
+				var start = this.messagesElement.mojo.getLength();
+				this.messagesElement.mojo.noticeUpdatedItems(start, [msg]);
+				this.messagesElement.mojo.setLength(start + 1);
 				this.revealBottom();
 			}
 		}
@@ -121,7 +139,11 @@ TailLogAssistant.prototype.parseMessage = function(msg)
 		{
 			if (!match[3].include('palmInitFramework'))
 			{
-				s = match[3];
+				s =
+				{
+					rowClass: 'generic',
+					message: match[3]
+				};
 			}
 		}
 	}
@@ -130,21 +152,24 @@ TailLogAssistant.prototype.parseMessage = function(msg)
 		var match = LogRegExpMojo.exec(msg);
 		if (match)
 		{
-			/*
-			s = '<hr>';
-			for (m = 0; m < match.length; m++)
-			{
-				s += m+': '+match[m]+'<br>';
-			}
-			*/
-			
 			if (this.toShow == 'all')
 			{
-				s = match[4]+' - '+match[5]+': '+match[6];
+				s =
+				{
+					id: match[4],
+					type: match[5],
+					rowClass: match[5],
+					message: match[6]
+				};
 			}
 			else if (match[4].toLowerCase() == this.toShow.toLowerCase()) 
 			{
-				s = match[5]+': '+match[6];
+				s =
+				{
+					type: match[5],
+					rowClass: match[5],
+					message: match[6]
+				};
 			}
 		}
 	}
