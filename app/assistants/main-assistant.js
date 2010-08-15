@@ -90,7 +90,7 @@ MainAssistant.prototype.setup = function()
 
 MainAssistant.prototype.listApps = function(payload)
 {
-	if (payload.apps.length > 0)
+	if (payload && payload.apps && payload.apps.length > 0)
 	{
 		this.toShowModel.choices = [];
 		appsList = $H();

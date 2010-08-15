@@ -5,12 +5,17 @@ function tailHandler()
 	this.status = false;
 	
 	this.request = false;
+	
+	// make truthy to enable heavy logging
+	this.logging = false;
 };
 
 tailHandler.prototype.newScene = function(assistant, log, popit)
 {
 	try
 	{
+		if (this.logging) Mojo.Log.info('newScene: ', log);
+		
 		var stageName = 'tail-'+log;
 		var stageController = Mojo.Controller.appController.getStageController(stageName);
 		
@@ -47,15 +52,26 @@ tailHandler.prototype.newSceneCallback = function(log, popped, controller)
 
 tailHandler.prototype.registerScene = function(log, assistant)
 {
-	var scene =
+	if (this.logging) Mojo.Log.info('registerScene: ', log);
+	var scene = this.scenes.get(log)
+	if (scene)
 	{
-		assistant: assistant,
-		status: false
-	};
-	this.scenes.set(log, scene);
+		scene.assistant = assistant;
+		this.scenes.update(log, scene);
+	}
+	else
+	{
+		scene =
+		{
+			assistant: assistant,
+			status: false
+		};
+		this.scenes.set(log, scene);
+	}
 };
 tailHandler.prototype.unregisterScene = function(log)
 {
+	if (this.logging) Mojo.Log.info('unregisterScene: ', log);
 	this.scenes.unset(log);
 	this.started = this.getStartedScenes();
 	
@@ -82,13 +98,16 @@ tailHandler.prototype.getStartedScenes = function()
 				started++;
 			}
 		}
+		if (this.logging) Mojo.Log.info('startedScenes: ', started);
 		return started;
 	}
+	if (this.logging) Mojo.Log.info('startedScenes: ', 0);
 	return 0;
 }
 
 tailHandler.prototype.startScene = function(log)
 {
+	if (this.logging) Mojo.Log.info('startScene: ', log);
 	var scene = this.scenes.get(log);
 	scene.status = true;
 	this.scenes.update(log, scene);
@@ -101,6 +120,7 @@ tailHandler.prototype.startScene = function(log)
 }
 tailHandler.prototype.stopScene = function(log)
 {
+	if (this.logging) Mojo.Log.info('stopScene: ', log);
 	var scene = this.scenes.get(log);
 	scene.status = false;
 	this.scenes.update(log, scene);
@@ -114,6 +134,7 @@ tailHandler.prototype.stopScene = function(log)
 
 tailHandler.prototype.start = function()
 {
+	if (this.logging) Mojo.Log.info('*** start');
 	this.request = LumberjackService.tailMessages(this.handleMessages.bindAsEventListener(this));
 }
 
@@ -208,6 +229,7 @@ tailHandler.prototype.parseMojo = function(msg)
 
 tailHandler.prototype.stop = function()
 {
+	if (this.logging) Mojo.Log.info('*** stop');
 	if (this.request)
 	{
 		this.request.cancel();
@@ -217,6 +239,7 @@ tailHandler.prototype.stop = function()
 }
 tailHandler.prototype.stopped = function(payload)
 {
+	if (this.logging) Mojo.Log.info('*** stopped');
 	this.status = false;
 	var keys = this.scenes.keys();
 	if (keys.length > 0)
@@ -224,7 +247,7 @@ tailHandler.prototype.stopped = function(payload)
 		for (var k = 0; k < keys.length; k++)
 		{
 			var scene = this.scenes.get(keys[k]);
-			if (scene.assistant.controller)
+			if (scene.assistant && scene.assistant.controller)
 			{
 				scene.assistant.stopped();
 			}
