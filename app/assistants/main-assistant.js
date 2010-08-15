@@ -111,9 +111,6 @@ MainAssistant.prototype.listApps = function(payload)
 		
 		for (var a = 0; a < payload.apps.length; a++)
 		{
-			alert('------------');
-			for (var x in payload.apps[a]) alert(x+': '+payload.apps[a][x]);
-			
 			appsList.set(payload.apps[a].id, payload.apps[a].title);
 			
 			if (prefs.get().listStockApps)
