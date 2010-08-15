@@ -133,6 +133,20 @@ body.palm-dark .scene-fade-bottom
 	padding-left: 7px;
 	word-wrap: break-word !important;
 }
+.log .log-messages .id
+{
+	display: none;
+}
+.log .log-messages .showid .id
+{
+	display: block;
+	float: right;
+	font-size: 13px;
+	padding-right: 8px;
+	color: #666;
+	margin-top: -1px;
+}
+.log .log-messages .generic .type	{ display: none; }
 .log .log-messages .Info .type		{ color: #3473e7; background-image: url(../images/log-info.png); }
 .log .log-messages .Warning .type	{ color: #ffa202; background-image: url(../images/log-warning.png); }
 .log .log-messages .Error .type		{ color: #f10000; background-image: url(../images/log-error.png); }

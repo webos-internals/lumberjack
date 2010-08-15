@@ -158,7 +158,7 @@ TailLogAssistant.prototype.parseMessage = function(msg)
 				{
 					id: match[4],
 					type: match[5],
-					rowClass: match[5],
+					rowClass: match[5] + ' showid',
 					message: match[6]
 				};
 			}
