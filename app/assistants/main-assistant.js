@@ -65,8 +65,9 @@ MainAssistant.prototype.setup = function()
 			value: 'all',
 			choices: 
 			[
-				{label:'Special'},
-				{label:$L('All Apps'), value:'all'},
+				//{label:'Applications'},
+				{label:'<b>'+$L('All')+'</b>', value:'all'},
+				//{label:'Other'},
 				{label:$L('Alert()s'), value:'alert'}
 			]
 		}
@@ -81,6 +82,8 @@ MainAssistant.prototype.listApps = function(payload)
 {
 	if (payload.apps.length > 0)
 	{
+		this.toShowModel.choices = [];
+		
 		payload.apps.sort(function(a, b)
 		{
 			if (a.title && b.title)
@@ -95,13 +98,25 @@ MainAssistant.prototype.listApps = function(payload)
 			}
 		});
 		
-		this.toShowModel.choices.push({label:'Applications'});
+		//this.toShowModel.choices.push({label:'Applications'});
+		this.toShowModel.choices.push({label:'<b>'+$L('All')+'</b>', value:'all'});
+		
 		for (var a = 0; a < payload.apps.length; a++)
 		{
-			this.toShowModel.choices.push({label:payload.apps[a].title+' <i>v'+payload.apps[a].version+'</i>', value:payload.apps[a].id});
+			alert('------------');
+			for (var x in payload.apps[a]) alert(x+': '+payload.apps[a][x]);
+			
+			if (payload.apps[a].size > 0)
+			{
+				this.toShowModel.choices.push({label:payload.apps[a].title, value:payload.apps[a].id});
+			}
 		}
+		
+		//this.toShowModel.choices.push({label:'Other'});
+		this.toShowModel.choices.push({label:'<i>'+$L('Alert()s')+'</i>', value:'alert'});
+		
+		this.controller.modelChanged(this.toShowModel);
 	}
-	this.controller.modelChanged(this.toShowModel);
 };
 
 MainAssistant.prototype.tailRowTap = function(event)
