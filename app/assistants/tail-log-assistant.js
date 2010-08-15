@@ -242,11 +242,20 @@ TailLogAssistant.prototype.handleCommand = function(event)
 	}
 }
 
+TailLogAssistant.prototype.orientationChanged = function(orientation)
+{
+	this.revealBottom();
+}
 TailLogAssistant.prototype.activate = function(event)
 {
 	if (!this.alreadyActivated)
 	{
 		this.start();
+	}
+	
+	if (this.controller.stageController.setWindowOrientation)
+	{
+    	this.controller.stageController.setWindowOrientation("free");
 	}
 	
 	this.alreadyActivated = true;

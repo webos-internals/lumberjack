@@ -158,6 +158,10 @@ MainAssistant.prototype.handleCommand = function(event)
 
 MainAssistant.prototype.activate = function(event)
 {
+	if (this.controller.stageController.setWindowOrientation)
+	{
+    	this.controller.stageController.setWindowOrientation("up");
+	}
 };
 MainAssistant.prototype.deactivate = function(event)
 {

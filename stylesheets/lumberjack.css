@@ -115,8 +115,10 @@ body.palm-dark .scene-fade-bottom
 }
 .log .log-messages .palm-row-wrapper
 {
-	padding-top: 4px;
+	padding-top: 5px;
 	padding-bottom: 8px;
+	background-repeat: repeat-y;
+	background-position: right;
 }
 .log .log-messages .type
 {
@@ -137,6 +139,12 @@ body.palm-dark .scene-fade-bottom
 {
 	display: none;
 }
+.log .log-messages .palm-row.selected .type,
+.log .log-messages .palm-row.selected .message,
+body.palm-default .log .log-messages .palm-row.selected .id
+{
+	color: #fff;
+}
 .log .log-messages .showid .id
 {
 	display: block;
@@ -146,10 +154,17 @@ body.palm-dark .scene-fade-bottom
 	color: #666;
 	margin-top: -1px;
 }
-.log .log-messages .generic .type	{ display: none; }
-.log .log-messages .Info .type		{ color: #3473e7; background-image: url(../images/log-info.png); }
-.log .log-messages .Warning .type	{ color: #ffa202; background-image: url(../images/log-warning.png); }
-.log .log-messages .Error .type		{ color: #f10000; background-image: url(../images/log-error.png); }
+body.palm-dark .log .log-messages .showid .id
+{
+	color: #ccc;
+}
+.log .log-messages .generic .type			{ display: none; }
+.log .log-messages .Info .type				{ color: #3473e7; background-image: url(../images/log-info-icon.png);	}
+.log .log-messages .Warning .type			{ color: #ffa202; background-image: url(../images/log-warning-icon.png);}
+.log .log-messages .Error .type				{ color: #f10000; background-image: url(../images/log-error-icon.png);	}
+.log .log-messages .palm-row-wrapper.Info	{ background-image: url(../images/log-info-bg.png);		}
+.log .log-messages .palm-row-wrapper.Warning{ background-image: url(../images/log-warning-bg.png);	}
+.log .log-messages .palm-row-wrapper.Error	{ background-image: url(../images/log-error-bg.png);	}
 
 
 
