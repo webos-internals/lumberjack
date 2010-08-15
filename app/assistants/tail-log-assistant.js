@@ -5,6 +5,8 @@ function TailLogAssistant(toShow, popped)
 	this.toShow =		(toShow ? toShow : 'all');
 	this.popped =		popped;
 	
+	this.unregister =	true;
+	
 	// setup menu
 	this.menuModel =
 	{
@@ -123,6 +125,7 @@ TailLogAssistant.prototype.toggleChanged = function(event)
 }
 TailLogAssistant.prototype.popButtonPressed = function(event)
 {
+	this.unregister = false;
 	tail.newScene(this, this.toShow, true);
 	this.controller.stageController.popScene();
 }
@@ -256,5 +259,6 @@ TailLogAssistant.prototype.deactivate = function(event) {}
 TailLogAssistant.prototype.cleanup = function(event)
 {
 	// unregister scene!
-	tail.unregisterScene(this.toShow);
+	if (this.unregister)
+		tail.unregisterScene(this.toShow);
 }
