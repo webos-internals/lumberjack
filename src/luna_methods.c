@@ -337,7 +337,29 @@ static bool simple_command(LSHandle* lshandle, LSMessage *message, char *command
 }
 
 //
-// Run command to save or restore.
+// Run command to get Logging context level.
+//
+bool getLogging_method(LSHandle* lshandle, LSMessage *message, void *ctx, char *subcommand) {
+  LSError lserror;
+  LSErrorInit(&lserror);
+
+  // Local buffer to store the update command
+  char command[MAXLINLEN];
+
+  // Store the command, so it can be used in the error report if necessary
+  sprintf(command, "PmLogCtl show 2>&1");
+  
+  return simple_command(lshandle, message, command);
+
+ error:
+  LSErrorPrint(&lserror, stderr);
+  LSErrorFree(&lserror);
+ end:
+  return false;
+}
+
+//
+// Run command to set Logging context level.
 //
 bool setLogging_method(LSHandle* lshandle, LSMessage *message, void *ctx, char *subcommand) {
   LSError lserror;
@@ -665,6 +687,7 @@ LSMethod luna_methods[] = {
   { "status",		dummy_method },
   { "version",		version_method },
 
+  { "getLogging",	getLogging_method },
   { "setLogging",	setLogging_method },
 
   { "getMessages",	getMessages_method },
