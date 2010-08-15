@@ -8,10 +8,7 @@ function MainAssistant()
 		{weight: 10, text: $L('I\'m OK')},
 		{weight: 1,  text: $L('Is A Logger... Get it?')}
 	];
-
-    // setup list model
-    this.mainModel = {items:[]};
-
+	
     // setup menu
     this.menuModel =
     {
@@ -41,48 +38,75 @@ MainAssistant.prototype.setup = function()
     this.controller.get('version').innerHTML = $L('v0.0.0');
     this.controller.get('subTitle').innerHTML = $L('');	
 
+    // setup menu
+    this.controller.setupWidget(Mojo.Menu.appMenu, { omitDefaultItems: true }, this.menuModel);
+	
     // get elements
-    this.versionElement =  this.controller.get('version');
-    this.subTitleElement = this.controller.get('subTitle');
-    this.listElement =     this.controller.get('mainList');
-
-    // handlers
-    this.listTapHandler =		this.listTap.bindAsEventListener(this);
+    this.versionElement = 	this.controller.get('version');
+    this.subTitleElement =	this.controller.get('subTitle');
+	this.toShowElement =	this.controller.get('toShow');
+	this.tailRow =			this.controller.get('tailRow');
 	
     this.versionElement.innerHTML = "v" + Mojo.Controller.appInfo.version;
     this.subTitleElement.innerHTML = this.getRandomSubTitle();
 
-    // setup menu
-    this.controller.setupWidget(Mojo.Menu.appMenu, { omitDefaultItems: true }, this.menuModel);
+    // handlers
+    this.listAppsHandler =		this.listApps.bindAsEventListener(this);
+    this.tailRowTapHandler =	this.tailRowTap.bindAsEventListener(this);
 	
-    this.mainModel.items.push(
-	{
-	    name:	$L('Tail Log'),
-		//style:	'disabled',
-		scene:	'tail-log'
-	});
-    
-    // setup widget
-    this.controller.setupWidget('mainList', { itemTemplate: "main/rowTemplate", swipeToDelete: false, reorderable: false }, this.mainModel);
-    this.controller.listen(this.listElement, Mojo.Event.listTap, this.listTapHandler);
+	this.controller.setupWidget
+	(
+		'toShow',
+		{
+			label: $L('Log')
+		},
+		this.toShowModel =
+		{
+			value: 'all',
+			choices: 
+			[
+				{label:'Special'},
+				{label:$L('All Apps'), value:'all'},
+				{label:$L('Alert()s'), value:'alert'}
+			]
+		}
+	);
+	
+	this.controller.listen(this.tailRow, Mojo.Event.tap, this.tailRowTapHandler);
+	
+	this.request = LumberjackService.listApps(this.listAppsHandler);
 };
 
-MainAssistant.prototype.listTap = function(event)
+MainAssistant.prototype.listApps = function(payload)
 {
-    if (event.item.scene === false || event.item.style == 'disabled') {
-		// no scene or its disabled, so we won't do anything
-    }
-    else
+	if (payload.apps.length > 0)
 	{
-		// push the scene
-		this.controller.stageController.pushScene(event.item.scene, event.item);
-    }
+		payload.apps.sort(function(a, b)
+		{
+			if (a.title && b.title)
+			{
+				strA = a.title.toLowerCase();
+				strB = b.title.toLowerCase();
+				return ((strA < strB) ? -1 : ((strA > strB) ? 1 : 0));
+			}
+			else
+			{
+				return -1;
+			}
+		});
+		
+		this.toShowModel.choices.push({label:'Applications'});
+		for (var a = 0; a < payload.apps.length; a++)
+		{
+			this.toShowModel.choices.push({label:payload.apps[a].title+' <i>v'+payload.apps[a].version+'</i>', value:payload.apps[a].id});
+		}
+	}
+	this.controller.modelChanged(this.toShowModel);
 };
 
-MainAssistant.prototype.updateList = function()
+MainAssistant.prototype.tailRowTap = function(event)
 {
-    // this.mainModel.items[0].style = 'showCount';
-    this.listElement.mojo.noticeUpdatedItems(0, this.mainModel.items);
+	this.controller.stageController.pushScene('tail-log', this.toShowModel.value);
 };
     
 MainAssistant.prototype.getRandomSubTitle = function()
@@ -141,5 +165,5 @@ MainAssistant.prototype.deactivate = function(event)
 
 MainAssistant.prototype.cleanup = function(event)
 {
-    this.controller.stopListening(this.listElement, Mojo.Event.listTap, this.listTapHandler);
+	this.controller.stopListening(this.tailRow, Mojo.Event.tap, this.tailRowTapHandler);
 };

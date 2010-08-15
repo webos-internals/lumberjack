@@ -1,7 +1,9 @@
-function TailLogAssistant()
+function TailLogAssistant(toShow)
 {
 	this.request =		false;
 	this.autoScroll =	true;
+	
+	this.toShow =		(toShow ? toShow : 'all');
 	
 	// setup menu
 	this.menuModel =
@@ -12,6 +14,10 @@ function TailLogAssistant()
 			{
 				label: $L("Help"),
 				command: 'do-help'
+			},
+			{
+				label: $L("Log Crap"),
+				command: 'do-logcrap'
 			}
 		]
 	}
@@ -48,6 +54,9 @@ TailLogAssistant.prototype.setup = function()
 		
 		this.controller.listen('followToggle', Mojo.Event.propertyChange, this.toggleChangeHandler);
 		
+		
+		
+		this.revealBottom();
 	}
 	catch (e)
 	{
@@ -69,7 +78,7 @@ TailLogAssistant.prototype.toggleChanged = function(event)
 
 TailLogAssistant.prototype.start = function()
 {
-	alert('start');
+	Mojo.Log.info('start');
 	this.request = LumberjackService.tailMessages(this.handleMessages.bindAsEventListener(this));
 	
 	this.followToggleModel.value = true;
@@ -81,25 +90,76 @@ TailLogAssistant.prototype.handleMessages = function(payload)
 	{
 		if (payload.status)
 		{
-			this.messagesElement.innerHTML += payload.status+'<br>';
-			this.revealBottom();
+			var msg = this.parseMessage(payload.status);
+			if (msg)
+			{
+				this.messagesElement.innerHTML += msg+'<br>';
+				this.revealBottom();
+			}
 		}
 	}
 	else
 	{
 		this.stop();
 	}
+}
+
+TailLogAssistant.prototype.parseMessage = function(msg)
+{
+	var s = false;
 	
+	// (alert)		2010-08-15T02:32:37.110778Z [178667] palm-webos-device user.warning LunaSysMgr: {LunaSysMgrJS}: start
+	// (mojo.log)	2010-08-15T01:47:25.448852Z [175956] palm-webos-device user.notice LunaSysMgr: {LunaSysMgrJS}: org.webosinternals.lumberjack: Info: start, palmInitFramework346:2520
+	
+	var LogRegExpAlert =	new RegExp(/^([^\s]*) \[(.*)\] palm-webos-device user.warning LunaSysMgr: {LunaSysMgrJS}: (.*)$/);
+	var LogRegExpMojo =		new RegExp(/^([^\s]*) \[(.*)\] palm-webos-device user.([^\s]*) LunaSysMgr: {LunaSysMgrJS}: ([^:]*): ([^:]*): (.*), palmInitFramework(.*)$/);
+	
+	if (this.toShow == 'alert')
+	{
+		var match = LogRegExpAlert.exec(msg);
+		if (match)
+		{
+			if (!match[3].include('palmInitFramework'))
+			{
+				s = match[3];
+			}
+		}
+	}
+	else
+	{
+		var match = LogRegExpMojo.exec(msg);
+		if (match)
+		{
+			/*
+			s = '<hr>';
+			for (m = 0; m < match.length; m++)
+			{
+				s += m+': '+match[m]+'<br>';
+			}
+			*/
+			
+			if (this.toShow == 'all')
+			{
+				s = match[4]+' - '+match[5]+': '+match[6];
+			}
+			else if (match[4].toLowerCase() == this.toShow.toLowerCase()) 
+			{
+				s = match[5]+': '+match[6];
+			}
+		}
+	}
+	
+	return s;
 }
 
 TailLogAssistant.prototype.stop = function()
 {
-	alert('stop');
+	Mojo.Log.info('stop');
 	this.request = LumberjackService.killCommand(this.stopped.bindAsEventListener(this));
 }
 TailLogAssistant.prototype.stopped = function(payload)
 {
-	alert('stopped');
+	Mojo.Log.info('stopped');
 	
 	if (this.controller)
 	{	// the scene may no longer exist...
@@ -145,6 +205,13 @@ TailLogAssistant.prototype.handleCommand = function(event)
 		{
 			case 'do-help':
 				this.controller.stageController.pushScene('help');
+				break;
+				
+			case 'do-logcrap':
+				alert('Test Alert Message');
+				Mojo.Log.info('Test Info Message');
+				Mojo.Log.warn('Test Warn Message');
+				Mojo.Log.error('Test Error Message');
 				break;
 		}
 	}
