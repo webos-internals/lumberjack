@@ -6,6 +6,8 @@ var vers =  new versionCookie();
 var mainStageName = 'lumberjack-main';
 var dashStageName = 'lumberjack-dash';
 
+var appsList = $H();
+
 function AppAssistant() {}
 
 AppAssistant.prototype.handleLaunch = function(params)

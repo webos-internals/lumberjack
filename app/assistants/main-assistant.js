@@ -83,6 +83,7 @@ MainAssistant.prototype.listApps = function(payload)
 	if (payload.apps.length > 0)
 	{
 		this.toShowModel.choices = [];
+		appsList = $H();
 		
 		payload.apps.sort(function(a, b)
 		{
@@ -106,9 +107,18 @@ MainAssistant.prototype.listApps = function(payload)
 			alert('------------');
 			for (var x in payload.apps[a]) alert(x+': '+payload.apps[a][x]);
 			
-			if (payload.apps[a].size > 0)
+			appsList.set(payload.apps[a].id, payload.apps[a].title);
+			
+			if (prefs.get().listStockApps)
 			{
 				this.toShowModel.choices.push({label:payload.apps[a].title, value:payload.apps[a].id});
+			}
+			else
+			{
+				if (payload.apps[a].size > 0)
+				{
+					this.toShowModel.choices.push({label:payload.apps[a].title, value:payload.apps[a].id});
+				}
 			}
 		}
 		
@@ -173,10 +183,17 @@ MainAssistant.prototype.handleCommand = function(event)
 
 MainAssistant.prototype.activate = function(event)
 {
+	if (this.alreadyActivated)
+	{
+		this.request = LumberjackService.listApps(this.listAppsHandler);
+	}
+	
 	if (this.controller.stageController.setWindowOrientation)
 	{
     	this.controller.stageController.setWindowOrientation("up");
 	}
+	
+	this.alreadyActivated = true;
 };
 MainAssistant.prototype.deactivate = function(event)
 {
