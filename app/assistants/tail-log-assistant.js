@@ -46,7 +46,7 @@ TailLogAssistant.prototype.setup = function()
 		
 		if (this.toShow == 'all')
 		{
-			this.titleElement.update('App Apps');
+			this.titleElement.update('App Applications');
 		}
 		else if (this.toShow == 'alert')
 		{
