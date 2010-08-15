@@ -53,5 +53,7 @@ AppAssistant.prototype.launchFirstScene = function(controller)
     }
 };
 
-AppAssistant.prototype.cleanup = function() {
+AppAssistant.prototype.cleanup = function()
+{
+	if (prefs.get().setLogLevel) LumberjackService.setLogging(function(p){}, 'LunaSysMgrJS', 'err');
 };

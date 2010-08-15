@@ -58,8 +58,22 @@ PreferencesAssistant.prototype.setup = function()
 			},
 			this.prefs
 		);
+		this.controller.setupWidget
+		(
+			'setLogLevel',
+			{
+	  			trueLabel:  $L("Yes"),
+	 			falseLabel: $L("No"),
+	  			fieldName:  'setLogLevel'
+			},
+			{
+				value : this.prefs.setLogLevel,
+	 			disabled: false
+			}
+		);
 		
 		this.controller.listen('theme', Mojo.Event.propertyChange, this.themeChanged.bindAsEventListener(this));
+		this.controller.listen('setLogLevel', Mojo.Event.propertyChange, this.logLevelChanged.bindAsEventListener(this));
 		
 		
 		
@@ -129,6 +143,18 @@ PreferencesAssistant.prototype.themeChanged = function(event)
 			}
 			catch (e) {}
 		}
+	}
+}
+PreferencesAssistant.prototype.logLevelChanged = function(event)
+{
+	this.toggleChanged(event);
+	if (event.value)
+	{
+		LumberjackService.setLogging(function(p){}, 'LunaSysMgrJS', 'debug');
+	}
+	else
+	{
+		LumberjackService.setLogging(function(p){}, 'LunaSysMgrJS', 'err');
 	}
 }
 PreferencesAssistant.prototype.toggleChanged = function(event)
