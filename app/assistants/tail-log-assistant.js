@@ -319,14 +319,14 @@ TailLogAssistant.prototype.updateAppMenu = function(skipUpdate)
 	if (this.showBanners)
 	{
 		this.menuModel.items.push({
-			label: $L("Banner Logs: On"),
+			label: $L("Turn Off Banners"),
 			command: 'do-banner-off'
 		});
 	}
 	else
 	{
 		this.menuModel.items.push({
-			label: $L("Banner Logs: Off"),
+			label: $L("Turn On Banners"),
 			command: 'do-banner-on'
 		});
 	}
