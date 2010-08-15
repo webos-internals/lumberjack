@@ -7,7 +7,14 @@ function dumpObject( obj ){
 }
 
 function arrayToObject( arr ){
+
 	var obj = {};
 	for( var i = 0; i < arr.length; i++ ) obj[arr[i]] = "";
 	return obj;
+}
+
+function formatForHtml(string){
+    string = string.escapeHTML();
+    string = string.replace(/[\s]{2}/g, " &nbsp;");
+    return string;
 }

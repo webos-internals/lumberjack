@@ -16,11 +16,11 @@ function TailLogAssistant(toShow, popped)
 			{
 				label: $L("Help"),
 				command: 'do-help'
-			}/*,
+			},
 			{
 				label: $L("Log Crap"),
 				command: 'do-logcrap'
-			}*/
+			}
 		]
 	}
 	
@@ -231,7 +231,8 @@ TailLogAssistant.prototype.handleCommand = function(event)
 				Mojo.Log.info('Test Info Message');
 				Mojo.Log.warn('Test Warn Message');
 				Mojo.Log.error('Test Error Message');
-				Mojo.Log.info(Object.toJSON(appsList.toObject()));
+				Mojo.Log.error('<b>TEST</b><br><br><u>HTMLFAIL</u>');
+				//Mojo.Log.info(Object.toJSON(appsList.toObject()));
 				break;
 		}
 	}

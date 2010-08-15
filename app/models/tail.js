@@ -222,7 +222,7 @@ tailHandler.prototype.parseMojo = function(msg)
 			id: match[4],
 			type: match[5],
 			rowClass: match[3],
-			message: match[6].replace(/, palmInitFramework346:2520/, '')
+			message: formatForHtml(match[6]).replace(/, palmInitFramework346:2520/, '')
 		};
 	}
 	
