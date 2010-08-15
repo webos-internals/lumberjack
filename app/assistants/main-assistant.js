@@ -229,5 +229,5 @@ MainAssistant.prototype.deactivate = function(event)
 
 MainAssistant.prototype.cleanup = function(event)
 {
-	this.controller.stopListening(this.tailRow, Mojo.Event.tap, this.tailRowTapHandler);
+	this.controller.stopListening(this.tailButton, Mojo.Event.tap, this.tailRowTapHandler);
 };
