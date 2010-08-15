@@ -113,9 +113,23 @@ PreferencesAssistant.prototype.setup = function()
 
 PreferencesAssistant.prototype.themeChanged = function(event)
 {
+	this.cookie.put(this.prefs);
+	
 	// set the theme right away with the body class
 	this.controller.document.body.className = event.value;
-	this.cookie.put(this.prefs);
+	
+	var keys = appsList.keys();
+	if (keys.length > 0)
+	{
+		for (var k = 0; k < keys.length; k++)
+		{
+			try
+			{
+				Mojo.Controller.appController.getStageController('tail-'+keys[k]).activeScene().assistant.controller.document.body.className = event.value;
+			}
+			catch (e) {}
+		}
+	}
 }
 PreferencesAssistant.prototype.toggleChanged = function(event)
 {

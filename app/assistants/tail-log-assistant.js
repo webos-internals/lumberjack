@@ -28,9 +28,11 @@ TailLogAssistant.prototype.setup = function()
 {
 	try
 	{
+	    // set theme because this can be the first scene pushed
+	    this.controller.document.body.className = prefs.get().theme;
+		
 		// setup menu
 		this.controller.setupWidget(Mojo.Menu.appMenu, { omitDefaultItems: true }, this.menuModel);
-		
 		
 		this.sceneScroller =			this.controller.sceneScroller;
 		this.titleElement =				this.controller.get('tail-log-title');
