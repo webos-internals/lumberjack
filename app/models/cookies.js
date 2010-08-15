@@ -14,7 +14,11 @@ preferenceCookie.prototype.get = function(reload)
 			this.prefs = 
 			{
 				// Global Group
-				theme: 'palm-default'
+				theme: 'palm-default',
+				
+				// Main Group
+				listStockApps: false
+				
 			};
 			
 			// uncomment to delete cookie for testing

@@ -39,6 +39,10 @@ PreferencesAssistant.prototype.setup = function()
 		// set this scene's default transition
 		this.controller.setDefaultTransition(Mojo.Transition.zoomFade);
 		
+		// setup handlers for preferences
+		this.toggleChangeHandler = this.toggleChanged.bindAsEventListener(this);
+		
+		
 		// Global Group
 		this.controller.setupWidget
 		(
@@ -56,6 +60,27 @@ PreferencesAssistant.prototype.setup = function()
 		);
 		
 		this.controller.listen('theme', Mojo.Event.propertyChange, this.themeChanged.bindAsEventListener(this));
+		
+		
+		
+		// Main Group
+		this.controller.setupWidget
+		(
+			'listStockApps',
+			{
+	  			trueLabel:  $L("Yes"),
+	 			falseLabel: $L("No"),
+	  			fieldName:  'listStockApps'
+			},
+			{
+				value : this.prefs.listStockApps,
+	 			disabled: false
+			}
+		);
+
+		this.controller.listen('listStockApps',     Mojo.Event.propertyChange, this.toggleChangeHandler);
+		
+		
 		
 		// Secret Group
 		this.keyPressHandler = this.keyPress.bindAsEventListener(this)
@@ -78,6 +103,11 @@ PreferencesAssistant.prototype.themeChanged = function(event)
 	this.controller.document.body.className = event.value;
 	this.cookie.put(this.prefs);
 }
+PreferencesAssistant.prototype.toggleChanged = function(event)
+{
+	this.prefs[event.target.id] = event.value;
+	this.cookie.put(this.prefs);
+};
 
 PreferencesAssistant.prototype.handleCommand = function(event)
 {
