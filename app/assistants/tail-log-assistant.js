@@ -7,6 +7,8 @@ function TailLogAssistant(toShow, popped)
 	
 	this.unregister =	true;
 	
+	this.copyStart =	-1;
+	
 	// setup menu
 	this.menuModel =
 	{
@@ -135,24 +137,72 @@ TailLogAssistant.prototype.messageTap = function(event)
 	if (event.item)
 	{
 		var popupList = [];
-		popupList.push({label: 'Copy',	 command: 'copy'});
+		if (this.copyStart > -1)
+		{
+			popupList.push({label: 'Copy This',			command: 'copy-this'});
+			popupList.push({label: 'Copy To here...',	command: 'copy-to-here'});
+		}
+		else
+		{
+			popupList.push({label: 'Copy This',			command: 'copy-this'});
+			popupList.push({label: 'Copy From here...',	command: 'copy-from-here'});
+		}
 		
 		this.controller.popupSubmenu(
 		{
-			onChoose: this.messageTapListHandler.bindAsEventListener(this, event.item),
+			onChoose: this.messageTapListHandler.bindAsEventListener(this, event.item, event.index),
 			popupClass: 'group-popup',
 			placeNear: event.originalEvent.target,
 			items: popupList
 		});
 	}
 }
-TailLogAssistant.prototype.messageTapListHandler = function(choice, item)
+TailLogAssistant.prototype.messageTapListHandler = function(choice, item, index)
 {
 	switch(choice)
 	{
-		case 'copy':
-			this.controller.stageController.setClipboard(item.message);
+		case 'copy-this':
+			this.controller.stageController.setClipboard(item.type+': '+item.message);
+			this.copyStart = -1;
 			break;
+			
+		case 'copy-from-here':
+			this.messageHighlight(index);
+			this.copyStart = index;
+			break;
+			
+		case 'copy-to-here':
+			if (this.listModel.items.length > 0)
+			{
+				var message = '';
+				for (var i = this.copyStart; i <= index; i++)
+				{
+					if (message != '') message += '\n';
+					message += this.listModel.items[i].type+': '+this.listModel.items[i].message;
+				}
+				if (message != '')
+				{
+					this.controller.stageController.setClipboard(message);
+				}
+			}
+			this.copyStart = -1;
+			this.messageHighlight(-1);
+			break;
+	}
+}
+TailLogAssistant.prototype.messageHighlight = function(index)
+{
+	if (this.listModel.items.length > 0)
+	{
+		for (var i = 0; i < this.listModel.items.length; i++)
+		{
+			if (i == index)
+				this.listModel.items[i].select = 'selected';
+			else
+				this.listModel.items[i].select = '';
+		}
+		this.messagesElement.mojo.noticeUpdatedItems(0, this.listModel.items);
+		this.messagesElement.mojo.setLength(this.listModel.items.length);
 	}
 }
 
@@ -167,6 +217,7 @@ TailLogAssistant.prototype.addMessage = function(msg)
 {
 	if (msg)
 	{
+		msg.select = '';
 		this.listModel.items.push(msg);
 		var start = this.messagesElement.mojo.getLength();
 		this.messagesElement.mojo.noticeUpdatedItems(start, [msg]);
@@ -231,7 +282,7 @@ TailLogAssistant.prototype.handleCommand = function(event)
 				Mojo.Log.info('Test Info Message');
 				Mojo.Log.warn('Test Warn Message');
 				Mojo.Log.error('Test Error Message');
-				Mojo.Log.error('<b>TEST</b><br><br><u>HTMLFAIL</u>');
+				//Mojo.Log.error('<b>TEST</b><br><br><u>HTMLFAIL</u>');
 				//Mojo.Log.info(Object.toJSON(appsList.toObject()));
 				break;
 		}

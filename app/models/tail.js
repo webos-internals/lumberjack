@@ -197,6 +197,7 @@ tailHandler.prototype.parseAlert = function(msg)
 				id: false,
 				type: 'alert',
 				rowClass: 'generic',
+				display: formatForHtml(match[3]),
 				message: match[3]
 			};
 		}
@@ -214,15 +215,14 @@ tailHandler.prototype.parseMojo = function(msg)
 	var match = LogRegExpMojo.exec(msg);
 	if (match)
 	{
-		
-		
 		l =
 		{
 			app: (appsList.get(match[4])?appsList.get(match[4]):match[4]),
 			id: match[4],
 			type: match[5],
 			rowClass: match[3],
-			message: formatForHtml(match[6]).replace(/, palmInitFramework346:2520/, '')
+			display: formatForHtml(match[6]).replace(/, palmInitFramework346:2520/, ''),
+			message: match[6].replace(/, palmInitFramework346:2520/, '')
 		};
 	}
 	
