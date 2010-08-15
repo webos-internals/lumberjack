@@ -33,6 +33,7 @@ TailLogAssistant.prototype.setup = function()
 		
 		
 		this.sceneScroller =			this.controller.sceneScroller;
+		this.titleElement =				this.controller.get('tail-log-title');
 		this.messagesElement =			this.controller.get('messages');
 		this.followToggle = 			this.controller.get('followToggle');
 		this.popButtonElement =			this.controller.get('popButton');
@@ -43,9 +44,23 @@ TailLogAssistant.prototype.setup = function()
 		
 		Mojo.Event.listen(this.sceneScroller, Mojo.Event.scrollStarting, this.scrollHandler);
 		
+		if (this.toShow == 'all')
+		{
+			this.titleElement.update('App Apps');
+		}
+		else if (this.toShow == 'alert')
+		{
+			this.titleElement.update('Alert()s');
+		}
+		else
+		{
+			this.titleElement.update(appsList.get(this.toShow));
+		}
+		
 		if (this.popped)
 		{
 			this.popButtonElement.style.display = 'none';
+			this.titleElement.style.width = '200px';
 		}
 		else
 		{
