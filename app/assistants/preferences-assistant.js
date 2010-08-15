@@ -77,8 +77,22 @@ PreferencesAssistant.prototype.setup = function()
 	 			disabled: false
 			}
 		);
+		this.controller.setupWidget
+		(
+			'popLog',
+			{
+	  			trueLabel:  $L("Yes"),
+	 			falseLabel: $L("No"),
+	  			fieldName:  'popLog'
+			},
+			{
+				value : this.prefs.popLog,
+	 			disabled: false
+			}
+		);
 
 		this.controller.listen('listStockApps',     Mojo.Event.propertyChange, this.toggleChangeHandler);
+		this.controller.listen('popLog',    		Mojo.Event.propertyChange, this.toggleChangeHandler);
 		
 		
 		

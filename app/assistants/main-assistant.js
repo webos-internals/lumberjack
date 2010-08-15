@@ -154,7 +154,7 @@ MainAssistant.prototype.appChanged = function(event)
 
 MainAssistant.prototype.tailTap = function(event)
 {
-	this.controller.stageController.pushScene('tail-log', this.toShowModel.value);
+	tail.newScene(this, this.toShowModel.value, prefs.get().statusPop);
 };
     
 MainAssistant.prototype.getRandomSubTitle = function()

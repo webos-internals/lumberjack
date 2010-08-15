@@ -18,7 +18,8 @@ preferenceCookie.prototype.get = function(reload)
 				
 				// Main Group
 				lastLog: 'all',
-				listStockApps: false
+				listStockApps: false,
+				popLog: false
 				
 			};
 			

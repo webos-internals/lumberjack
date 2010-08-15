@@ -1,8 +1,9 @@
-function TailLogAssistant(toShow)
+function TailLogAssistant(toShow, popped)
 {
 	this.autoScroll =	true;
 	
 	this.toShow =		(toShow ? toShow : 'all');
+	this.popped =		popped;
 	
 	// setup menu
 	this.menuModel =
@@ -34,12 +35,23 @@ TailLogAssistant.prototype.setup = function()
 		this.sceneScroller =			this.controller.sceneScroller;
 		this.messagesElement =			this.controller.get('messages');
 		this.followToggle = 			this.controller.get('followToggle');
+		this.popButtonElement =			this.controller.get('popButton');
 		this.scrollHandler =			this.onScrollStarted.bindAsEventListener(this);
 		this.toggleChangeHandler =		this.toggleChanged.bindAsEventListener(this);
+		this.popButtonPressed =			this.popButtonPressed.bindAsEventListener(this);
 		this.messageTapHandler =		this.messageTap.bindAsEventListener(this);
 		
 		Mojo.Event.listen(this.sceneScroller, Mojo.Event.scrollStarting, this.scrollHandler);
 		
+		if (this.popped)
+		{
+			this.popButtonElement.style.display = 'none';
+		}
+		else
+		{
+			this.controller.listen(this.popButtonElement, Mojo.Event.tap, this.popButtonPressed);
+			this.followToggle.style.right = '16px';
+		}
 		
 		this.controller.setupWidget
 		(
@@ -91,6 +103,11 @@ TailLogAssistant.prototype.toggleChanged = function(event)
 	{
 		this.stop();
 	}
+}
+TailLogAssistant.prototype.popButtonPressed = function(event)
+{
+	tail.newScene(this, this.toShow, true);
+	this.controller.stageController.popScene();
 }
 
 TailLogAssistant.prototype.messageTap = function(event)

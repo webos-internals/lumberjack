@@ -7,6 +7,44 @@ function tailHandler()
 	this.request = false;
 };
 
+tailHandler.prototype.newScene = function(assistant, log, popit)
+{
+	try
+	{
+		var stageName = 'tail-'+log;
+		var stageController = Mojo.Controller.appController.getStageController(stageName);
+		
+        if (stageController && stageController.activeScene().sceneName == 'tail-log')
+		{
+			stageController.activate();
+			return;
+		}
+		else if (stageController && stageController.activeScene().sceneName != 'tail-log')
+		{
+			stageController.popScenesTo('tail-log');
+			stageController.activate();
+			return;
+		}
+		
+		if (!popit)
+		{
+			assistant.controller.stageController.pushScene('tail-log', log, false);
+		}
+		else
+		{
+			Mojo.Controller.appController.createStageWithCallback({name: stageName, lightweight: true}, this.newSceneCallback.bind(this, log, true));
+		}
+	}
+	catch (e)
+	{
+		Mojo.Log.logException(e, "tailHandler#newScene");
+	}
+}
+tailHandler.prototype.newSceneCallback = function(log, popped, controller)
+{
+	controller.pushScene('tail-log', log, popped);
+}
+
 tailHandler.prototype.registerScene = function(log, assistant)
 {
 	var scene =
