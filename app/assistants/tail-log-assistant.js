@@ -21,7 +21,7 @@ function TailLogAssistant(toShow)
 			}
 		]
 	}
-
+	
 }
 
 TailLogAssistant.prototype.setup = function()
@@ -37,6 +37,7 @@ TailLogAssistant.prototype.setup = function()
 		this.followToggle = 			this.controller.get('followToggle');
 		this.scrollHandler =			this.onScrollStarted.bindAsEventListener(this);
 		this.toggleChangeHandler =		this.toggleChanged.bindAsEventListener(this);
+		this.messageTapHandler =		this.messageTap.bindAsEventListener(this);
 		
 		Mojo.Event.listen(this.sceneScroller, Mojo.Event.scrollStarting, this.scrollHandler);
 		
@@ -69,7 +70,10 @@ TailLogAssistant.prototype.setup = function()
 			}
 		);
 		this.revealBottom();
-		//Mojo.Event.listen(this.messagesElement, Mojo.Event.listTap, this.messageTapHandler);
+		this.controller.listen(this.messagesElement, Mojo.Event.listTap, this.messageTapHandler);
+		
+		// register scene!
+		//tail.registerScene(this);
 		
 	}
 	catch (e)
@@ -175,6 +179,31 @@ TailLogAssistant.prototype.parseMessage = function(msg)
 	}
 	
 	return s;
+}
+TailLogAssistant.prototype.messageTap = function(event)
+{
+	if (event.item)
+	{
+		var popupList = [];
+		popupList.push({label: 'Copy',	 command: 'copy'});
+		
+		this.controller.popupSubmenu(
+		{
+			onChoose: this.messageTapListHandler.bindAsEventListener(this, event.item),
+			popupClass: 'group-popup',
+			placeNear: event.originalEvent.target,
+			items: popupList
+		});
+	}
+}
+TailLogAssistant.prototype.messageTapListHandler = function(choice, item)
+{
+	switch(choice)
+	{
+		case 'copy':
+			this.controller.stageController.setClipboard(item.message);
+			break;
+	}
 }
 
 TailLogAssistant.prototype.stop = function()
