@@ -9,6 +9,10 @@ function TailLogAssistant(toShow, popped)
 	
 	this.copyStart =	-1;
 	
+    this.isVisible = true;
+    this.lastFocusMarker = false;
+    this.lastFocusMessage = false;
+	
 	// setup menu
 	this.menuModel =
 	{
@@ -38,17 +42,22 @@ TailLogAssistant.prototype.setup = function()
 		// setup menu
 		this.controller.setupWidget(Mojo.Menu.appMenu, { omitDefaultItems: true }, this.menuModel);
 		
+        this.documentElement =			this.controller.stageController.document;
 		this.sceneScroller =			this.controller.sceneScroller;
 		this.titleElement =				this.controller.get('tail-log-title');
 		this.messagesElement =			this.controller.get('messages');
 		this.followToggle = 			this.controller.get('followToggle');
 		this.popButtonElement =			this.controller.get('popButton');
 		this.scrollHandler =			this.onScrollStarted.bindAsEventListener(this);
+        this.visibleWindowHandler =		this.visibleWindow.bindAsEventListener(this);
+        this.invisibleWindowHandler =	this.invisibleWindow.bindAsEventListener(this);
 		this.toggleChangeHandler =		this.toggleChanged.bindAsEventListener(this);
 		this.popButtonPressed =			this.popButtonPressed.bindAsEventListener(this);
 		this.messageTapHandler =		this.messageTap.bindAsEventListener(this);
 		
 		Mojo.Event.listen(this.sceneScroller, Mojo.Event.scrollStarting, this.scrollHandler);
+        Mojo.Event.listen(this.documentElement, Mojo.Event.stageActivate, this.visibleWindowHandler);
+        Mojo.Event.listen(this.documentElement, Mojo.Event.stageDeactivate, this.invisibleWindowHandler);
 		
 		if (this.toShow == 'all')
 		{
@@ -225,6 +234,16 @@ TailLogAssistant.prototype.addMessage = function(theMsg)
 		this.messagesElement.mojo.noticeUpdatedItems(start, [msg]);
 		this.messagesElement.mojo.setLength(start + 1);
 		this.revealBottom();
+		
+		 if (!this.isVisible && this.lastFocusMessage && !this.lastFocusMessage.hasClassName('lostFocus'))
+		 {
+            if (this.lastFocusMarker && this.lastFocusMarker.hasClassName('lostFocus'))
+			{
+                this.lastFocusMarker.removeClassName('lostFocus');
+                this.lastFocusMarker = false;
+            }
+            this.lastFocusMessage.addClassName('lostFocus');
+        }
 	}
 }
 TailLogAssistant.prototype.stop = function()
@@ -268,6 +287,22 @@ TailLogAssistant.prototype.revealBottom = function()
 	}
 }
 
+TailLogAssistant.prototype.visibleWindow = function(event)
+{
+    if (!this.isVisible)
+	{
+        this.isVisible = true;
+    }
+}
+TailLogAssistant.prototype.invisibleWindow = function(event)
+{
+    this.isVisible = false;
+    if (this.lastFocusMessage && this.lastFocusMessage.hasClassName('lostFocus'))
+	{
+        this.lastFocusMarker = this.lastFocusMessage;
+    }
+    this.lastFocusMessage = this.messagesElement.mojo.getNodeByIndex(this.messagesElement.mojo.getLength() - 1);
+}
 
 TailLogAssistant.prototype.handleCommand = function(event)
 {

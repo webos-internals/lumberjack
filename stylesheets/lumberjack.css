@@ -148,6 +148,21 @@ body.palm-dark .scene-fade-bottom
 {
 	min-height: 0px;
 }
+.log .log-messages .palm-row.lostFocus
+{
+	background-repeat: repeat-x;
+	background-image: url(../images/palm-default/palm-divider.png);
+	padding-bottom: 7px;
+}
+body.palm-dark .log .log-messages .palm-row.lostFocus
+{
+	background-image: url(../images/palm-dark/palm-divider.png);
+}
+.log .log-messages .palm-row.selected.lostFocus,
+body.palm-dark .log .log-messages .palm-row.selected.lostFocus
+{
+	background-image: none;
+}
 .log .log-messages .palm-row-wrapper
 {
 	padding-top: 5px;
