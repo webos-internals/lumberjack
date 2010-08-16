@@ -50,7 +50,7 @@ GetLogAssistant.prototype.setup = function()
 		}
 		else
 		{
-			this.titleElement.update(appsList.get(this.toShow));
+			this.titleElement.update((appsList.get(this.toShow) ? appsList.get(this.toShow) : this.toShow));
 		}
 		
 		this.controller.setupWidget
@@ -157,6 +157,7 @@ GetLogAssistant.prototype.get = function()
 }
 GetLogAssistant.prototype.got = function(payload)
 {
+	for (var p in payload) alert(p+': '+payload[p]);
 	if (payload.returnValue)
 	{
 		switch (payload.stage)
@@ -194,6 +195,16 @@ GetLogAssistant.prototype.got = function(payload)
 				this.revealBottom();
 				break;
 		}
+	}
+	else
+	{
+		this.spinnerElement.mojo.stop();
+		this.contents = '';
+		this.listModel.items = [];
+		this.messagesElement.mojo.noticeUpdatedItems(0, this.listModel.items);
+		this.messagesElement.mojo.setLength(this.listModel.items.length);
+		
+		this.errorMessage('<b>Service Error:</b><br>'+payload.errorText);
 	}
 }
 GetLogAssistant.prototype.parseMessages = function(data)
@@ -238,6 +249,18 @@ GetLogAssistant.prototype.revealBottom = function()
 }
 
 
+GetLogAssistant.prototype.errorMessage = function(msg)
+{
+	this.controller.showAlertDialog(
+	{
+		allowHTMLMessage:	true,
+		preventCancel:		true,
+	    title:				'Lumberjack',
+	    message:			msg,
+	    choices:			[{label:$L("Ok"), value:'ok'}],
+	    onChoose:			function(e){}
+    });
+}
 
 GetLogAssistant.prototype.handleCommand = function(event)
 {

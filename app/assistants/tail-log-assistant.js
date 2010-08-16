@@ -342,6 +342,21 @@ TailLogAssistant.prototype.updateAppMenu = function(skipUpdate)
     }
 }
 
+
+TailLogAssistant.prototype.errorMessage = function(msg)
+{
+	this.controller.showAlertDialog(
+	{
+		allowHTMLMessage:	true,
+		preventCancel:		true,
+	    title:				'Lumberjack',
+	    message:			msg,
+	    choices:			[{label:$L("Ok"), value:'ok'}],
+	    onChoose:			function(e){}
+    });
+}
+
+
 TailLogAssistant.prototype.handleCommand = function(event)
 {
 	if (event.type == Mojo.Event.command)

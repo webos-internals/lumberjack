@@ -171,6 +171,20 @@ tailHandler.prototype.handleMessages = function(payload)
 	else
 	{
 		this.stop();
+		
+		var keys = this.scenes.keys();
+		if (keys.length > 0)
+		{
+			for (var k = 0; k < keys.length; k++)
+			{
+				var scene = this.scenes.get(keys[k]);
+				if (scene.status)
+				{
+					if (scene.assistant.controller)
+						scene.assistant.errorMessage('<b>Service Error:</b><br>'+payload.errorText);
+				}
+			}
+		}
 	}
 }
 
