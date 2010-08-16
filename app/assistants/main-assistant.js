@@ -9,6 +9,8 @@ function MainAssistant()
 		{weight: 1,  text: $L('Is A Logger... Get it?')}
 	];
 	
+	this.appsCache = false;
+	
     // setup menu
     this.menuModel =
     {
@@ -105,6 +107,8 @@ MainAssistant.prototype.listApps = function(payload)
 {
 	if (payload.apps && payload.apps.length > 0)
 	{
+		this.appsCache = payload;
+		
 		this.toShowModel.choices = [];
 		appsList = $H();
 		
@@ -246,7 +250,8 @@ MainAssistant.prototype.activate = function(event)
 {
 	if (this.alreadyActivated)
 	{
-		this.request = LumberjackService.listApps(this.listAppsHandler);
+		this.listApps(this.appsCache);
+		//this.request = LumberjackService.listApps(this.listAppsHandler);
 	}
 	
 	if (this.controller.stageController.setWindowOrientation)
