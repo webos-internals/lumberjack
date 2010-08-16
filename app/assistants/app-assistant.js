@@ -33,6 +33,10 @@ AppAssistant.prototype.handleLaunch = function(params)
 				this.controller.createStageWithCallback({name: mainStageName, lightweight: true}, this.launchFirstScene.bind(this));
 			}
 		}
+		else if (params.source == 'tail-log-message' && params.log)
+		{
+			// NOTHING!
+		}
     }
     catch (e)
 	{

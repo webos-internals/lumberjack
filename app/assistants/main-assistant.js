@@ -48,6 +48,7 @@ MainAssistant.prototype.setup = function()
     this.subTitleElement =	this.controller.get('subTitle');
 	this.toShowElement =	this.controller.get('toShow');
 	this.tailButton =		this.controller.get('tailButton');
+	this.getButton =		this.controller.get('getButton');
 	
     this.versionElement.innerHTML = "v" + Mojo.Controller.appInfo.version;
     this.subTitleElement.innerHTML = this.getRandomSubTitle();
@@ -56,6 +57,7 @@ MainAssistant.prototype.setup = function()
     this.listAppsHandler =		this.listApps.bindAsEventListener(this);
 	this.appChangedHandler = 	this.appChanged.bindAsEventListener(this);
     this.tailTapHandler =		this.tailTap.bindAsEventListener(this);
+    this.getTapHandler =		this.getTap.bindAsEventListener(this);
 	
 	this.controller.setupWidget
 	(
@@ -84,15 +86,24 @@ MainAssistant.prototype.setup = function()
 			buttonLabel: $L("Tail Log")
 		}
 	);
+	this.controller.setupWidget
+	(
+		'getButton',
+		{},
+		{
+			buttonLabel: $L("Get Log")
+		}
+	);
 	
 	this.controller.listen(this.tailButton, Mojo.Event.tap, this.tailTapHandler.bindAsEventListener(this));
+	this.controller.listen(this.getButton, Mojo.Event.tap, this.getTapHandler.bindAsEventListener(this));
 	
 	this.request = LumberjackService.listApps(this.listAppsHandler);
 };
 
 MainAssistant.prototype.listApps = function(payload)
 {
-	if (payload && payload.apps && payload.apps.length > 0)
+	if (payload.apps && payload.apps.length > 0)
 	{
 		this.toShowModel.choices = [];
 		appsList = $H();
@@ -146,6 +157,10 @@ MainAssistant.prototype.listApps = function(payload)
 		
 		this.controller.modelChanged(this.toShowModel);
 	}
+	else
+	{
+		this.errorMessage('<b>Service Error:</b><br>'+payload.errorText);
+	}
 };
 
 MainAssistant.prototype.appChanged = function(event)
@@ -160,6 +175,10 @@ MainAssistant.prototype.appChanged = function(event)
 MainAssistant.prototype.tailTap = function(event)
 {
 	tail.newScene(this, this.toShowModel.value, prefs.get().popLog);
+};
+MainAssistant.prototype.getTap = function(event)
+{
+	this.controller.stageController.pushScene('get-log', this.toShowModel.value);
 };
     
 MainAssistant.prototype.getRandomSubTitle = function()
@@ -190,6 +209,20 @@ MainAssistant.prototype.getRandomSubTitle = function()
 	
 	// if no random title was found (for whatever reason, wtf?) return first and best subtitle
 	return this.randomSub[0].text;
+}
+
+
+MainAssistant.prototype.errorMessage = function(msg)
+{
+	this.controller.showAlertDialog(
+	{
+		allowHTMLMessage:	true,
+		preventCancel:		true,
+	    title:				'Lumberjack',
+	    message:			msg,
+	    choices:			[{label:$L("Ok"), value:'ok'}],
+	    onChoose:			function(e){}
+    });
 }
 
 MainAssistant.prototype.handleCommand = function(event)

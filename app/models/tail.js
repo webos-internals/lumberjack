@@ -143,8 +143,8 @@ tailHandler.prototype.handleMessages = function(payload)
 	if (payload.returnValue)
 	{
 		this.status = true;
-		var alertMsg = this.parseAlert(payload.status);
-		var mojoMsg =  this.parseMojo(payload.status);
+		var alertMsg = tailHandler.parseAlert(payload.status);
+		var mojoMsg =  tailHandler.parseMojo(payload.status);
 		var keys = this.scenes.keys();
 		if (keys.length > 0)
 		{
@@ -171,10 +171,24 @@ tailHandler.prototype.handleMessages = function(payload)
 	else
 	{
 		this.stop();
+		
+		var keys = this.scenes.keys();
+		if (keys.length > 0)
+		{
+			for (var k = 0; k < keys.length; k++)
+			{
+				var scene = this.scenes.get(keys[k]);
+				if (scene.status)
+				{
+					if (scene.assistant.controller)
+						scene.assistant.errorMessage('<b>Service Error:</b><br>'+payload.errorText);
+				}
+			}
+		}
 	}
 }
 
-tailHandler.prototype.parseAlert = function(msg)
+tailHandler.parseAlert = function(msg)
 {
 	var l = false;
 	
@@ -200,7 +214,7 @@ tailHandler.prototype.parseAlert = function(msg)
 	
 	return l;
 }
-tailHandler.prototype.parseMojo = function(msg)
+tailHandler.parseMojo = function(msg)
 {
 	var l = false;
 	

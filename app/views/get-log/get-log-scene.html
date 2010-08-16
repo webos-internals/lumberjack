@@ -1,14 +1,15 @@
-<div class="tail log">
+<div class="get log">
 	
 	<div class="scene-fade-top" x-mojo-scroll-fade="top"></div>
 	
 	<div class="palm-header left">
-		<div id="popButton" x-mojo-tap-highlight="momentary"><div class="icon"></div></div>
-        <div x-mojo-element="ToggleButton" id="followToggle"></div>
-		<div class="title" id="tail-log-title"></div>
+		<div id="reloadButton" x-mojo-tap-highlight="momentary"><div class="icon"></div></div>
+		<div class="title" id="get-log-title"></div>
 	</div>
 	
 	<div class="palm-header-spacer" style="height: 50px;"></div>
+	
+	<div x-mojo-element="Spinner" id="spinner"></div>
 	
 	<div id="messages" class="log-messages" x-mojo-element="List"></div>
 	
