@@ -207,6 +207,7 @@ body.palm-dark .scene-fade-bottom
 	background-repeat: repeat-x;
 	background-image: url(../images/palm-default/palm-divider.png);
 	padding-bottom: 7px;
+	/*margin-bottom: -2px;*/
 }
 body.palm-dark .log .log-messages .palm-row.lostFocus
 {
@@ -219,10 +220,15 @@ body.palm-dark .log .log-messages .palm-row.selected.lostFocus
 }
 .log .log-messages .palm-row-wrapper
 {
-	padding-top: 5px;
-	padding-bottom: 8px;
+	position: relative;
+	padding-top: 8px;
+	padding-bottom: 11px;
 	background-repeat: repeat-y;
 	background-position: right;
+}
+.log .log-messages .palm-row.lostFocus .palm-row-wrapper
+{
+	padding-bottom: 8px;
 }
 .log .log-messages .type
 {
@@ -236,11 +242,27 @@ body.palm-dark .log .log-messages .palm-row.selected.lostFocus
 }
 .log .log-messages .date
 {
-	float: left;
-	font-size: 13px;
-	padding-left: 20px;
-	/* i dont like how this looks :/ */
+	/* im still not happy with this... */
 	display: none;
+	
+	position: absolute;
+	font-weight: bold;
+	top: -5px;
+	right: 6px;
+	/*left: 7px;*/
+	font-size: 10px;
+	color: #666;
+	-webkit-border-image: url(../images/palm-default/line-bubble.png) 6 6 6 6 stretch stretch;
+	line-height: 1px;
+	padding-top: 1px;
+	padding-right: 2px;
+	padding-left: 2px;
+	height: 4px;
+}
+body.palm-dark .log .log-messages .date
+{
+	color: #ccc;
+	-webkit-border-image: url(../images/palm-dark/line-bubble.png) 6 6 6 6 stretch stretch;
 }
 .log .log-messages .message
 {
