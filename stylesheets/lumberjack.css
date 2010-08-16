@@ -156,6 +156,12 @@ body.palm-dark .scene-fade-bottom
 	text-overflow: ellipsis;
 	overflow: hidden;
 }
+.get #spinner
+{
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 120px;
+}
 
 
 

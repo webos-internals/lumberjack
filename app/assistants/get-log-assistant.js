@@ -35,7 +35,10 @@ GetLogAssistant.prototype.setup = function()
 		this.sceneScroller =			this.controller.sceneScroller;
 		this.titleElement =				this.controller.get('get-log-title');
 		this.messagesElement =			this.controller.get('messages');
+		this.spinnerElement =			this.controller.get('spinner');
 		this.messageTapHandler =		this.messageTap.bindAsEventListener(this);
+		
+		this.controller.setupWidget('spinner', {spinnerSize: 'large'}, {spinning: false});
 		
 		if (this.toShow == 'all')
 		{
@@ -159,8 +162,12 @@ GetLogAssistant.prototype.got = function(payload)
 		switch (payload.stage)
 		{
 			case 'start':
+				this.spinnerElement.mojo.start();
 				this.contents = '';
 				this.listModel.items = [];
+				this.messagesElement.mojo.noticeUpdatedItems(0, this.listModel.items);
+				this.messagesElement.mojo.setLength(this.listModel.items.length);
+				this.revealBottom();
 				break;
 				
 			case 'middle':
@@ -181,6 +188,7 @@ GetLogAssistant.prototype.got = function(payload)
 				{
 					this.parseMessages(this.contents);
 				}
+				this.spinnerElement.mojo.stop();
 				this.messagesElement.mojo.noticeUpdatedItems(0, this.listModel.items);
 				this.messagesElement.mojo.setLength(this.listModel.items.length);
 				this.revealBottom();
@@ -190,21 +198,24 @@ GetLogAssistant.prototype.got = function(payload)
 }
 GetLogAssistant.prototype.parseMessages = function(data)
 {
-	var ary = data.split("\n");
-	if (ary.length > 0)
+	if (data)
 	{
-		for (var a = 0; a < ary.length; a++)
+		var ary = data.split("\n");
+		if (ary.length > 0)
 		{
-			var alertMsg = tailHandler.parseAlert(ary[a]);
-			var mojoMsg =  tailHandler.parseMojo(ary[a]);
-			if (this.toShow == 'alert')
+			for (var a = 0; a < ary.length; a++)
 			{
-				this.addMessage(alertMsg);
-			}
-			else if ((this.toShow == 'all') ||
-					(mojoMsg.id && this.toShow.toLowerCase() == mojoMsg.id.toLowerCase()))
-			{
-				this.addMessage(mojoMsg);
+				var alertMsg = tailHandler.parseAlert(ary[a]);
+				var mojoMsg =  tailHandler.parseMojo(ary[a]);
+				if (this.toShow == 'alert')
+				{
+					this.addMessage(alertMsg);
+				}
+				else if ((this.toShow == 'all') ||
+						(mojoMsg.id && this.toShow.toLowerCase() == mojoMsg.id.toLowerCase()))
+				{
+					this.addMessage(mojoMsg);
+				}
 			}
 		}
 	}
