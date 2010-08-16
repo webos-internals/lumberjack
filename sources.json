@@ -13,15 +13,19 @@
         "source": "app/assistants/main-assistant.js"
     },
     {
+        "scenes": "tail-log",
+        "source": "app/assistants/tail-log-assistant.js"
+    },
+    {
+        "scenes": "get-log",
+        "source": "app/assistants/get-log-assistant.js"
+    },
+    {
         "scenes": "preferences",
         "source": "app/assistants/preferences-assistant.js"
     },
     {
         "scenes": "help",
         "source": "app/assistants/help-assistant.js"
-    },
-    {
-        "scenes": "tail-log",
-        "source": "app/assistants/tail-log-assistant.js"
     }
 ]

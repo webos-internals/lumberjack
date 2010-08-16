@@ -141,6 +141,28 @@ body.palm-dark .scene-fade-bottom
 	background: url(../images/pop-icon.png) center center no-repeat;
 }
 
+
+
+
+/*
+ * Get Scene Styles
+ */
+.get #get-log-title
+{
+	float: left;
+	display: block;
+	/*width: 150px;*/
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+
+
+
+
+
+
 /*
  * Generic Log Styles
  */
