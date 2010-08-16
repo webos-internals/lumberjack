@@ -10,6 +10,15 @@ function tailHandler()
 	this.logging = false;
 };
 
+// (alert)					2010-08-15T02:32:37.110778Z [178667] palm-webos-device user.warning LunaSysMgr: {LunaSysMgrJS}: start
+tailHandler.LogRegExpAlert =	new RegExp(/^([^\s]*) \[(.*)\] palm-webos-device user.warning LunaSysMgr: {LunaSysMgrJS}: (.*)$/);
+
+// (mojo.log)				2010-08-15T01:47:25.448852Z [175956] palm-webos-device user.notice LunaSysMgr: {LunaSysMgrJS}: org.webosinternals.lumberjack: Info: start, palmInitFramework346:2520
+tailHandler.LogRegExpMojo =		new RegExp(/^([^\s]*) \[(.*)\] palm-webos-device user.([^\s]*) LunaSysMgr: {LunaSysMgrJS}: ([^:]*): ([^:]*): (.*)$/);
+
+//										   2010-08-16T09:22:55.327301Z
+tailHandler.LogDateRegExp =		new RegExp(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(.*)$/);
+
 tailHandler.prototype.newScene = function(assistant, log, popit)
 {
 	try
@@ -206,19 +215,19 @@ tailHandler.prototype.handleMessages = function(payload)
 tailHandler.parseAlert = function(msg)
 {
 	var l = false;
-	
-	// (alert)		2010-08-15T02:32:37.110778Z [178667] palm-webos-device user.warning LunaSysMgr: {LunaSysMgrJS}: start
-	var LogRegExpAlert =	new RegExp(/^([^\s]*) \[(.*)\] palm-webos-device user.warning LunaSysMgr: {LunaSysMgrJS}: (.*)$/);
 
-	var match = LogRegExpAlert.exec(msg);
+	var match = tailHandler.LogRegExpAlert.exec(msg);
 	if (match)
 	{
 		if (!match[3].include('palmInitFramework'))
 		{
+			var d = tailHandler.parseDate(match[1]);
+			
 			l =
 			{
 				app: false,
 				id: false,
+				date: (d ? d.month + '/' + d.day + ' ' + d.hour + ':' + d.min + ':' + d.sec : '?'),
 				type: 'alert',
 				rowClass: 'generic',
 				display: formatForHtml(match[3]),
@@ -233,16 +242,16 @@ tailHandler.parseMojo = function(msg)
 {
 	var l = false;
 	
-	// (mojo.log)	2010-08-15T01:47:25.448852Z [175956] palm-webos-device user.notice LunaSysMgr: {LunaSysMgrJS}: org.webosinternals.lumberjack: Info: start, palmInitFramework346:2520
-	var LogRegExpMojo =		new RegExp(/^([^\s]*) \[(.*)\] palm-webos-device user.([^\s]*) LunaSysMgr: {LunaSysMgrJS}: ([^:]*): ([^:]*): (.*)$/);
-	
-	var match = LogRegExpMojo.exec(msg);
+	var match = tailHandler.LogRegExpMojo.exec(msg);
 	if (match)
 	{
+		var d = tailHandler.parseDate(match[1]);
+		
 		l =
 		{
 			app: (appsList.get(match[4])?appsList.get(match[4]):match[4]),
 			id: match[4],
+			date: (d ? d.month + '/' + d.day + ' ' + d.hour + ':' + d.min + ':' + d.sec : '?'),
 			type: match[5],
 			rowClass: match[3],
 			display: formatForHtml(match[6]).replace(/, palmInitFramework346:2520/, ''),
@@ -252,6 +261,25 @@ tailHandler.parseMojo = function(msg)
 	
 	return l;
 }
+tailHandler.parseDate = function(string)
+{
+	var da = tailHandler.LogDateRegExp(string);
+	if (da)
+	{
+		var dobj =
+		{
+			year:  parseInt(da[1]),
+			month: parseInt(da[2]),
+			day:   parseInt(da[3]),
+			hour:  parseInt(da[4]),
+			min:   parseInt(da[5]),
+			sec:   parseInt(da[6])
+		};
+		return dobj;
+	}
+	return false;
+}
+
 
 tailHandler.prototype.stop = function()
 {
