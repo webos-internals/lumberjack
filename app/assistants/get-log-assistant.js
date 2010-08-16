@@ -35,7 +35,9 @@ GetLogAssistant.prototype.setup = function()
 		this.sceneScroller =			this.controller.sceneScroller;
 		this.titleElement =				this.controller.get('get-log-title');
 		this.messagesElement =			this.controller.get('messages');
+		this.reloadButtonElement =		this.controller.get('reloadButton');
 		this.spinnerElement =			this.controller.get('spinner');
+		this.reloadButtonPressed =		this.reloadButtonPressed.bindAsEventListener(this);
 		this.messageTapHandler =		this.messageTap.bindAsEventListener(this);
 		
 		this.controller.setupWidget('spinner', {spinnerSize: 'large'}, {spinning: false});
@@ -52,6 +54,8 @@ GetLogAssistant.prototype.setup = function()
 		{
 			this.titleElement.update((appsList.get(this.toShow) ? appsList.get(this.toShow) : this.toShow));
 		}
+		
+		this.controller.listen(this.reloadButtonElement, Mojo.Event.tap, this.reloadButtonPressed);
 		
 		this.controller.setupWidget
 		(
@@ -75,6 +79,11 @@ GetLogAssistant.prototype.setup = function()
 	{
 		Mojo.Log.logException(e, 'get-log#setup');
 	}
+}
+
+GetLogAssistant.prototype.reloadButtonPressed = function(event)
+{
+	this.get();
 }
 
 GetLogAssistant.prototype.messageTap = function(event)
@@ -157,7 +166,6 @@ GetLogAssistant.prototype.get = function()
 }
 GetLogAssistant.prototype.got = function(payload)
 {
-	for (var p in payload) alert(p+': '+payload[p]);
 	if (payload.returnValue)
 	{
 		switch (payload.stage)

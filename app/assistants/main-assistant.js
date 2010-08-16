@@ -103,62 +103,59 @@ MainAssistant.prototype.setup = function()
 
 MainAssistant.prototype.listApps = function(payload)
 {
-	if (payload.returnValue)
+	if (payload.apps && payload.apps.length > 0)
 	{
-		if (payload.apps && payload.apps.length > 0)
+		this.toShowModel.choices = [];
+		appsList = $H();
+		
+		payload.apps.sort(function(a, b)
 		{
-			this.toShowModel.choices = [];
-			appsList = $H();
-			
-			payload.apps.sort(function(a, b)
+			if (a.title && b.title)
 			{
-				if (a.title && b.title)
-				{
-					strA = a.title.toLowerCase();
-					strB = b.title.toLowerCase();
-					return ((strA < strB) ? -1 : ((strA > strB) ? 1 : 0));
-				}
-				else
-				{
-					return -1;
-				}
-			});
-			
-			this.toShowModel.choices.push({label:'Mojo.Log'});
-			this.toShowModel.choices.push({label:'<b>'+$L('All Applications')+'</b>', value:'all'});
-			appsList.set('all', 1);
-			
-			for (var a = 0; a < payload.apps.length; a++)
+				strA = a.title.toLowerCase();
+				strB = b.title.toLowerCase();
+				return ((strA < strB) ? -1 : ((strA > strB) ? 1 : 0));
+			}
+			else
 			{
-				//alert('==================');
-				//for (var x in payload.apps[a]) alert(x+': '+payload.apps[a][x]);
-				
-				appsList.set(payload.apps[a].id, payload.apps[a].title);
-				
-				if (prefs.get().listStockApps)
+				return -1;
+			}
+		});
+		
+		this.toShowModel.choices.push({label:'Mojo.Log'});
+		this.toShowModel.choices.push({label:'<b>'+$L('All Applications')+'</b>', value:'all'});
+		appsList.set('all', 1);
+		
+		for (var a = 0; a < payload.apps.length; a++)
+		{
+			//alert('==================');
+			//for (var x in payload.apps[a]) alert(x+': '+payload.apps[a][x]);
+			
+			appsList.set(payload.apps[a].id, payload.apps[a].title);
+			
+			if (prefs.get().listStockApps)
+			{
+				this.toShowModel.choices.push({label:payload.apps[a].title, value:payload.apps[a].id});
+			}
+			else
+			{
+				if (payload.apps[a].size > 0)
 				{
 					this.toShowModel.choices.push({label:payload.apps[a].title, value:payload.apps[a].id});
 				}
-				else
-				{
-					if (payload.apps[a].size > 0)
-					{
-						this.toShowModel.choices.push({label:payload.apps[a].title, value:payload.apps[a].id});
-					}
-				}
 			}
-			
-			this.toShowModel.choices.push({label:'Other'});
-			this.toShowModel.choices.push({label:'<i>'+$L('Alert()s')+'</i>', value:'alert'});
-			appsList.set('alert', 1);
-			
-			if (!appsList.get(prefs.get().lastLog))
-			{
-				this.toShowModel.value = 'all';
-			}
-			
-			this.controller.modelChanged(this.toShowModel);
 		}
+		
+		this.toShowModel.choices.push({label:'Other'});
+		this.toShowModel.choices.push({label:'<i>'+$L('Alert()s')+'</i>', value:'alert'});
+		appsList.set('alert', 1);
+		
+		if (!appsList.get(prefs.get().lastLog))
+		{
+			this.toShowModel.value = 'all';
+		}
+		
+		this.controller.modelChanged(this.toShowModel);
 	}
 	else
 	{
