@@ -14,7 +14,7 @@ tailHandler.prototype.newScene = function(assistant, log, popit)
 {
 	try
 	{
-		if (this.logging) Mojo.Log.info('newScene: ', log);
+		if (this.logging) Mojo.Log.info('(START) newScene: ', log);
 		
 		var stageName = 'tail-'+log;
 		var stageController = Mojo.Controller.appController.getStageController(stageName);
@@ -39,6 +39,8 @@ tailHandler.prototype.newScene = function(assistant, log, popit)
 		{
 			Mojo.Controller.appController.createStageWithCallback({name: stageName, lightweight: true}, this.newSceneCallback.bind(this, log, true));
 		}
+		
+		if (this.logging) Mojo.Log.info('( END ) newScene: ', log);
 	}
 	catch (e)
 	{
@@ -52,7 +54,8 @@ tailHandler.prototype.newSceneCallback = function(log, popped, controller)
 
 tailHandler.prototype.registerScene = function(log, assistant)
 {
-	if (this.logging) Mojo.Log.info('registerScene: ', log);
+	if (this.logging) Mojo.Log.info('(START) registerScene: ', log);
+	
 	var scene = this.scenes.get(log)
 	if (scene)
 	{
@@ -68,10 +71,13 @@ tailHandler.prototype.registerScene = function(log, assistant)
 		};
 		this.scenes.set(log, scene);
 	}
+	
+	if (this.logging) Mojo.Log.info('( END ) registerScene: ', log);
 };
 tailHandler.prototype.unregisterScene = function(log)
 {
-	if (this.logging) Mojo.Log.info('unregisterScene: ', log);
+	if (this.logging) Mojo.Log.info('(START) unregisterScene: ', log);
+	
 	this.scenes.unset(log);
 	this.started = this.getStartedScenes();
 	
@@ -83,9 +89,12 @@ tailHandler.prototype.unregisterScene = function(log)
 	{
 		this.stop();
 	}
+	
+	if (this.logging) Mojo.Log.info('( END ) unregisterScene: ', log);
 };
 tailHandler.prototype.getStartedScenes = function()
 {
+	if (this.logging) Mojo.Log.info('(START) startedScenes');
 	var keys = this.scenes.keys();
 	if (keys.length > 0)
 	{
@@ -98,16 +107,17 @@ tailHandler.prototype.getStartedScenes = function()
 				started++;
 			}
 		}
-		if (this.logging) Mojo.Log.info('startedScenes: ', started);
+		if (this.logging) Mojo.Log.info('( END ) startedScenes: ', started);
 		return started;
 	}
-	if (this.logging) Mojo.Log.info('startedScenes: ', 0);
+	if (this.logging) Mojo.Log.info('( END ) startedScenes: ', 0);
 	return 0;
 }
 
 tailHandler.prototype.startScene = function(log)
 {
-	if (this.logging) Mojo.Log.info('startScene: ', log);
+	if (this.logging) Mojo.Log.info('(START) startScene: ', log);
+	
 	var scene = this.scenes.get(log);
 	scene.status = true;
 	this.scenes.update(log, scene);
@@ -117,10 +127,13 @@ tailHandler.prototype.startScene = function(log)
 	{
 		this.start();
 	}
+	
+	if (this.logging) Mojo.Log.info('( END ) startScene: ', log);
 }
 tailHandler.prototype.stopScene = function(log)
 {
-	if (this.logging) Mojo.Log.info('stopScene: ', log);
+	if (this.logging) Mojo.Log.info('(START) stopScene: ', log);
+	
 	var scene = this.scenes.get(log);
 	scene.status = false;
 	this.scenes.update(log, scene);
@@ -130,6 +143,8 @@ tailHandler.prototype.stopScene = function(log)
 	{
 		this.stop();
 	}
+	
+	if (this.logging) Mojo.Log.info('( END ) stopScene: ', log);
 }
 
 tailHandler.prototype.start = function()
