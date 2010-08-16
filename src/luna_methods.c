@@ -29,18 +29,15 @@
 
 #define API_VERSION "1"
 
-//
-// We use static buffers instead of continually allocating and deallocating stuff,
-// since we're a long-running service, and do not want to leak anything.
-//
-static char buffer[MAXBUFLEN];
-static char esc_buffer[MAXBUFLEN];
-static char run_command_buffer[MAXBUFLEN];
-static char read_file_buffer[CHUNKSIZE+CHUNKSIZE+1];
-
 pthread_t tailMessagesThread;
-LSHandle *tailMessagesHandle;
-LSMessage*tailMessagesMessage;
+LSHandle *tailMessagesHandle = NULL;
+LSMessage*tailMessagesMessage = NULL;
+FILE *    tailMessagesFileHandle = NULL;
+bool      tailMessagesRunning = false;;
+
+
+pthread_mutex_t stopmutex = PTHREAD_MUTEX_INITIALIZER;
+bool      tailMessagesStop = false;
 
 //
 // Escape a string so that it can be used directly in a JSON response.
@@ -48,7 +45,7 @@ LSMessage*tailMessagesMessage;
 // It uses the static esc_buffer, which must be twice as large as the
 // largest string this routine can handle.
 //
-static char *json_escape_str(char *str)
+static char *json_escape_str(char *str, char *esc_buffer)
 {
   const char *json_hex_chars = "0123456789abcdef";
 
@@ -176,16 +173,18 @@ bool version_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
 // The global run_command_buffer must be initialised before calling this function.
 // The return value says whether the command executed successfully or not.
 //
-static bool run_command(char *command, bool escape) {
+static bool run_command(char *command, bool escape, char *buffer) {
   LSError lserror;
   LSErrorInit(&lserror);
+
+  char esc_buffer[MAXBUFLEN];
 
   // Local buffers to store the current and previous lines.
   char line[MAXLINLEN];
 
   // fprintf(stderr, "Running command %s\n", command);
 
-  // run_command_buffer is assumed to be initialised, ready for strcat to append.
+  // buffer is assumed to be initialised, ready for strcat to append.
 
   // Is this the first line of output?
   bool first = true;
@@ -208,32 +207,32 @@ static bool run_command(char *command, bool escape) {
 
     // Add formatting breaks between lines
     if (first) {
-      if (run_command_buffer[strlen(run_command_buffer)-1] == '[') {
+      if (buffer[strlen(buffer)-1] == '[') {
 	array = true;
       }
       first = false;
     }
     else {
       if (array) {
-	strcat(run_command_buffer, ", ");
+	strcat(buffer, ", ");
       }
       else {
-	strcat(run_command_buffer, "<br>");
+	strcat(buffer, "<br>");
       }
     }
     
-    // Append the unfiltered output to the run_command_buffer.
+    // Append the unfiltered output to the buffer.
     if (escape) {
       if (array) {
-	strcat(run_command_buffer, "\"");
+	strcat(buffer, "\"");
       }
-      strcat(run_command_buffer, json_escape_str(line));
+      strcat(buffer, json_escape_str(line, esc_buffer));
       if (array) {
-	strcat(run_command_buffer, "\"");
+	strcat(buffer, "\"");
       }
     }
     else {
-      strcat(run_command_buffer, line);
+      strcat(buffer, line);
     }
   }
   
@@ -262,10 +261,13 @@ static bool report_command_failure(LSHandle* lshandle, LSMessage *message, char 
   LSError lserror;
   LSErrorInit(&lserror);
 
+  char buffer[MAXBUFLEN];
+  char esc_buffer[MAXBUFLEN];
+
   // Include the command that was executed, in escaped form.
   snprintf(buffer, MAXBUFLEN,
 	   "{\"errorText\": \"Unable to run command: %s\"",
-	   json_escape_str(command));
+	   json_escape_str(command, esc_buffer));
 
   // Include any stderr fields from the command.
   if (stdErrText) {
@@ -305,11 +307,13 @@ static bool simple_command(LSHandle* lshandle, LSMessage *message, char *command
   LSError lserror;
   LSErrorInit(&lserror);
 
+  char run_command_buffer[MAXBUFLEN];
+
   // Initialise the output buffer
   strcpy(run_command_buffer, "{\"stdOut\": [");
 
   // Run the command
-  if (run_command(command, true)) {
+  if (run_command(command, true, run_command_buffer)) {
 
     // Finalise the message ...
     strcat(run_command_buffer, "], \"returnValue\": true}");
@@ -339,7 +343,7 @@ static bool simple_command(LSHandle* lshandle, LSMessage *message, char *command
 //
 // Run command to get Logging context level.
 //
-bool getLogging_method(LSHandle* lshandle, LSMessage *message, void *ctx, char *subcommand) {
+bool getLogging_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   LSError lserror;
   LSErrorInit(&lserror);
 
@@ -361,7 +365,7 @@ bool getLogging_method(LSHandle* lshandle, LSMessage *message, void *ctx, char *
 //
 // Run command to set Logging context level.
 //
-bool setLogging_method(LSHandle* lshandle, LSMessage *message, void *ctx, char *subcommand) {
+bool setLogging_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   LSError lserror;
   LSErrorInit(&lserror);
 
@@ -399,32 +403,34 @@ bool setLogging_method(LSHandle* lshandle, LSMessage *message, void *ctx, char *
   return false;
 }
 
-//
-// Run a shell command and send back status messages.
-// The return value says whether the command executed successfully or not.
-//
-static bool run_long_command(char *command, LSHandle* lshandle, LSMessage *message) {
+void *tail_messages(void *ctx) {
   LSError lserror;
   LSErrorInit(&lserror);
 
+  char buffer[MAXBUFLEN];
+  char esc_buffer[MAXBUFLEN];
+
+  LSHandle* lshandle = tailMessagesHandle;
+  LSMessage *message = tailMessagesMessage;
+  FILE           *fp = tailMessagesFileHandle;
+
+  fprintf(stderr, "Created thread\n");
+  
   // Local buffer to store the current line.
   char line[MAXLINLEN];
 
   // Has an early termination error been detected?
   bool error = false;
 
-  fprintf(stderr, "Running command %s\n", command);
-
-  // Start execution of the command, and read the output.
-  FILE *fp = popen(command, "r");
-
-  // Return immediately if we cannot even start the command.
-  if (!fp) {
-    return false;
-  }
-
   // Loop through the output lines
   while (fgets(line, sizeof line, fp)) {
+
+    pthread_mutex_lock( &stopmutex );
+    if (tailMessagesStop) {
+      pthread_mutex_unlock( &stopmutex );
+      break;
+    }
+    pthread_mutex_unlock( &stopmutex );
 
     // Chomp the newline
     char *nl = strchr(line,'\n'); if (nl) *nl = 0;
@@ -434,7 +440,7 @@ static bool run_long_command(char *command, LSHandle* lshandle, LSMessage *messa
 
       // Send it as a status message.
       strcpy(buffer, "{\"returnValue\": true, \"stage\": \"status\", \"status\": \"");
-      strcat(buffer, json_escape_str(line));
+      strcat(buffer, json_escape_str(line, esc_buffer));
       strcat(buffer, "\"}");
 
       // %%% Should we break out of the loop here, or just ignore the error? %%%
@@ -447,57 +453,18 @@ static bool run_long_command(char *command, LSHandle* lshandle, LSMessage *messa
 
   }
 
-  // Check the close status of the process, and return the combined error status
-  if (pclose(fp) || error) {
-    return false;
-  }
-
-  return true;
- error:
-  LSErrorPrint(&lserror, stderr);
-  LSErrorFree(&lserror);
- end:
-  // %%% We need a way to distinguish command failures from LSMessage failures %%%
-  // %%% This may need to be true if we just want to ignore LSMessage failures %%%
-  return false;
-}
-
-void *tail_messages(void *ctx) {
-  LSError lserror;
-  LSErrorInit(&lserror);
-
-  LSHandle* lshandle = tailMessagesHandle;
-  LSMessage *message = tailMessagesMessage;
-
-
-  // Local buffer to store the update command
-  char command[MAXLINLEN];
-
-  // Capture any errors
-  bool error = false;
-
-  fprintf(stderr, "Created thread\n");
-  
-  // Store the command, so it can be used in the error report if necessary
-  strcpy(command, "/usr/bin/tail -f /var/log/messages 2>&1");
-
-  // Run the command
-  if (!run_long_command(command, lshandle, message)) {
-    fprintf(stderr, "Command failed\n");
-    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
-  }
-  else {
-    fprintf(stderr, "Command passed\n");
-    if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"stage\": \"completed\"}", &lserror)) goto error;
-  }
-
   fprintf(stderr, "Thread exiting\n");
   
-  return;
+  fprintf(stderr, "Closing previous pipe\n");
+  pclose(fp);
+  
+  goto end;
+
  error:
   LSErrorPrint(&lserror, stderr);
   LSErrorFree(&lserror);
  end:
+  pthread_exit(NULL);
   return;
 }
 
@@ -508,8 +475,35 @@ bool tailMessages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   LSError lserror;
   LSErrorInit(&lserror);
 
+  if (tailMessagesRunning) {
+    fprintf(stderr, "Thread already running\n");
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
+    return;
+  }
+
   tailMessagesHandle = lshandle;
   tailMessagesMessage = message;
+
+  // Local buffer to store the update command
+  char command[MAXLINLEN];
+
+  // Store the command, so it can be used in the error report if necessary
+  strcpy(command, "/usr/bin/tail -f /var/log/messages 2>&1");
+
+  fprintf(stderr, "Running command %s\n", command);
+
+  // Start execution of the command, and read the output.
+  FILE *fp = popen(command, "r");
+
+  // Return immediately if we cannot even start the command.
+  if (!fp) {
+    return false;
+  }
+
+  tailMessagesFileHandle = fp;
+  pthread_mutex_lock( &stopmutex );
+  tailMessagesStop = false;
+  pthread_mutex_unlock( &stopmutex );
 
   fprintf(stderr, "Creating thread\n");
   
@@ -523,6 +517,8 @@ bool tailMessages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
     // Report that the update operaton has begun
     if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"stage\": \"start\"}", &lserror)) goto error;
   }
+
+  tailMessagesRunning = true;
 
   return true;
  error:
@@ -539,15 +535,26 @@ bool killCommand_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   LSError lserror;
   LSErrorInit(&lserror);
 
+  if (!tailMessagesRunning) {
+    fprintf(stderr, "Thread not running\n");
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
+    return;
+  }
+
   fprintf(stderr, "Killing thread\n");
   
-  pthread_cancel(tailMessagesThread);
+  pthread_mutex_lock( &stopmutex );
+  tailMessagesStop = true;
+  pthread_mutex_unlock( &stopmutex );
 
-  // Report that the update operaton has begun
-  if (!LSMessageReply(lshandle, message, "{\"returnValue\": true}", &lserror)) goto error;
+  pthread_join(tailMessagesThread, NULL);
+
+  tailMessagesRunning = false;
 
   fprintf(stderr, "Exiting kill\n");
   
+  if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"stage\": \"completed\"}", &lserror)) goto error;
+
   return true;
  error:
   LSErrorPrint(&lserror, stderr);
@@ -560,13 +567,16 @@ static bool read_file(LSHandle* lshandle, LSMessage *message, char *filename, bo
   LSError lserror;
   LSErrorInit(&lserror);
 
+  char buffer[CHUNKSIZE+CHUNKSIZE+1];
+  char esc_buffer[MAXBUFLEN];
+
   FILE * file = fopen(filename, "r");
   if (!file) {
-    sprintf(read_file_buffer,
+    sprintf(buffer,
 	    "{\"returnValue\": false, \"errorCode\": -1, \"errorText\": \"Cannot open %s\"}",
 	    filename);
     
-    if (!LSMessageReply(lshandle, message, read_file_buffer, &lserror)) goto error;
+    if (!LSMessageReply(lshandle, message, buffer, &lserror)) goto error;
     return true;
   }
   
@@ -580,11 +590,11 @@ static bool read_file(LSHandle* lshandle, LSMessage *message, char *filename, bo
   fseek(file, 0, SEEK_SET);
 
   if (subscribed) {
-    if (sprintf(read_file_buffer,
+    if (sprintf(buffer,
 		"{\"returnValue\": true, \"filesize\": %d, \"chunksize\": %d, \"stage\": \"start\"}",
 		filesize, chunksize)) {
 
-      if (!LSMessageReply(lshandle, message, read_file_buffer, &lserror)) goto error;
+      if (!LSMessageReply(lshandle, message, buffer, &lserror)) goto error;
 
     }
   }
@@ -597,30 +607,30 @@ static bool read_file(LSHandle* lshandle, LSMessage *message, char *filename, bo
   while ((size = fread(chunk, 1, chunksize, file)) > 0) {
     datasize += size;
     chunk[size] = '\0';
-    sprintf(read_file_buffer, "{\"returnValue\": true, \"size\": %d, \"contents\": \"", size);
-    strcat(read_file_buffer, json_escape_str(chunk));
-    strcat(read_file_buffer, "\"");
+    sprintf(buffer, "{\"returnValue\": true, \"size\": %d, \"contents\": \"", size);
+    strcat(buffer, json_escape_str(chunk, esc_buffer));
+    strcat(buffer, "\"");
     if (subscribed) {
-      strcat(read_file_buffer, ", \"stage\": \"middle\"");
+      strcat(buffer, ", \"stage\": \"middle\"");
     }
-    strcat(read_file_buffer, "}");
+    strcat(buffer, "}");
 
-    if (!LSMessageReply(lshandle, message, read_file_buffer, &lserror)) goto error;
+    if (!LSMessageReply(lshandle, message, buffer, &lserror)) goto error;
 
   }
 
   if (!fclose(file)) {
     if (subscribed) {
-      sprintf(read_file_buffer, "{\"returnValue\": true, \"datasize\": %d, \"stage\": \"end\"}", datasize);
+      sprintf(buffer, "{\"returnValue\": true, \"datasize\": %d, \"stage\": \"end\"}", datasize);
 
-      if (!LSMessageReply(lshandle, message, read_file_buffer, &lserror)) goto error;
+      if (!LSMessageReply(lshandle, message, buffer, &lserror)) goto error;
 
     }
   }
   else {
-    sprintf(read_file_buffer, "{\"returnValue\": false, \"errorCode\": -1, \"errorText\": \"Cannot close file\"}");
+    sprintf(buffer, "{\"returnValue\": false, \"errorCode\": -1, \"errorText\": \"Cannot close file\"}");
 
-    if (!LSMessageReply(lshandle, message, read_file_buffer, &lserror)) goto error;
+    if (!LSMessageReply(lshandle, message, buffer, &lserror)) goto error;
 
   }
 
