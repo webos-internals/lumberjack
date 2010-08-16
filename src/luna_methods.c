@@ -29,6 +29,9 @@
 
 #define API_VERSION "1"
 
+static char file_buffer[CHUNKSIZE+CHUNKSIZE+1];
+static char file_esc_buffer[MAXBUFLEN];
+
 pthread_t tailMessagesThread;
 LSHandle *tailMessagesHandle = NULL;
 LSMessage*tailMessagesMessage = NULL;
@@ -567,16 +570,13 @@ static bool read_file(LSHandle* lshandle, LSMessage *message, char *filename, bo
   LSError lserror;
   LSErrorInit(&lserror);
 
-  char buffer[CHUNKSIZE+CHUNKSIZE+1];
-  char esc_buffer[MAXBUFLEN];
-
   FILE * file = fopen(filename, "r");
   if (!file) {
-    sprintf(buffer,
+    sprintf(file_buffer,
 	    "{\"returnValue\": false, \"errorCode\": -1, \"errorText\": \"Cannot open %s\"}",
 	    filename);
     
-    if (!LSMessageReply(lshandle, message, buffer, &lserror)) goto error;
+    if (!LSMessageReply(lshandle, message, file_buffer, &lserror)) goto error;
     return true;
   }
   
@@ -590,11 +590,11 @@ static bool read_file(LSHandle* lshandle, LSMessage *message, char *filename, bo
   fseek(file, 0, SEEK_SET);
 
   if (subscribed) {
-    if (sprintf(buffer,
+    if (sprintf(file_buffer,
 		"{\"returnValue\": true, \"filesize\": %d, \"chunksize\": %d, \"stage\": \"start\"}",
 		filesize, chunksize)) {
 
-      if (!LSMessageReply(lshandle, message, buffer, &lserror)) goto error;
+      if (!LSMessageReply(lshandle, message, file_buffer, &lserror)) goto error;
 
     }
   }
@@ -607,30 +607,30 @@ static bool read_file(LSHandle* lshandle, LSMessage *message, char *filename, bo
   while ((size = fread(chunk, 1, chunksize, file)) > 0) {
     datasize += size;
     chunk[size] = '\0';
-    sprintf(buffer, "{\"returnValue\": true, \"size\": %d, \"contents\": \"", size);
-    strcat(buffer, json_escape_str(chunk, esc_buffer));
-    strcat(buffer, "\"");
+    sprintf(file_buffer, "{\"returnValue\": true, \"size\": %d, \"contents\": \"", size);
+    strcat(file_buffer, json_escape_str(chunk, file_esc_buffer));
+    strcat(file_buffer, "\"");
     if (subscribed) {
-      strcat(buffer, ", \"stage\": \"middle\"");
+      strcat(file_buffer, ", \"stage\": \"middle\"");
     }
-    strcat(buffer, "}");
+    strcat(file_buffer, "}");
 
-    if (!LSMessageReply(lshandle, message, buffer, &lserror)) goto error;
+    if (!LSMessageReply(lshandle, message, file_buffer, &lserror)) goto error;
 
   }
 
   if (!fclose(file)) {
     if (subscribed) {
-      sprintf(buffer, "{\"returnValue\": true, \"datasize\": %d, \"stage\": \"end\"}", datasize);
+      sprintf(file_buffer, "{\"returnValue\": true, \"datasize\": %d, \"stage\": \"end\"}", datasize);
 
-      if (!LSMessageReply(lshandle, message, buffer, &lserror)) goto error;
+      if (!LSMessageReply(lshandle, message, file_buffer, &lserror)) goto error;
 
     }
   }
   else {
-    sprintf(buffer, "{\"returnValue\": false, \"errorCode\": -1, \"errorText\": \"Cannot close file\"}");
+    sprintf(file_buffer, "{\"returnValue\": false, \"errorCode\": -1, \"errorText\": \"Cannot close file\"}");
 
-    if (!LSMessageReply(lshandle, message, buffer, &lserror)) goto error;
+    if (!LSMessageReply(lshandle, message, file_buffer, &lserror)) goto error;
 
   }
 
