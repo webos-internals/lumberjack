@@ -161,9 +161,9 @@ MainAssistant.prototype.listApps = function(payload)
 		
 		this.controller.modelChanged(this.toShowModel);
 	}
-	else
+	else if (payload.returnValue === false)
 	{
-		this.errorMessage('<b>Service Error:</b><br>'+payload.errorText);
+		this.errorMessage('<b>Service Error (listApps):</b><br>'+payload.errorText);
 	}
 };
 

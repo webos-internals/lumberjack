@@ -226,6 +226,7 @@ body.palm-dark .log .log-messages .palm-row.selected.lostFocus
 }
 .log .log-messages .type
 {
+	float: left;
 	font-weight: bold;
 	font-size: 13px;
 	padding-left: 20px;
@@ -233,8 +234,17 @@ body.palm-dark .log .log-messages .palm-row.selected.lostFocus
 	background-position-x: 7px;
 	background-position-y: 4px;
 }
+.log .log-messages .date
+{
+	float: left;
+	font-size: 13px;
+	padding-left: 20px;
+	/* i dont like how this looks :/ */
+	display: none;
+}
 .log .log-messages .message
 {
+	clear: both;
 	font-size: 14px;
 	padding-left: 7px;
 	padding-right: 7px;

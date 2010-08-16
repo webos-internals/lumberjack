@@ -212,7 +212,7 @@ GetLogAssistant.prototype.got = function(payload)
 		this.messagesElement.mojo.noticeUpdatedItems(0, this.listModel.items);
 		this.messagesElement.mojo.setLength(this.listModel.items.length);
 		
-		this.errorMessage('<b>Service Error:</b><br>'+payload.errorText);
+		this.errorMessage('<b>Service Error (getMessages):</b><br>'+payload.errorText);
 	}
 }
 GetLogAssistant.prototype.parseMessages = function(data)

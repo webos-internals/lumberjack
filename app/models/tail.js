@@ -205,7 +205,7 @@ tailHandler.prototype.handleMessages = function(payload)
 				if (scene.status)
 				{
 					if (scene.assistant.controller)
-						scene.assistant.errorMessage('<b>Service Error:</b><br>'+payload.errorText);
+						scene.assistant.errorMessage('<b>Service Error (tailMessages):</b><br>'+payload.errorText);
 				}
 			}
 		}
@@ -268,12 +268,12 @@ tailHandler.parseDate = function(string)
 	{
 		var dobj =
 		{
-			year:  parseInt(da[1]),
-			month: parseInt(da[2]),
-			day:   parseInt(da[3]),
-			hour:  parseInt(da[4]),
-			min:   parseInt(da[5]),
-			sec:   parseInt(da[6])
+			year:  da[1],
+			month: da[2],
+			day:   da[3],
+			hour:  da[4],
+			min:   da[5],
+			sec:   da[6]
 		};
 		return dobj;
 	}
