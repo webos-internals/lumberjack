@@ -62,7 +62,7 @@ TailLogAssistant.prototype.setup = function()
 		}
 		else
 		{
-			this.titleElement.update(appsList.get(this.toShow));
+			this.titleElement.update((appsList.get(this.toShow) ? appsList.get(this.toShow) : this.toShow));
 		}
 		
 		if (this.popped)
