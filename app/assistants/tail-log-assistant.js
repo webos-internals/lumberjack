@@ -141,13 +141,21 @@ TailLogAssistant.prototype.messageTap = function(event)
 		var popupList = [];
 		if (this.copyStart > -1)
 		{
-			popupList.push({label: 'Copy This',				command: 'copy-this'});
-			popupList.push({label: '... Copy To here',		command: 'copy-to-here'});
+			popupList.push({label: 'Copy',				command: 'copy'});
+			if (this.copyStart == event.index)
+			{
+				this.copyStart = -1;
+				popupList.push({label: 'Copy From Here',	command: 'copy-from'});
+			}
+			else
+			{
+				popupList.push({label: '... To Here',		command: 'copy-to'});
+			}
 		}
 		else
 		{
-			popupList.push({label: 'Copy This',				command: 'copy-this'});
-			popupList.push({label: 'Copy From here ...',	command: 'copy-from-here'});
+			popupList.push({label: 'Copy',				command: 'copy'});
+			popupList.push({label: 'Copy From Here',	command: 'copy-from'});
 		}
 		
 		this.controller.popupSubmenu(
@@ -163,21 +171,26 @@ TailLogAssistant.prototype.messageTapListHandler = function(choice, item, index)
 {
 	switch(choice)
 	{
-		case 'copy-this':
+		case 'copy':
 			this.controller.stageController.setClipboard('['+item.date+'] '+(this.toShow=='all'?item.app+': ':'')+item.type+': '+item.message);
 			this.copyStart = -1;
+			this.messageHighlight(-1);
 			break;
 			
-		case 'copy-from-here':
+		case 'copy-from':
 			this.messageHighlight(index);
 			this.copyStart = index;
 			break;
 			
-		case 'copy-to-here':
+		case 'copy-to':
 			if (this.listModel.items.length > 0)
 			{
 				var message = '';
-				for (var i = this.copyStart; i <= index; i++)
+				
+				var start = (this.copyStart > index ? index : this.copyStart);
+				var end   = (this.copyStart < index ? index : this.copyStart);
+				
+				for (var i = start; i <= end; i++)
 				{
 					if (message != '') message += '\n';
 					message += '['+this.listModel.items[i].date+'] '+(this.toShow=='all'?this.listModel.items[i].app+': ':'')+this.listModel.items[i].type+': '+this.listModel.items[i].message;
