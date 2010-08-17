@@ -5,6 +5,7 @@ function MainAssistant()
 	[
 		{weight: 30, text: $L('Always Watching The Log')},
 		{weight: 20, text: $L('Sleep All Night, Work All Day')},
+		{weight: 20, text: $L('Hack Through Your Logs')},
 		{weight: 10, text: $L('I\'m OK')},
 		{weight: 1,  text: $L('Is A Logger... Get it?')}
 	];
