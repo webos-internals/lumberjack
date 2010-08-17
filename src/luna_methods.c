@@ -484,6 +484,7 @@ bool tailMessages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
     return;
   }
 
+  LSMessageRef(message);
   tailMessagesHandle = lshandle;
   tailMessagesMessage = message;
 
