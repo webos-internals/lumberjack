@@ -694,6 +694,39 @@ bool listApps_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   return retVal;
 }
 
+//
+// Handler for the getStats service.
+//
+bool getStats_handler(LSHandle* lshandle, LSMessage *reply, void *ctx) {
+  bool retVal;
+  LSError lserror;
+  LSErrorInit(&lserror);
+  LSMessage* message = (LSMessage*)ctx;
+  retVal = LSMessageRespond(message, LSMessageGetPayload(reply), &lserror);
+  if (!retVal) {
+    LSErrorPrint(&lserror, stderr);
+    LSErrorFree(&lserror);
+  }
+  return retVal;
+}
+
+//
+// Call the getStats service using liblunaservice and return the output to webOS.
+//
+bool getStats_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
+  bool retVal;
+  LSError lserror;
+  LSErrorInit(&lserror);
+  LSMessageRef(message);
+  retVal = LSCall(priv_serviceHandle, "palm://com.palm.lunastats/getStats", "{\"subscribe\":true}",
+		  getStats_handler, message, NULL, &lserror);
+  if (!retVal) {
+    LSErrorPrint(&lserror, stderr);
+    LSErrorFree(&lserror);
+  }
+  return retVal;
+}
+
 LSMethod luna_methods[] = {
   { "status",		dummy_method },
   { "version",		version_method },
@@ -707,6 +740,7 @@ LSMethod luna_methods[] = {
   { "killCommand",	killCommand_method },
 
   { "listApps",		listApps_method },
+  { "getStats",		getStats_method },
 
   { 0, 0 }
 };
