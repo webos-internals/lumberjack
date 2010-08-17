@@ -254,8 +254,8 @@ tailHandler.parseMojo = function(msg)
 			date: (d ? d.month + '/' + d.day + ' ' + d.hour + ':' + d.min + ':' + d.sec : '?'),
 			type: match[5],
 			rowClass: match[3],
-			display: formatForHtml(match[6]).replace(/, palmInitFramework346:2520/, ''),
-			message: match[6].replace(/, palmInitFramework346:2520/, '')
+			display: formatForHtml(match[6]).replace(/, palmInitFramework(.*)/, ''),
+			message: match[6].replace(/, palmInitFramework(.*)/, '')
 		};
 	}
 	
