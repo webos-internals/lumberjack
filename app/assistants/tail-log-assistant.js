@@ -326,12 +326,12 @@ TailLogAssistant.prototype.updateAppMenu = function(skipUpdate)
 {
     this.menuModel.items = [];
     
-	
+	/*
 	this.menuModel.items.push({
 		label: $L("Log Crap"),
 		command: 'do-logcrap'
 	});
-	
+	*/
 	
 	if (this.showBanners)
 	{
