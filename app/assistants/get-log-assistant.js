@@ -1,6 +1,6 @@
-function GetLogAssistant(toShow)
+function GetLogAssistant(filter)
 {
-	this.toShow =		(toShow ? toShow : 'all');
+	this.filter =		(filter ? filter : 'allapps');
 	
 	this.request =		false;
 	this.contents =		'';
@@ -42,17 +42,21 @@ GetLogAssistant.prototype.setup = function()
 		
 		this.controller.setupWidget('spinner', {spinnerSize: 'large'}, {spinning: false});
 		
-		if (this.toShow == 'all')
+		if (this.filter == 'allapps')
 		{
 			this.titleElement.update('All Applications');
 		}
-		else if (this.toShow == 'alert')
+		if (this.filter == 'every')
+		{
+			this.titleElement.update('Everything');
+		}
+		else if (this.filter == 'alert')
 		{
 			this.titleElement.update('Alert()s');
 		}
 		else
 		{
-			this.titleElement.update((appsList.get(this.toShow) ? appsList.get(this.toShow) : this.toShow));
+			this.titleElement.update((appsList.get(this.filter) ? appsList.get(this.filter) : this.filter));
 		}
 		
 		this.controller.listen(this.reloadButtonElement, Mojo.Event.tap, this.reloadButtonPressed);
@@ -124,7 +128,7 @@ GetLogAssistant.prototype.messageTapListHandler = function(choice, item, index)
 	switch(choice)
 	{
 		case 'copy':
-			this.controller.stageController.setClipboard('['+item.date+'] '+(this.toShow=='all'?event.app+': ':'')+item.type+': '+item.message);
+			this.controller.stageController.setClipboard('['+item.date+'] '+(this.filter=='allapps'?event.app+': ':'')+item.type+': '+item.message);
 			this.copyStart = -1;
 			this.messageHighlight(-1);
 			break;
@@ -145,7 +149,7 @@ GetLogAssistant.prototype.messageTapListHandler = function(choice, item, index)
 				for (var i = start; i <= end; i++)
 				{
 					if (message != '') message += '\n';
-					message += '['+this.listModel.items[i].date+'] '+(this.toShow=='all'?this.listModel.items[i].app+': ':'')+this.listModel.items[i].type+': '+this.listModel.items[i].message;
+					message += '['+this.listModel.items[i].date+'] '+(this.filter=='allapps'?this.listModel.items[i].app+': ':'')+this.listModel.items[i].type+': '+this.listModel.items[i].message;
 				}
 				if (message != '')
 				{
@@ -237,16 +241,22 @@ GetLogAssistant.prototype.parseMessages = function(data)
 		{
 			for (var a = 0; a < ary.length; a++)
 			{
-				var alertMsg = tailHandler.parseAlert(ary[a]);
-				var mojoMsg =  tailHandler.parseMojo(ary[a]);
-				if (this.toShow == 'alert')
+				if (this.filter == 'every')
 				{
+					var everyMsg = tailHandler.parseEvery(ary[a]);
+					this.addMessage(everyMsg);
+				}
+				if (this.filter == 'alert')
+				{
+					var alertMsg = tailHandler.parseAlert(ary[a]);
 					this.addMessage(alertMsg);
 				}
-				else if ((this.toShow == 'all') ||
-						(mojoMsg.id && this.toShow.toLowerCase() == mojoMsg.id.toLowerCase()))
+				else
 				{
-					this.addMessage(mojoMsg);
+					var mojoMsg =  tailHandler.parseMojo(ary[a]);
+					if ((this.filter == 'allapps') ||
+						(mojoMsg.id && this.filter.toLowerCase() == mojoMsg.id.toLowerCase()))
+						this.addMessage(mojoMsg);
 				}
 			}
 		}
@@ -257,7 +267,7 @@ GetLogAssistant.prototype.addMessage = function(msg)
 	if (msg)
 	{
 		msg.select = '';
-		if (this.toShow == 'all') msg.rowClass += ' showapp';
+		if (this.filter == 'allapps' || this.filter == 'every') msg.rowClass += ' showapp';
 		this.listModel.items.push(msg);
 	}
 }

@@ -1,8 +1,8 @@
-function TailLogAssistant(toShow, popped)
+function TailLogAssistant(filter, popped)
 {
 	this.autoScroll =	true;
 	
-	this.toShow =		(toShow ? toShow : 'all');
+	this.filter =		(filter ? filter : 'allapps');
 	this.popped =		popped;
 	
 	this.unregister =	true;
@@ -52,17 +52,21 @@ TailLogAssistant.prototype.setup = function()
         Mojo.Event.listen(this.documentElement, Mojo.Event.stageActivate, this.visibleWindowHandler);
         Mojo.Event.listen(this.documentElement, Mojo.Event.stageDeactivate, this.invisibleWindowHandler);
 		
-		if (this.toShow == 'all')
+		if (this.filter == 'allapps')
 		{
 			this.titleElement.update('All Applications');
 		}
-		else if (this.toShow == 'alert')
+		if (this.filter == 'every')
+		{
+			this.titleElement.update('Everything');
+		}
+		else if (this.filter == 'alert')
 		{
 			this.titleElement.update('Alert()s');
 		}
 		else
 		{
-			this.titleElement.update((appsList.get(this.toShow) ? appsList.get(this.toShow) : this.toShow));
+			this.titleElement.update((appsList.get(this.filter) ? appsList.get(this.filter) : this.filter));
 		}
 		
 		if (this.popped)
@@ -107,7 +111,7 @@ TailLogAssistant.prototype.setup = function()
 		this.controller.listen(this.messagesElement, Mojo.Event.listTap, this.messageTapHandler);
 		
 		// register scene!
-		tail.registerScene(this.toShow, this);
+		tail.registerScene(this.filter, this);
 		
 	}
 	catch (e)
@@ -130,7 +134,7 @@ TailLogAssistant.prototype.toggleChanged = function(event)
 TailLogAssistant.prototype.popButtonPressed = function(event)
 {
 	this.unregister = false;
-	tail.newScene(this, this.toShow, true);
+	tail.newScene(this, this.filter, true);
 	this.controller.stageController.popScene();
 }
 
@@ -172,7 +176,7 @@ TailLogAssistant.prototype.messageTapListHandler = function(choice, item, index)
 	switch(choice)
 	{
 		case 'copy':
-			this.controller.stageController.setClipboard('['+item.date+'] '+(this.toShow=='all'?item.app+': ':'')+item.type+': '+item.message);
+			this.controller.stageController.setClipboard('['+item.date+'] '+(this.filter=='allapps'?item.app+': ':'')+item.type+': '+item.message);
 			this.copyStart = -1;
 			this.messageHighlight(-1);
 			break;
@@ -193,7 +197,7 @@ TailLogAssistant.prototype.messageTapListHandler = function(choice, item, index)
 				for (var i = start; i <= end; i++)
 				{
 					if (message != '') message += '\n';
-					message += '['+this.listModel.items[i].date+'] '+(this.toShow=='all'?this.listModel.items[i].app+': ':'')+this.listModel.items[i].type+': '+this.listModel.items[i].message;
+					message += '['+this.listModel.items[i].date+'] '+(this.filter=='allapps'?this.listModel.items[i].app+': ':'')+this.listModel.items[i].type+': '+this.listModel.items[i].message;
 				}
 				if (message != '')
 				{
@@ -223,7 +227,7 @@ TailLogAssistant.prototype.messageHighlight = function(index)
 
 TailLogAssistant.prototype.start = function()
 {
-	tail.startScene(this.toShow);
+	tail.startScene(this.filter);
 	
 	this.followToggleModel.value = true;
 	this.controller.modelChanged(this.followToggleModel);
@@ -234,7 +238,7 @@ TailLogAssistant.prototype.addMessage = function(theMsg)
 	{
 		var msg = Object.clone(theMsg);
 		msg.select = '';
-		if (this.toShow == 'all') msg.rowClass += ' showapp';
+		if (this.filter == 'allapps' || this.filter == 'every') msg.rowClass += ' showapp';
 		this.listModel.items.push(msg);
 		var start = this.messagesElement.mojo.getLength();
 		this.messagesElement.mojo.noticeUpdatedItems(start, [msg]);
@@ -254,13 +258,13 @@ TailLogAssistant.prototype.addMessage = function(theMsg)
 		if (!this.isVisible && this.showBanners)
 		{
 			Mojo.Controller.appController.removeBanner('tail-log-message');
-			Mojo.Controller.getAppController().showBanner({messageText: theMsg.type+': '+theMsg.message, icon: 'icon.png'}, {source: 'tail-log-message', log: this.toShow});
+			Mojo.Controller.getAppController().showBanner({messageText: theMsg.type+': '+theMsg.message, icon: 'icon.png'}, {source: 'tail-log-message', log: this.filter});
 		}
 	}
 }
 TailLogAssistant.prototype.stop = function()
 {
-	tail.stopScene(this.toShow);
+	tail.stopScene(this.filter);
 }
 TailLogAssistant.prototype.stopped = function()
 {
@@ -322,12 +326,12 @@ TailLogAssistant.prototype.updateAppMenu = function(skipUpdate)
 {
     this.menuModel.items = [];
     
-	/*
+	
 	this.menuModel.items.push({
 		label: $L("Log Crap"),
 		command: 'do-logcrap'
 	});
-	*/
+	
 	
 	if (this.showBanners)
 	{
@@ -395,8 +399,6 @@ TailLogAssistant.prototype.handleCommand = function(event)
 				Mojo.Log.info('Test Info Message');
 				Mojo.Log.warn('Test Warn Message');
 				Mojo.Log.error('Test Error Message');
-				//Mojo.Log.error('<b>TEST</b><br><br><u>HTMLFAIL</u>');
-				//Mojo.Log.info(Object.toJSON(appsList.toObject()));
 				break;
 		}
 	}
@@ -427,5 +429,5 @@ TailLogAssistant.prototype.cleanup = function(event)
 {
 	// unregister scene!
 	if (this.unregister)
-		tail.unregisterScene(this.toShow);
+		tail.unregisterScene(this.filter);
 }

@@ -10,14 +10,16 @@ function tailHandler()
 	this.logging = false;
 };
 
+// DATE									   2010-08-16T09:22:55.327301Z
+tailHandler.LogDateRegExp =		new RegExp(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(.*)$/);
+
+// (every)
+tailHandler.LogRegExpEvery =	new RegExp(/^([^\s]*) \[(.*)\] palm-webos-device ([^\.]*).([^\s]*) ([^:]*): (.*)$/);
 // (alert)					2010-08-15T02:32:37.110778Z [178667] palm-webos-device user.warning LunaSysMgr: {LunaSysMgrJS}: start
 tailHandler.LogRegExpAlert =	new RegExp(/^([^\s]*) \[(.*)\] palm-webos-device user.warning LunaSysMgr: {LunaSysMgrJS}: (.*)$/);
-
 // (mojo.log)				2010-08-15T01:47:25.448852Z [175956] palm-webos-device user.notice LunaSysMgr: {LunaSysMgrJS}: org.webosinternals.lumberjack: Info: start, palmInitFramework346:2520
 tailHandler.LogRegExpMojo =		new RegExp(/^([^\s]*) \[(.*)\] palm-webos-device user.([^\s]*) LunaSysMgr: {LunaSysMgrJS}: ([^:]*): ([^:]*): (.*)$/);
 
-//										   2010-08-16T09:22:55.327301Z
-tailHandler.LogDateRegExp =		new RegExp(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(.*)$/);
 
 tailHandler.prototype.newScene = function(assistant, log, popit)
 {
@@ -167,8 +169,9 @@ tailHandler.prototype.handleMessages = function(payload)
 	if (payload.returnValue)
 	{
 		this.status = true;
-		var alertMsg = tailHandler.parseAlert(payload.status);
-		var mojoMsg =  tailHandler.parseMojo(payload.status);
+		var mojoMsg = false;
+		var alertMsg = false;
+		var everyMsg = false;
 		var keys = this.scenes.keys();
 		if (keys.length > 0)
 		{
@@ -177,16 +180,25 @@ tailHandler.prototype.handleMessages = function(payload)
 				var scene = this.scenes.get(keys[k]);
 				if (scene.status)
 				{
+					if (keys[k] == 'every')
+					{
+						if (!everyMsg) everyMsg = tailHandler.parseEvery(payload.status);
+						if (scene.assistant)
+							scene.assistant.addMessage(everyMsg);
+					}
 					if (keys[k] == 'alert')
 					{
-						if (scene.assistant.controller)
+						if (!alertMsg) alertMsg = tailHandler.parseAlert(payload.status);
+						if (scene.assistant)
 							scene.assistant.addMessage(alertMsg);
 					}
-					else if ((keys[k] == 'all') ||
-							(mojoMsg.id && keys[k].toLowerCase() == mojoMsg.id.toLowerCase()))
+					else
 					{
-						if (scene.assistant.controller)
-							scene.assistant.addMessage(mojoMsg);
+						if (!mojoMsg) mojoMsg =  tailHandler.parseMojo(payload.status);
+						if ((keys[k] == 'allapps') ||
+							(mojoMsg.id && keys[k].toLowerCase() == mojoMsg.id.toLowerCase()))
+							if (scene.assistant)
+								scene.assistant.addMessage(mojoMsg);
 					}
 				}
 			}
@@ -204,7 +216,7 @@ tailHandler.prototype.handleMessages = function(payload)
 				var scene = this.scenes.get(keys[k]);
 				if (scene.status)
 				{
-					if (scene.assistant.controller)
+					if (scene.assistant)
 						scene.assistant.errorMessage('<b>Service Error (tailMessages):</b><br>'+payload.errorText);
 				}
 			}
@@ -212,6 +224,32 @@ tailHandler.prototype.handleMessages = function(payload)
 	}
 }
 
+tailHandler.parseEvery = function(msg)
+{
+	var l = false;
+
+	var match = tailHandler.LogRegExpEvery.exec(msg);
+	if (match)
+	{
+		var d = tailHandler.parseDate(match[1]);
+		
+		var test = '';
+		for (var m = 1; m < match.length; m++) test += '['+m+'] '+match[m]+'<br>';
+		
+		l =
+		{
+			app: match[5],
+			id: match[5],
+			date: (d ? d.month + '/' + d.day + ' ' + d.hour + ':' + d.min + ':' + d.sec : '?'),
+			type: match[3].capitalize()+'.'+match[4].capitalize(),
+			rowClass: match[4],
+			display: formatForHtml(match[6].replace(/^{(.*)}: /, '')),
+			message: match[6].replace(/^{(.*)}: /, '')
+		};
+	}
+	
+	return l;
+}
 tailHandler.parseAlert = function(msg)
 {
 	var l = false;
@@ -228,8 +266,8 @@ tailHandler.parseAlert = function(msg)
 				app: false,
 				id: false,
 				date: (d ? d.month + '/' + d.day + ' ' + d.hour + ':' + d.min + ':' + d.sec : '?'),
-				type: 'alert',
-				rowClass: 'generic',
+				type: 'Alert',
+				rowClass: 'warning',
 				display: formatForHtml(match[3]),
 				message: match[3]
 			};

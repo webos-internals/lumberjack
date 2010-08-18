@@ -72,7 +72,7 @@ MainAssistant.prototype.setup = function()
 			choices: 
 			[
 				{label:'Mojo.Log'},
-				{label:'<b>'+$L('All Applications')+'</b>', value:'all'},
+				{label:'<b>'+$L('All Applications')+'</b>', value:'allapps'},
 				{label:'Other'},
 				{label:$L('Alert()s'), value:'alert'}
 			]
@@ -128,8 +128,8 @@ MainAssistant.prototype.listApps = function(payload)
 		});
 		
 		this.toShowModel.choices.push({label:'Mojo.Log'});
-		this.toShowModel.choices.push({label:'<b>'+$L('All Applications')+'</b>', value:'all'});
-		appsList.set('all', 1);
+		this.toShowModel.choices.push({label:'<b>'+$L('All Applications')+'</b>', value:'allapps'});
+		appsList.set('allapps', 1);
 		
 		for (var a = 0; a < payload.apps.length; a++)
 		{
@@ -152,12 +152,14 @@ MainAssistant.prototype.listApps = function(payload)
 		}
 		
 		this.toShowModel.choices.push({label:'Other'});
+		this.toShowModel.choices.push({label:$L('Everything'),			  value:'every'});
 		this.toShowModel.choices.push({label:'<i>'+$L('Alert()s')+'</i>', value:'alert'});
+		appsList.set('every', 1);
 		appsList.set('alert', 1);
 		
 		if (!appsList.get(prefs.get().lastLog))
 		{
-			this.toShowModel.value = 'all';
+			this.toShowModel.value = 'allapps';
 		}
 		
 		this.controller.modelChanged(this.toShowModel);
