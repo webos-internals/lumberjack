@@ -18,7 +18,7 @@ preferenceCookie.prototype.get = function(reload)
 				setLogLevel: true,
 				
 				// Main Group
-				lastLog: 'all',
+				lastLog: 'allapps',
 				listStockApps: false,
 				popLog: false,
 				

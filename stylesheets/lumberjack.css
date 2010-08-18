@@ -245,6 +245,7 @@ body.palm-dark .log .log-messages .palm-row.selected.lostFocus
 	/* im still not happy with this... */
 	display: none;
 	
+	
 	position: absolute;
 	font-weight: bold;
 	top: -5px;

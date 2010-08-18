@@ -86,7 +86,7 @@ MainAssistant.prototype.setup = function()
 		'tailButton',
 		{},
 		{
-			buttonLabel: $L("Tail Log")
+			buttonLabel: $L("Follow Log Output")
 		}
 	);
 	this.controller.setupWidget
@@ -94,7 +94,7 @@ MainAssistant.prototype.setup = function()
 		'getButton',
 		{},
 		{
-			buttonLabel: $L("Get Log")
+			buttonLabel: $L("Retrieve Logs")
 		}
 	);
 	
