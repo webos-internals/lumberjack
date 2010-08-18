@@ -46,7 +46,7 @@ GetLogAssistant.prototype.setup = function()
 		{
 			this.titleElement.update('All Applications');
 		}
-		if (this.filter == 'every')
+		else if (this.filter == 'every')
 		{
 			this.titleElement.update('Everything');
 		}

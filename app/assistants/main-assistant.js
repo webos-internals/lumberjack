@@ -49,7 +49,7 @@ MainAssistant.prototype.setup = function()
     // get elements
     this.versionElement = 	this.controller.get('version');
     this.subTitleElement =	this.controller.get('subTitle');
-	this.toShowElement =	this.controller.get('toShow');
+	this.filterElement =	this.controller.get('filter');
 	this.tailButton =		this.controller.get('tailButton');
 	this.getButton =		this.controller.get('getButton');
 	
@@ -64,22 +64,22 @@ MainAssistant.prototype.setup = function()
 	
 	this.controller.setupWidget
 	(
-		'toShow',
+		'filter',
 		{},
-		this.toShowModel =
+		this.filterModel =
 		{
 			value: prefs.get().lastLog,
 			choices: 
 			[
-				{label:'Mojo.Log'},
-				{label:'<b>'+$L('All Applications')+'</b>', value:'allapps'},
-				{label:'Other'},
-				{label:$L('Alert()s'), value:'alert'}
+				{label:$L('Everything'),       value:'every'},
+				{label:$L('Alerts'),  		   value:'alert'},
+				{label:$L('Mojo.Logs')},
+				{label:$L('All Applications'), value:'allapps'}
 			]
 		}
 	);
 	
-	this.controller.listen('toShow', Mojo.Event.propertyChange, this.appChangedHandler);
+	this.controller.listen('filter', Mojo.Event.propertyChange, this.appChangedHandler);
 	
 	this.controller.setupWidget
 	(
@@ -110,7 +110,7 @@ MainAssistant.prototype.listApps = function(payload)
 	{
 		this.appsCache = payload;
 		
-		this.toShowModel.choices = [];
+		this.filterModel.choices = [];
 		appsList = $H();
 		
 		payload.apps.sort(function(a, b)
@@ -127,8 +127,13 @@ MainAssistant.prototype.listApps = function(payload)
 			}
 		});
 		
-		this.toShowModel.choices.push({label:'Mojo.Log'});
-		this.toShowModel.choices.push({label:'<b>'+$L('All Applications')+'</b>', value:'allapps'});
+		this.filterModel.choices.push({label:$L('Everything'),		 value:'every'});
+		this.filterModel.choices.push({label:$L('Alerts'), 			 value:'alert'});
+		appsList.set('every', 1);
+		appsList.set('alert', 1);
+		
+		this.filterModel.choices.push({label:$L('Mojo.Logs')});
+		this.filterModel.choices.push({label:$L('All Applications'), value:'allapps'});
 		appsList.set('allapps', 1);
 		
 		for (var a = 0; a < payload.apps.length; a++)
@@ -140,29 +145,23 @@ MainAssistant.prototype.listApps = function(payload)
 			
 			if (prefs.get().listStockApps)
 			{
-				this.toShowModel.choices.push({label:payload.apps[a].title, value:payload.apps[a].id});
+				this.filterModel.choices.push({label:payload.apps[a].title, value:payload.apps[a].id});
 			}
 			else
 			{
 				if (payload.apps[a].size > 0)
 				{
-					this.toShowModel.choices.push({label:payload.apps[a].title, value:payload.apps[a].id});
+					this.filterModel.choices.push({label:payload.apps[a].title, value:payload.apps[a].id});
 				}
 			}
 		}
 		
-		this.toShowModel.choices.push({label:'Other'});
-		this.toShowModel.choices.push({label:$L('Everything'),			  value:'every'});
-		this.toShowModel.choices.push({label:'<i>'+$L('Alert()s')+'</i>', value:'alert'});
-		appsList.set('every', 1);
-		appsList.set('alert', 1);
-		
 		if (!appsList.get(prefs.get().lastLog))
 		{
-			this.toShowModel.value = 'allapps';
+			this.filterModel.value = 'allapps';
 		}
 		
-		this.controller.modelChanged(this.toShowModel);
+		this.controller.modelChanged(this.filterModel);
 	}
 	else if (payload.returnValue === false)
 	{
@@ -181,11 +180,11 @@ MainAssistant.prototype.appChanged = function(event)
 
 MainAssistant.prototype.tailTap = function(event)
 {
-	tail.newScene(this, this.toShowModel.value, prefs.get().popLog);
+	tail.newScene(this, this.filterModel.value, prefs.get().popLog);
 };
 MainAssistant.prototype.getTap = function(event)
 {
-	this.controller.stageController.pushScene('get-log', this.toShowModel.value);
+	this.controller.stageController.pushScene('get-log', this.filterModel.value);
 };
     
 MainAssistant.prototype.getRandomSubTitle = function()
