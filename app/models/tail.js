@@ -264,7 +264,7 @@ tailHandler.parseAlert = function(msg)
 				id: false,
 				date: (d ? d.month + '/' + d.day + ' ' + d.hour + ':' + d.min + ':' + d.sec : '?'),
 				type: 'Alert',
-				rowClass: 'warning',
+				rowClass: 'notice',
 				message: formatForHtml(match[3]),
 				raw: msg,
 				copy:	(d ? '[' + d.year + '-' + d.month + '-' + d.day + ' ' + d.hour + ':' + d.min + ':' + d.sec + '] ' : '') +
