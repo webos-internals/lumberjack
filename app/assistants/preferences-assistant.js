@@ -41,6 +41,7 @@ PreferencesAssistant.prototype.setup = function()
 		
 		// setup handlers for preferences
 		this.toggleChangeHandler = this.toggleChanged.bindAsEventListener(this);
+		this.listChangedHandler  = this.listChanged.bindAsEventListener(this);
 		
 		
 		// Global Group
@@ -110,6 +111,26 @@ PreferencesAssistant.prototype.setup = function()
 		
 		
 		
+		// Logs Group
+		this.controller.setupWidget
+		(
+			'copyStyle',
+			{
+				label: $L('Copy Format'),
+				choices:
+				[
+					{label:$L('Raw Log'),	value:'raw'},
+					{label:$L('Cleaned'),	value:'clean'}//,
+					//{label:$L('Message'),	value:'msg'}
+				],
+				modelProperty: 'copyStyle'
+			},
+			this.prefs
+		);
+		
+		this.controller.listen('copyStyle', Mojo.Event.propertyChange, this.listChangedHandler);
+		
+		
 		// Secret Group
 		this.keyPressHandler = this.keyPress.bindAsEventListener(this)
 		Mojo.Event.listen(this.controller.sceneElement, Mojo.Event.keypress, this.keyPressHandler);
@@ -160,6 +181,10 @@ PreferencesAssistant.prototype.logLevelChanged = function(event)
 PreferencesAssistant.prototype.toggleChanged = function(event)
 {
 	this.prefs[event.target.id] = event.value;
+	this.cookie.put(this.prefs);
+};
+PreferencesAssistant.prototype.listChanged = function(event)
+{
 	this.cookie.put(this.prefs);
 };
 

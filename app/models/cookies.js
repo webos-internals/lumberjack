@@ -20,7 +20,10 @@ preferenceCookie.prototype.get = function(reload)
 				// Main Group
 				lastLog: 'all',
 				listStockApps: false,
-				popLog: false
+				popLog: false,
+				
+				// Log Group
+				copyStyle: 'clean'
 				
 			};
 			
