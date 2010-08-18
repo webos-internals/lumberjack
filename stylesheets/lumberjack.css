@@ -295,14 +295,20 @@ body.palm-dark .log .log-messages .showapp .app
 {
 	color: #ccc;
 }
-.log .log-messages .generic .type			{ display: none; }
+.log .log-messages .none .type				{ display: none; }
 .log .log-messages .info .type,
+.log .log-messages .debug .type,
 .log .log-messages .notice .type			{ color: #3473e7; background-image: url(../images/log-info-icon.png);	}
+.log .log-messages .alert .type,
 .log .log-messages .warning .type			{ color: #ffa202; background-image: url(../images/log-warning-icon.png);}
+.log .log-messages .err .type,
 .log .log-messages .crit .type				{ color: #f10000; background-image: url(../images/log-error-icon.png);	}
 .log .log-messages .palm-row-wrapper.info,
+.log .log-messages .palm-row-wrapper.debug,
 .log .log-messages .palm-row-wrapper.notice	{ background-image: url(../images/log-info-bg.png);		}
+.log .log-messages .palm-row-wrapper.alert,
 .log .log-messages .palm-row-wrapper.warning{ background-image: url(../images/log-warning-bg.png);	}
+.log .log-messages .palm-row-wrapper.err,
 .log .log-messages .palm-row-wrapper.crit	{ background-image: url(../images/log-error-bg.png);	}
 
 
