@@ -232,19 +232,17 @@ tailHandler.parseEvery = function(msg)
 	if (match)
 	{
 		var d = tailHandler.parseDate(match[1]);
-		
-		var test = '';
-		for (var m = 1; m < match.length; m++) test += '['+m+'] '+match[m]+'<br>';
-		
 		l =
 		{
 			app: match[5],
 			id: match[5],
 			date: (d ? d.month + '/' + d.day + ' ' + d.hour + ':' + d.min + ':' + d.sec : '?'),
-			type: match[3].capitalize()+'.'+match[4].capitalize(),
+			type: match[3].capitalize() + '.' + match[4].capitalize(),
 			rowClass: match[4],
-			display: formatForHtml(match[6].replace(/^{(.*)}: /, '')),
-			message: match[6].replace(/^{(.*)}: /, '')
+			message: formatForHtml(match[6].replace(/^{(.*)}: /, '')),
+			raw: msg,
+			copy: (d ? '[' + d.year + '-' + d.month + '-' + d.day + ' ' + d.hour + ':' + d.min + ':' + d.sec + '] ' : '') +
+				'(' + match[5] + ') ' + match[3] + '.' + match[4] + ': ' + match[6].replace(/^{(.*)}: /, '')
 		};
 	}
 	
@@ -260,7 +258,6 @@ tailHandler.parseAlert = function(msg)
 		if (!match[3].include('palmInitFramework'))
 		{
 			var d = tailHandler.parseDate(match[1]);
-			
 			l =
 			{
 				app: false,
@@ -268,8 +265,10 @@ tailHandler.parseAlert = function(msg)
 				date: (d ? d.month + '/' + d.day + ' ' + d.hour + ':' + d.min + ':' + d.sec : '?'),
 				type: 'Alert',
 				rowClass: 'warning',
-				display: formatForHtml(match[3]),
-				message: match[3]
+				message: formatForHtml(match[3]),
+				raw: msg,
+				copy:	(d ? '[' + d.year + '-' + d.month + '-' + d.day + ' ' + d.hour + ':' + d.min + ':' + d.sec + '] ' : '') +
+					'Alert: ' + match[3]
 			};
 		}
 	}
@@ -284,7 +283,6 @@ tailHandler.parseMojo = function(msg)
 	if (match)
 	{
 		var d = tailHandler.parseDate(match[1]);
-		
 		l =
 		{
 			app: (appsList.get(match[4])?appsList.get(match[4]):match[4]),
@@ -292,8 +290,10 @@ tailHandler.parseMojo = function(msg)
 			date: (d ? d.month + '/' + d.day + ' ' + d.hour + ':' + d.min + ':' + d.sec : '?'),
 			type: match[5],
 			rowClass: match[3],
-			display: formatForHtml(match[6]).replace(/, palmInitFramework(.*)/, ''),
-			message: match[6].replace(/, palmInitFramework(.*)/, '')
+			message: formatForHtml(match[6]).replace(/, palmInitFramework(.*)/, ''),
+			raw: msg,
+			copy: (d ? '[' + d.year + '-' + d.month + '-' + d.day + ' ' + d.hour + ':' + d.min + ':' + d.sec + '] ' : '') +
+				'(' + (appsList.get(match[4])?appsList.get(match[4]):match[4]) + ') ' + match[5] + ': ' + match[6].replace(/, palmInitFramework(.*)/, '')
 		};
 	}
 	

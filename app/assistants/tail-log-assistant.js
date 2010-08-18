@@ -176,7 +176,7 @@ TailLogAssistant.prototype.messageTapListHandler = function(choice, item, index)
 	switch(choice)
 	{
 		case 'copy':
-			this.controller.stageController.setClipboard('['+item.date+'] '+(this.filter=='allapps'?item.app+': ':'')+item.type+': '+item.message);
+			this.controller.stageController.setClipboard(item.copy);
 			this.copyStart = -1;
 			this.messageHighlight(-1);
 			break;
@@ -197,7 +197,7 @@ TailLogAssistant.prototype.messageTapListHandler = function(choice, item, index)
 				for (var i = start; i <= end; i++)
 				{
 					if (message != '') message += '\n';
-					message += '['+this.listModel.items[i].date+'] '+(this.filter=='allapps'?this.listModel.items[i].app+': ':'')+this.listModel.items[i].type+': '+this.listModel.items[i].message;
+					message += this.listModel.items[i].copy;
 				}
 				if (message != '')
 				{
