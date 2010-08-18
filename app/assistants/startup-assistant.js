@@ -9,7 +9,7 @@ function StartupAssistant()
     this.newMessages =
 	[
 		// Don't forget the comma on all but the last entry
-		{ version: '0.0.1', log: [ 'Initial skeleton version' ] }
+		{ version: '0.1.0', log: [ 'Initial Release!' ] }
 	];
 	
     // setup menu
