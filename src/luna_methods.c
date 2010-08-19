@@ -402,7 +402,7 @@ bool setLogging_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
 void tail_thread_cleanup(void *arg) {
   FILE *fp = (FILE *)arg;
 
-  syslog(LOG_INFO, "Thread cleanup, closing pipe %p, unref message %p\n", fp, tailMessagesMessage);
+  syslog(LOG_DEBUG, "Thread cleanup, closing pipe %p, unref message %p\n", fp, tailMessagesMessage);
   pclose(fp);
   LSMessageUnref(tailMessagesMessage);
   tailMessagesMessage = NULL;
@@ -423,10 +423,10 @@ void *tail_messages(void *ctx) {
   if (!message) 
     return NULL;
 
-  syslog(LOG_INFO, "Running command %s\n", command);
+  syslog(LOG_DEBUG, "Running command %s\n", command);
   fp = popen(command, "r");
 
-  syslog(LOG_INFO, "Pushing cleanup handler, pipe %p\n", fp);
+  syslog(LOG_DEBUG, "Pushing cleanup handler, pipe %p\n", fp);
   pthread_cleanup_push(tail_thread_cleanup, fp);
 
   if (!fp) {
@@ -434,7 +434,7 @@ void *tail_messages(void *ctx) {
     return NULL;
   }
 
-  syslog(LOG_INFO, "Created thread 0x%x\n", tailMessagesThread);
+  syslog(LOG_DEBUG, "Created thread 0x%x\n", tailMessagesThread);
   
   // Local buffer to store the current line.
   char line[MAXLINLEN];
@@ -477,7 +477,7 @@ bool tailMessages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   LSErrorInit(&lserror);
 
   if (tailMessagesThread) {
-    syslog(LOG_INFO, "Thread already running\n");
+    syslog(LOG_NOTICE, "Thread already running\n");
     if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
     return true;
   }
@@ -486,14 +486,14 @@ bool tailMessages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   LSMessageRef(message);
   tailMessagesMessage = message;
 
-  syslog(LOG_INFO, "Ref'd message %p, ceating thread\n", tailMessagesMessage);
+  syslog(LOG_DEBUG, "Ref'd message %p, ceating thread\n", tailMessagesMessage);
   if (pthread_create(&tailMessagesThread, NULL, tail_messages, NULL)) {
-    syslog(LOG_INFO, "Creating thread failed (0x%x)\n", tailMessagesThread);
+    syslog(LOG_ERR, "Creating thread failed (0x%x)\n", tailMessagesThread);
     // Report that the update operaton was not able to start
     if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"errorCode\": -1, \"errorText\": \"Unable to start tail thread\"}", &lserror)) goto error;
   }
   else {
-    syslog(LOG_INFO, "Created thread successfully (0x%x)\n", tailMessagesThread);
+    syslog(LOG_DEBUG, "Created thread successfully (0x%x)\n", tailMessagesThread);
     // Report that the update operaton has begun
     if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"stage\": \"start\"}", &lserror)) goto error;
   }
@@ -514,12 +514,12 @@ bool killCommand_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   LSErrorInit(&lserror);
 
   if (!tailMessagesThread) {
-    syslog(LOG_INFO, "Thread 0x%x not running\n", tailMessagesThread);
+    syslog(LOG_NOTICE, "Thread 0x%x not running\n", tailMessagesThread);
     if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
     return true;
   }
 
-  syslog(LOG_INFO, "Killing thread 0x%x\n", tailMessagesThread);
+  syslog(LOG_DEBUG, "Killing thread 0x%x\n", tailMessagesThread);
   
   pthread_cancel(tailMessagesThread);
   tailMessagesThread = 0;
@@ -551,7 +551,7 @@ static bool read_file(LSHandle* lshandle, LSMessage *message, char *filename, bo
   char chunk[CHUNKSIZE];
   int chunksize = CHUNKSIZE;
 
-  syslog(LOG_INFO, "Reading file %s\n", filename);
+  syslog(LOG_DEBUG, "Reading file %s\n", filename);
 
   fseek(file, 0, SEEK_END);
   int filesize = ftell(file);
