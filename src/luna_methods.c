@@ -21,6 +21,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <syslog.h>
 
 #include "luna_service.h"
 #include "luna_methods.h"
@@ -32,15 +33,8 @@
 static char file_buffer[CHUNKSIZE+CHUNKSIZE+1];
 static char file_esc_buffer[MAXBUFLEN];
 
-pthread_t tailMessagesThread;
-LSHandle *tailMessagesHandle = NULL;
-LSMessage*tailMessagesMessage = NULL;
-FILE *    tailMessagesFileHandle = NULL;
-bool      tailMessagesRunning = false;;
-
-
-pthread_mutex_t stopmutex = PTHREAD_MUTEX_INITIALIZER;
-bool      tailMessagesStop = false;
+pthread_t  tailMessagesThread = 0;
+LSMessage* tailMessagesMessage = NULL;
 
 //
 // Escape a string so that it can be used directly in a JSON response.
@@ -48,8 +42,7 @@ bool      tailMessagesStop = false;
 // It uses the static esc_buffer, which must be twice as large as the
 // largest string this routine can handle.
 //
-static char *json_escape_str(char *str, char *esc_buffer)
-{
+static char *json_escape_str(char *str, char *esc_buffer) {
   const char *json_hex_chars = "0123456789abcdef";
 
   // Initialise the output buffer
@@ -406,35 +399,48 @@ bool setLogging_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   return false;
 }
 
+void tail_thread_cleanup(void *arg) {
+  FILE *fp = (FILE *)arg;
+
+  syslog(LOG_INFO, "Thread cleanup, closing pipe %p, unref message %p\n", fp, tailMessagesMessage);
+  pclose(fp);
+  LSMessageUnref(tailMessagesMessage);
+  tailMessagesMessage = NULL;
+
+  return NULL;
+}
+
 void *tail_messages(void *ctx) {
   LSError lserror;
   LSErrorInit(&lserror);
-
+  LSHandle* lshandle = pub_serviceHandle;
+  LSMessage *message = tailMessagesMessage;
   char buffer[MAXBUFLEN];
   char esc_buffer[MAXBUFLEN];
+  char command[MAXLINLEN] = "/usr/bin/tail -f /var/log/messages 2>&1";
+  FILE *fp = NULL;
+    
+  if (!message) 
+    return NULL;
 
-  LSHandle* lshandle = tailMessagesHandle;
-  LSMessage *message = tailMessagesMessage;
-  FILE           *fp = tailMessagesFileHandle;
+  syslog(LOG_INFO, "Running command %s\n", command);
+  fp = popen(command, "r");
 
-  fprintf(stderr, "Created thread\n");
+  syslog(LOG_INFO, "Pushing cleanup handler, pipe %p\n", fp);
+  pthread_cleanup_push(tail_thread_cleanup, fp);
+
+  if (!fp) {
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
+    return NULL;
+  }
+
+  syslog(LOG_INFO, "Created thread 0x%x\n", tailMessagesThread);
   
   // Local buffer to store the current line.
   char line[MAXLINLEN];
 
-  // Has an early termination error been detected?
-  bool error = false;
-
   // Loop through the output lines
   while (fgets(line, sizeof line, fp)) {
-
-    pthread_mutex_lock( &stopmutex );
-    if (tailMessagesStop) {
-      pthread_mutex_unlock( &stopmutex );
-      break;
-    }
-    pthread_mutex_unlock( &stopmutex );
-
     // Chomp the newline
     char *nl = strchr(line,'\n'); if (nl) *nl = 0;
 
@@ -450,25 +456,17 @@ void *tail_messages(void *ctx) {
       if (!LSMessageReply(lshandle, message, buffer, &lserror)) goto error;
 
     }
-
-    // If a termination failure has been detected, then break out of the loop.
-    if (error) break;
-
   }
 
-  fprintf(stderr, "Thread exiting\n");
-  
-  fprintf(stderr, "Closing previous pipe\n");
-  pclose(fp);
-  
+  pthread_cleanup_pop(1);
+
   goto end;
 
  error:
   LSErrorPrint(&lserror, stderr);
   LSErrorFree(&lserror);
  end:
-  pthread_exit(NULL);
-  return;
+  return NULL;
 }
 
 //
@@ -478,51 +476,27 @@ bool tailMessages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   LSError lserror;
   LSErrorInit(&lserror);
 
-  if (tailMessagesRunning) {
-    fprintf(stderr, "Thread already running\n");
+  if (tailMessagesThread) {
+    syslog(LOG_INFO, "Thread already running\n");
     if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
-    return;
+    return true;
   }
 
+  // Ref and save the message for use in tail thread
   LSMessageRef(message);
-  tailMessagesHandle = lshandle;
   tailMessagesMessage = message;
 
-  // Local buffer to store the update command
-  char command[MAXLINLEN];
-
-  // Store the command, so it can be used in the error report if necessary
-  strcpy(command, "/usr/bin/tail -f /var/log/messages 2>&1");
-
-  fprintf(stderr, "Running command %s\n", command);
-
-  // Start execution of the command, and read the output.
-  FILE *fp = popen(command, "r");
-
-  // Return immediately if we cannot even start the command.
-  if (!fp) {
-    return false;
-  }
-
-  tailMessagesFileHandle = fp;
-  pthread_mutex_lock( &stopmutex );
-  tailMessagesStop = false;
-  pthread_mutex_unlock( &stopmutex );
-
-  fprintf(stderr, "Creating thread\n");
-  
+  syslog(LOG_INFO, "Ref'd message %p, ceating thread\n", tailMessagesMessage);
   if (pthread_create(&tailMessagesThread, NULL, tail_messages, NULL)) {
-    fprintf(stderr, "Creating thread failed\n");
+    syslog(LOG_INFO, "Creating thread failed (0x%x)\n", tailMessagesThread);
     // Report that the update operaton was not able to start
-    if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"stage\": \"failed\"}", &lserror)) goto error;
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"errorCode\": -1, \"errorText\": \"Unable to start tail thread\"}", &lserror)) goto error;
   }
   else {
-    fprintf(stderr, "Creating thread successful\n");
+    syslog(LOG_INFO, "Created thread successfully (0x%x)\n", tailMessagesThread);
     // Report that the update operaton has begun
     if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"stage\": \"start\"}", &lserror)) goto error;
   }
-
-  tailMessagesRunning = true;
 
   return true;
  error:
@@ -539,24 +513,17 @@ bool killCommand_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   LSError lserror;
   LSErrorInit(&lserror);
 
-  if (!tailMessagesRunning) {
-    fprintf(stderr, "Thread not running\n");
+  if (!tailMessagesThread) {
+    syslog(LOG_INFO, "Thread 0x%x not running\n", tailMessagesThread);
     if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
-    return;
+    return true;
   }
 
-  fprintf(stderr, "Killing thread\n");
+  syslog(LOG_INFO, "Killing thread 0x%x\n", tailMessagesThread);
   
-  pthread_mutex_lock( &stopmutex );
-  tailMessagesStop = true;
-  pthread_mutex_unlock( &stopmutex );
+  pthread_cancel(tailMessagesThread);
+  tailMessagesThread = 0;
 
-  pthread_join(tailMessagesThread, NULL);
-
-  tailMessagesRunning = false;
-
-  fprintf(stderr, "Exiting kill\n");
-  
   if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"stage\": \"completed\"}", &lserror)) goto error;
 
   return true;
@@ -584,7 +551,7 @@ static bool read_file(LSHandle* lshandle, LSMessage *message, char *filename, bo
   char chunk[CHUNKSIZE];
   int chunksize = CHUNKSIZE;
 
-  fprintf(stderr, "Reading file %s\n", filename);
+  syslog(LOG_INFO, "Reading file %s\n", filename);
 
   fseek(file, 0, SEEK_END);
   int filesize = ftell(file);

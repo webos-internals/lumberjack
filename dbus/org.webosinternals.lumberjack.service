@@ -1,3 +1,0 @@
-[D-BUS Service]
-Name=org.webosinternals.lumberjack
-Exec=/var/usr/sbin/org.webosinternals.lumberjack
