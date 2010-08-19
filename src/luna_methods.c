@@ -33,8 +33,12 @@
 static char file_buffer[CHUNKSIZE+CHUNKSIZE+1];
 static char file_esc_buffer[MAXBUFLEN];
 
-pthread_t  tailMessagesThread = 0;
-LSMessage* tailMessagesMessage = NULL;
+typedef struct {
+  LSMessage *message;
+  FILE *fp;
+} TAIL_DATA;
+
+pthread_t tailMessagesThread = 0;
 
 //
 // Escape a string so that it can be used directly in a JSON response.
@@ -400,52 +404,51 @@ bool setLogging_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
 }
 
 void tail_thread_cleanup(void *arg) {
-  FILE *fp = (FILE *)arg;
+  TAIL_DATA *data = (TAIL_DATA *)arg;
 
-  syslog(LOG_DEBUG, "Thread cleanup, closing pipe %p, unref message %p\n", fp, tailMessagesMessage);
-  pclose(fp);
-  LSMessageUnref(tailMessagesMessage);
-  tailMessagesMessage = NULL;
+  syslog(LOG_DEBUG, "Thread cleanup, closing pipe %p, unref message %p\n", 
+      data->fp, data->message);
 
-  return NULL;
+  if (data->fp) pclose(data->fp);
+  if (data->message) LSMessageUnref(data->message);
 }
+
 
 void *tail_messages(void *ctx) {
   LSError lserror;
   LSErrorInit(&lserror);
   LSHandle* lshandle = pub_serviceHandle;
-  LSMessage *message = tailMessagesMessage;
   char buffer[MAXBUFLEN];
   char esc_buffer[MAXBUFLEN];
   char command[MAXLINLEN] = "/usr/bin/tail -f /var/log/messages 2>&1";
-  FILE *fp = NULL;
-    
-  if (!message) 
+  TAIL_DATA data;
+  char line[MAXLINLEN];
+  pthread_key_t key;
+
+  if (ctx) 
+    data.message = (LSMessage *)ctx;
+  else
     return NULL;
 
-  syslog(LOG_DEBUG, "Running command %s\n", command);
-  fp = popen(command, "r");
+  // Create thread key/value
+  pthread_key_create(&key, tail_thread_cleanup);
+  pthread_setspecific(key, &data);
 
-  syslog(LOG_DEBUG, "Pushing cleanup handler, pipe %p\n", fp);
-  pthread_cleanup_push(tail_thread_cleanup, fp);
+  data.fp = popen(command, "r");
+  syslog(LOG_DEBUG, "pipe fp %p\n", data.fp);
 
-  if (!fp) {
-    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
+  if (!data.fp) {
+    if (!LSMessageReply(lshandle, data.message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
     return NULL;
   }
 
-  syslog(LOG_DEBUG, "Created thread 0x%x\n", tailMessagesThread);
-  
-  // Local buffer to store the current line.
-  char line[MAXLINLEN];
-
   // Loop through the output lines
-  while (fgets(line, sizeof line, fp)) {
+  while (fgets(line, sizeof line, data.fp)) {
     // Chomp the newline
     char *nl = strchr(line,'\n'); if (nl) *nl = 0;
 
     // Have status updates been requested?
-    if (lshandle && message) {
+    if (lshandle && data.message) {
 
       // Send it as a status message.
       strcpy(buffer, "{\"returnValue\": true, \"stage\": \"status\", \"status\": \"");
@@ -453,12 +456,10 @@ void *tail_messages(void *ctx) {
       strcat(buffer, "\"}");
 
       // %%% Should we break out of the loop here, or just ignore the error? %%%
-      if (!LSMessageReply(lshandle, message, buffer, &lserror)) goto error;
+      if (!LSMessageReply(lshandle, data.message, buffer, &lserror)) goto error;
 
     }
   }
-
-  pthread_cleanup_pop(1);
 
   goto end;
 
@@ -482,12 +483,12 @@ bool tailMessages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
     return true;
   }
 
+  syslog(LOG_DEBUG, "Create thread, ref message %p\n", message);
+
   // Ref and save the message for use in tail thread
   LSMessageRef(message);
-  tailMessagesMessage = message;
 
-  syslog(LOG_DEBUG, "Ref'd message %p, ceating thread\n", tailMessagesMessage);
-  if (pthread_create(&tailMessagesThread, NULL, tail_messages, NULL)) {
+  if (pthread_create(&tailMessagesThread, NULL, tail_messages, (void*)message)) {
     syslog(LOG_ERR, "Creating thread failed (0x%x)\n", tailMessagesThread);
     // Report that the update operaton was not able to start
     if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"errorCode\": -1, \"errorText\": \"Unable to start tail thread\"}", &lserror)) goto error;
