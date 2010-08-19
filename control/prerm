@@ -9,9 +9,6 @@ APPS=/media/cryptofs/apps
 # Stop the service if running
 /sbin/stop ${PID} || true
 
-# Remove the dbus service
-rm -f /var/palm/system-services/${PID}.service
-
 # Remove the upstart script
 rm -f /var/palm/event.d/${PID}
 

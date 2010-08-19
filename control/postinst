@@ -11,11 +11,6 @@ rm -f /var/palm/event.d/${PID}
 [ -d /var/palm/event.d ] || exit 1
 cp $APPS/usr/palm/applications/${PID}/upstart/${PID} /var/palm/event.d/${PID}
 
-# Install the dbus service
-rm -f /var/palm/system-services/${PID}.service
-[ -d /var/palm/system-services ] || exit 1
-cp $APPS/usr/palm/applications/${PID}/dbus/${PID}.service /var/palm/system-services/${PID}.service
-
 # Stop any existing service
 /sbin/stop ${PID} || true
 
@@ -29,8 +24,5 @@ install -m 755 $APPS/usr/palm/applications/${PID}/bin/${PID} /var/usr/sbin/${PID
 
 # Check the upstart script is installed
 [ -f /var/palm/event.d/${PID} ] || exit 1
-
-# Check the dbus service is installed
-[ -f /var/palm/system-services/${PID}.service ] || exit 1
 
 exit 0
