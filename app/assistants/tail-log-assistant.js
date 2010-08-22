@@ -11,9 +11,9 @@ function TailLogAssistant(filter, popped)
 	
 	this.copyStart =	-1;
 	
-    this.isVisible = true;
-    this.lastFocusMarker = false;
-    this.lastFocusMessage = false;
+    this.isVisible =	true;
+    this.lastFocusMarker =	false;
+    this.lastFocusMessage =	false;
 	
 	// setup menu
 	this.menuModel =
@@ -108,6 +108,7 @@ TailLogAssistant.prototype.setup = function()
 			}
 		);
 		this.revealBottom();
+		
 		this.controller.listen(this.messagesElement, Mojo.Event.listTap, this.messageTapHandler);
 		
 		// register scene!

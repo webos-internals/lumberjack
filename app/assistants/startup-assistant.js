@@ -9,6 +9,8 @@ function StartupAssistant()
     this.newMessages =
 	[
 		// Don't forget the comma on all but the last entry
+		{ version: '0.1.2', log: [ 'Type-to-Search in get-log scene' ] },
+		{ version: '0.1.1', log: [ 'Service Stability Updates' ] },
 		{ version: '0.1.0', log: [ 'Initial Release!' ] }
 	];
 	

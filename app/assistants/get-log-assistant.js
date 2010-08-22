@@ -1,11 +1,17 @@
 function GetLogAssistant(filter)
 {
+	this.messages =		[];
+	
 	this.filter =		(filter ? filter : 'allapps');
 	
 	this.request =		false;
 	this.contents =		'';
 	
 	this.copyStart =	-1;
+	
+	this.searchTimer =	false;
+	this.searching =	false;
+	this.searchText =	'';
 	
 	// setup menu
 	this.menuModel =
@@ -33,12 +39,18 @@ GetLogAssistant.prototype.setup = function()
 		this.controller.setupWidget(Mojo.Menu.appMenu, { omitDefaultItems: true }, this.menuModel);
 		
 		this.sceneScroller =			this.controller.sceneScroller;
+		this.headerElement =			this.controller.get('logHeader');
+		this.searchElement =			this.controller.get('searchText');
+		this.searchSpinnerElement =		this.controller.get('searchSpinner');
 		this.titleElement =				this.controller.get('get-log-title');
 		this.messagesElement =			this.controller.get('messages');
 		this.reloadButtonElement =		this.controller.get('reloadButton');
 		this.spinnerElement =			this.controller.get('spinner');
 		this.reloadButtonPressed =		this.reloadButtonPressed.bindAsEventListener(this);
 		this.messageTapHandler =		this.messageTap.bindAsEventListener(this);
+		this.searchDelayHandler =		this.searchDelay.bindAsEventListener(this);
+		this.keyHandler =				this.keyTest.bindAsEventListener(this);
+		this.searchFunction =			this.search.bind(this);
 		
 		this.controller.setupWidget('spinner', {spinnerSize: 'large'}, {spinning: false});
 		
@@ -76,7 +88,25 @@ GetLogAssistant.prototype.setup = function()
 			}
 		);
 		this.revealBottom();
+		
 		this.controller.listen(this.messagesElement, Mojo.Event.listTap, this.messageTapHandler);
+		
+		this.controller.setupWidget('searchSpinner', {spinnerSize: 'small'}, {spinning: false});
+		
+		this.controller.setupWidget
+		(
+			'searchText',
+			{
+				focus: false,
+				autoFocus: false,
+				changeOnKeyPress: true
+			},
+			this.searchModel = { value: this.searchText }
+		);
+		
+		this.controller.listen(this.searchElement, Mojo.Event.propertyChange, this.searchDelayHandler);
+		
+		this.controller.listen(this.controller.sceneElement, Mojo.Event.keypress, this.keyHandler);
 		
 	}
 	catch (e)
@@ -89,6 +119,76 @@ GetLogAssistant.prototype.reloadButtonPressed = function(event)
 {
 	this.get();
 }
+
+
+GetLogAssistant.prototype.keyTest = function(event)
+{
+	if (Mojo.Char.isValidWrittenChar(event.originalEvent.charCode)) 
+	{
+		this.controller.stopListening(this.controller.sceneElement, Mojo.Event.keypress, this.keyHandler);
+		this.headerElement.style.display = 'none';
+		this.searchElement.style.display = 'inline';
+		this.searchElement.mojo.focus();
+	}
+};
+GetLogAssistant.prototype.searchDelay = function(event)
+{
+	clearTimeout(this.searchTimer);
+	
+	this.searchText = event.value;
+	
+	if (this.searchText == '') 
+	{
+		this.searchSpinnerElement.mojo.stop();
+		this.searchElement.mojo.blur();
+		this.searchElement.style.display = 'none';
+		this.headerElement.style.display = 'inline';
+		this.controller.listen(this.controller.sceneElement, Mojo.Event.keypress, this.keyHandler);
+		this.searchFunction();
+	}
+	else
+	{
+		this.searchSpinnerElement.mojo.start();
+		this.searching = true;
+		this.searchTimer = setTimeout(this.searchFunction, 1000);
+	}
+};
+GetLogAssistant.prototype.search = function()
+{
+	this.listModel.items = [];
+	
+	//alert(this.searchText);
+	
+	for (var m = 0; m < this.messages.length; m++) 
+	{
+		var pushIt = false;
+		
+		if (this.searchText == '')
+		{
+			pushIt = true;
+		}
+		else if (this.messages[m].message.toLowerCase().include(this.searchText.toLowerCase()))
+		{
+     		//this.messages[m].message = this.messages[m].message.replace(new RegExp('(' + this.searchText + ')', 'gi'), '<span class="highlight">$1</span>');
+			pushIt = true;
+		}
+		
+		if (pushIt) 
+		{
+			this.listModel.items.push(this.messages[m]);
+		}
+	}
+	
+	this.messagesElement.mojo.noticeUpdatedItems(0, this.listModel.items);
+ 	this.messagesElement.mojo.setLength(this.listModel.items.length);
+	if (this.searching)
+	{
+		//this.messagesElement.mojo.revealItem(0, true);
+		this.searching = false;
+	}
+	
+	this.searchSpinnerElement.mojo.stop();
+};
 
 GetLogAssistant.prototype.messageTap = function(event)
 {
@@ -190,6 +290,7 @@ GetLogAssistant.prototype.got = function(payload)
 			case 'start':
 				this.spinnerElement.mojo.start();
 				this.contents = '';
+				this.messages = [];
 				this.listModel.items = [];
 				this.messagesElement.mojo.noticeUpdatedItems(0, this.listModel.items);
 				this.messagesElement.mojo.setLength(this.listModel.items.length);
@@ -215,9 +316,7 @@ GetLogAssistant.prototype.got = function(payload)
 					this.parseMessages(this.contents);
 				}
 				this.spinnerElement.mojo.stop();
-				this.messagesElement.mojo.noticeUpdatedItems(0, this.listModel.items);
-				this.messagesElement.mojo.setLength(this.listModel.items.length);
-				this.revealBottom();
+				this.search();
 				break;
 		}
 	}
@@ -225,9 +324,9 @@ GetLogAssistant.prototype.got = function(payload)
 	{
 		this.spinnerElement.mojo.stop();
 		this.contents = '';
+		this.messages = [];
 		this.listModel.items = [];
-		this.messagesElement.mojo.noticeUpdatedItems(0, this.listModel.items);
-		this.messagesElement.mojo.setLength(this.listModel.items.length);
+		this.search();
 		
 		this.errorMessage('<b>Service Error (getMessages):</b><br>'+payload.errorText);
 	}
@@ -268,7 +367,7 @@ GetLogAssistant.prototype.addMessage = function(msg)
 	{
 		msg.select = '';
 		if (this.filter == 'allapps' || this.filter == 'every') msg.rowClass += ' showapp';
-		this.listModel.items.push(msg);
+		this.messages.push(msg);
 	}
 }
 

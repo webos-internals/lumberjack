@@ -198,6 +198,46 @@ body.palm-dark .scene-fade-bottom
 /*
  * Generic Log Styles
  */
+
+.log #searchText
+{
+	display: none;
+	z-index: 20000;
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	right: 0px;
+	height: 50px;
+	color: #fff;
+	padding-top: 2px;
+	padding-left: 1px;
+	border-width: 10px 25px 10px 25px;
+	-webkit-border-image: url(../images/palm-default/search-box.png) 10 25 10 25 stretch stretch;
+	-webkit-box-sizing: border-box;
+}
+body.palm-dark .log #searchText
+{
+	-webkit-border-image: url(../images/palm-dark/search-box.png) 10 25 10 25 stretch stretch;
+}
+.log #searchText input
+{
+	color: #fff;
+	background: none;
+	margin-top: 0px;
+	margin-left: -1px;
+	border: 0px;
+	padding: 0px;
+}
+.log #searchSpinner
+{
+	position: fixed;
+	top: 8px;
+	right: 10px;
+	z-index: 20001;
+	float: right;
+}
+
+
 .log .log-messages .palm-row
 {
 	min-height: 0px;
@@ -303,6 +343,7 @@ body.palm-dark .log .log-messages .showapp .app
 .log .log-messages .alert .type,
 .log .log-messages .warning .type			{ color: #ffa202; background-image: url(../images/log-warning-icon.png);}
 .log .log-messages .err .type,
+.log .log-messages .emerg .type,
 .log .log-messages .crit .type				{ color: #f10000; background-image: url(../images/log-error-icon.png);	}
 .log .log-messages .palm-row-wrapper.info,
 .log .log-messages .palm-row-wrapper.debug,
@@ -310,6 +351,7 @@ body.palm-dark .log .log-messages .showapp .app
 .log .log-messages .palm-row-wrapper.alert,
 .log .log-messages .palm-row-wrapper.warning{ background-image: url(../images/log-warning-bg.png);	}
 .log .log-messages .palm-row-wrapper.err,
+.log .log-messages .palm-row-wrapper.emerg,
 .log .log-messages .palm-row-wrapper.crit	{ background-image: url(../images/log-error-bg.png);	}
 
 
