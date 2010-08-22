@@ -456,9 +456,10 @@ GetLogAssistant.prototype.handleCommand = function(event)
 				this.updateCommandMenu();
 				break;
 			case 'do-clear':
+				this.searchIndexes = [];
+				this.searchIndex = 0;
 				this.searchElement.mojo.setValue('');
 				this.searchDelay({value: ''});
-				this.search();
 				break;
 			
 			case 'do-help':
