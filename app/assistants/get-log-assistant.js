@@ -145,7 +145,7 @@ GetLogAssistant.prototype.searchDelay = function(event)
 		this.searchElement.style.display = 'none';
 		this.headerElement.style.display = 'inline';
 		this.controller.listen(this.controller.sceneElement, Mojo.Event.keypress, this.keyHandler);
-		this.searchFunction();
+		this.search();
 	}
 	else
 	{
@@ -395,22 +395,26 @@ GetLogAssistant.prototype.updateCommandMenu = function()
 {
 	this.cmdMenuModel.items = [];
 	this.cmdMenuModel.items.push({});
+	this.cmdMenuModel.items.push({});
 	
-	var item = {label: $L("Prev"), command: 'do-prev'};
-    if (this.searchIndex == 0)
-	{
-		item.disabled = true;
-    }
+	var item = {command: 'do-first', icon: 'first'};
+    if (this.searchIndex == 0) item.disabled = true;
 	this.cmdMenuModel.items.push(item);
 	
-	var item = {label: $L("Next"), command: 'do-next'};
-    if (this.searchIndex == (this.searchIndexes.length-1))
-	{
-		item.disabled = true;
-    }
+	var item = {command: 'do-prev', icon: 'back'};
+    if (this.searchIndex == 0) item.disabled = true;
+	this.cmdMenuModel.items.push(item);
+	
+	var item = {command: 'do-next', icon: 'forward'};
+    if (this.searchIndex == (this.searchIndexes.length-1)) item.disabled = true;
+	this.cmdMenuModel.items.push(item);
+	
+	var item = {command: 'do-last', icon: 'last'};
+    if (this.searchIndex == (this.searchIndexes.length-1)) item.disabled = true;
 	this.cmdMenuModel.items.push(item);
 	
 	this.cmdMenuModel.items.push({});
+	this.cmdMenuModel.items.push({command: 'do-clear', icon: 'stop'});
 	
 	this.controller.modelChanged(this.cmdMenuModel);
 	if (this.searchIndexes.length > 0)
@@ -429,9 +433,8 @@ GetLogAssistant.prototype.handleCommand = function(event)
 	{
 		switch (event.command)
 		{
-			case 'do-next':
-				this.searchIndex++;
-				if (this.searchIndex > (this.searchIndexes.length-1)) this.searchIndex = (this.searchIndexes.length-1);
+			case 'do-first':
+				this.searchIndex = 0;
 				this.messagesElement.mojo.revealItem(this.searchIndexes[this.searchIndex], false);
 				this.updateCommandMenu();
 				break;
@@ -440,6 +443,22 @@ GetLogAssistant.prototype.handleCommand = function(event)
 				if (this.searchIndex < 0) this.searchIndex = 0;
 				this.messagesElement.mojo.revealItem(this.searchIndexes[this.searchIndex], false);
 				this.updateCommandMenu();
+				break;
+			case 'do-next':
+				this.searchIndex++;
+				if (this.searchIndex > (this.searchIndexes.length-1)) this.searchIndex = (this.searchIndexes.length-1);
+				this.messagesElement.mojo.revealItem(this.searchIndexes[this.searchIndex], false);
+				this.updateCommandMenu();
+				break;
+			case 'do-last':
+				this.searchIndex = (this.searchIndexes.length-1);
+				this.messagesElement.mojo.revealItem(this.searchIndexes[this.searchIndex], false);
+				this.updateCommandMenu();
+				break;
+			case 'do-clear':
+				this.searchElement.mojo.setValue('');
+				this.searchDelay({value: ''});
+				this.search();
 				break;
 			
 			case 'do-help':

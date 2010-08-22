@@ -29,6 +29,15 @@ body.palm-dark .scene-fade-bottom
 {
 	background: url(../images/palm-dark/fade-bottom.png) bottom center repeat-x;
 }
+.palm-menu-icon.first
+{
+	background-image: url(../images/menu-icon-first.png);
+}
+.palm-menu-icon.last
+{
+	background-image: url(../images/menu-icon-last.png);
+}
+
 
 
 /*
