@@ -251,6 +251,14 @@ body.palm-dark .log #searchText
 {
 	min-height: 0px;
 }
+.log .log-messages .palm-row.highlight
+{
+	background-color: #c8c7c6;
+}
+body.palm-dark .log .log-messages .palm-row.highlight
+{
+	background-color: #2d2e2e;
+}
 .log .log-messages .palm-row.lostFocus
 {
 	background-repeat: repeat-x;

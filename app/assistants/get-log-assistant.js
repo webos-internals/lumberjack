@@ -142,6 +142,7 @@ GetLogAssistant.prototype.searchDelay = function(event)
 	{
 		this.searchSpinnerElement.mojo.stop();
 		this.searchElement.mojo.blur();
+		this.messageHighlight(-1, 'highlight');
 		this.searchElement.style.display = 'none';
 		this.headerElement.style.display = 'inline';
 		this.controller.listen(this.controller.sceneElement, Mojo.Event.keypress, this.keyHandler);
@@ -158,6 +159,7 @@ GetLogAssistant.prototype.search = function()
 {
 	this.searchIndexes = [];
 	this.searchIndex = 0;
+	this.messageHighlight(-1, 'highlight');
 	
 	for (var m = 0; m < this.listModel.items.length; m++) 
 	{
@@ -175,6 +177,7 @@ GetLogAssistant.prototype.search = function()
 	
 	if (this.searchIndexes.length > 0)
 	{
+		this.messageHighlight(this.searchIndexes[this.searchIndex], 'highlight');
 		this.messagesElement.mojo.revealItem(this.searchIndexes[this.searchIndex], false);
 	}
 	
@@ -227,11 +230,11 @@ GetLogAssistant.prototype.messageTapListHandler = function(choice, item, index)
 		case 'copy':
 			this.controller.stageController.setClipboard((prefs.get().copyStyle == 'clean' ? item.copy : item.raw));
 			this.copyStart = -1;
-			this.messageHighlight(-1);
+			this.messageHighlight(-1, 'selected');
 			break;
 			
 		case 'copy-from':
-			this.messageHighlight(index);
+			this.messageHighlight(index, 'selected');
 			this.copyStart = index;
 			break;
 			
@@ -254,20 +257,20 @@ GetLogAssistant.prototype.messageTapListHandler = function(choice, item, index)
 				}
 			}
 			this.copyStart = -1;
-			this.messageHighlight(-1);
+			this.messageHighlight(-1, 'selected');
 			break;
 	}
 }
-GetLogAssistant.prototype.messageHighlight = function(index)
+GetLogAssistant.prototype.messageHighlight = function(index, style)
 {
 	if (this.listModel.items.length > 0)
 	{
 		for (var i = 0; i < this.listModel.items.length; i++)
 		{
 			if (i == index)
-				this.listModel.items[i].select = 'selected';
+				this.listModel.items[i].select += ' ' + style;
 			else
-				this.listModel.items[i].select = '';
+				this.listModel.items[i].select = this.listModel.items[i].select.replace(style, '');
 		}
 		this.messagesElement.mojo.noticeUpdatedItems(0, this.listModel.items);
 		this.messagesElement.mojo.setLength(this.listModel.items.length);
@@ -435,23 +438,27 @@ GetLogAssistant.prototype.handleCommand = function(event)
 		{
 			case 'do-first':
 				this.searchIndex = 0;
+				this.messageHighlight(this.searchIndexes[this.searchIndex], 'highlight');
 				this.messagesElement.mojo.revealItem(this.searchIndexes[this.searchIndex], false);
 				this.updateCommandMenu();
 				break;
 			case 'do-prev':
 				this.searchIndex--;
 				if (this.searchIndex < 0) this.searchIndex = 0;
+				this.messageHighlight(this.searchIndexes[this.searchIndex], 'highlight');
 				this.messagesElement.mojo.revealItem(this.searchIndexes[this.searchIndex], false);
 				this.updateCommandMenu();
 				break;
 			case 'do-next':
 				this.searchIndex++;
 				if (this.searchIndex > (this.searchIndexes.length-1)) this.searchIndex = (this.searchIndexes.length-1);
+				this.messageHighlight(this.searchIndexes[this.searchIndex], 'highlight');
 				this.messagesElement.mojo.revealItem(this.searchIndexes[this.searchIndex], false);
 				this.updateCommandMenu();
 				break;
 			case 'do-last':
 				this.searchIndex = (this.searchIndexes.length-1);
+				this.messageHighlight(this.searchIndexes[this.searchIndex], 'highlight');
 				this.messagesElement.mojo.revealItem(this.searchIndexes[this.searchIndex], false);
 				this.updateCommandMenu();
 				break;
@@ -459,6 +466,7 @@ GetLogAssistant.prototype.handleCommand = function(event)
 				this.searchIndexes = [];
 				this.searchIndex = 0;
 				this.searchElement.mojo.setValue('');
+				this.messageHighlight(-1, 'highlight');
 				this.searchDelay({value: ''});
 				break;
 			
