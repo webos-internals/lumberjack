@@ -30,7 +30,6 @@ PreferencesAssistant.prototype.setup = function()
 		this.controller.get('secret-stuff').innerHTML = $L('Secret Stuff');
 		this.controller.get('secret-options').innerHTML = $L('This version has no secret options.');
 
-
 	try
 	{
 		// setup menu
@@ -63,14 +62,29 @@ PreferencesAssistant.prototype.setup = function()
 		(
 			'setLogLevel',
 			{
-	  			trueLabel:  $L("Yes"),
-	 			falseLabel: $L("No"),
-	  			fieldName:  'setLogLevel'
+				label: $L('Log Level'),
+				choices:
+				[
+					/*	Levels:
+						  none        # -1
+						  emerg       # 0
+						  alert       # 1
+						  crit        # 2
+						  err         # 3
+						  warning     # 4
+						  notice      # 5
+						  info        # 6
+						  debug       # 7	*/
+					{label:$L('Don\'t Change'),	value:''},
+					{label:$L('Alert'),			value:'alert'},
+					{label:$L('Error'),			value:'err'},
+					{label:$L('Warning'),		value:'warning'},
+					{label:$L('Info'),			value:'info'},
+					{label:$L('Debug'),			value:'debug'}
+				],
+				modelProperty: 'setLogLevel'
 			},
-			{
-				value : this.prefs.setLogLevel,
-	 			disabled: false
-			}
+			this.prefs
 		);
 		
 		this.controller.listen('theme', Mojo.Event.propertyChange, this.themeChanged.bindAsEventListener(this));
@@ -168,10 +182,11 @@ PreferencesAssistant.prototype.themeChanged = function(event)
 }
 PreferencesAssistant.prototype.logLevelChanged = function(event)
 {
-	this.toggleChanged(event);
+	this.cookie.put(this.prefs);
+	
 	if (event.value)
 	{
-		LumberjackService.setLogging(function(p){}, 'LunaSysMgrJS', 'debug');
+		LumberjackService.setLogging(function(p){}, 'LunaSysMgrJS', event.value);
 	}
 	else
 	{

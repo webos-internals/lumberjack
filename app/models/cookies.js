@@ -15,7 +15,7 @@ preferenceCookie.prototype.get = function(reload)
 			{
 				// Global Group
 				theme: 'palm-default',
-				setLogLevel: true,
+				setLogLevel: 'info',
 				
 				// Main Group
 				lastLog: 'allapps',
@@ -35,6 +35,10 @@ preferenceCookie.prototype.get = function(reload)
 				for (i in cookieData) 
 				{
 					this.prefs[i] = cookieData[i];
+					if (i == 'setLogLevel' && cookieData[i] === true)
+					{
+						this.prefs[i] = 'debug';
+					}
 				}
 			}
 			else 

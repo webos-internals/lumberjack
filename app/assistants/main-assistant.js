@@ -37,7 +37,7 @@ MainAssistant.prototype.setup = function()
     this.controller.document.body.className = prefs.get().theme;
 	
 	// set loglevel if they want it
-	if (prefs.get().setLogLevel) LumberjackService.setLogging(function(p){}, 'LunaSysMgrJS', 'debug');
+	if (prefs.get().setLogLevel) LumberjackService.setLogging(function(p){}, 'LunaSysMgrJS', prefs.get().setLogLevel);
 	
     this.controller.get('main-title').innerHTML = $L('Lumberjack');
     this.controller.get('version').innerHTML = $L('v0.0.0');

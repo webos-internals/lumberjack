@@ -372,6 +372,8 @@ body.palm-dark .log .log-messages .showapp .app
  */
 .form .palm-row-wrapper .note
 {
+	margin-top: 0px;
+	
 	clear: both;
 	padding-left: 10px;
 	font-style: italic;

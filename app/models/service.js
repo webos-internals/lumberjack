@@ -74,6 +74,7 @@ LumberjackService.listApps = function(callback)
 
 LumberjackService.setLogging = function(callback, context, level)
 {
+	//alert('setLogging: ' + context + ' - ' + level);
     var request = new Mojo.Service.Request(LumberjackService.identifier,
 	{
 	    method: 'setLogging',
