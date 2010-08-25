@@ -8,7 +8,8 @@ function StartupAssistant()
     // on new version start
     this.newMessages =
 	[
-		{ version: '0.1.2', log: [ 'Type-to-Search in get-log scene'
+		{ version: '0.1.2', log: [ 'Date/Time in log viewer'
+								 , 'Type-to-Search in get-log scene'
 								 , 'More log level preferences' ] },
 		{ version: '0.1.1', log: [ 'Service Stability Updates' ] },
 		{ version: '0.1.0', log: [ 'Initial Release!' ] }

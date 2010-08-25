@@ -300,7 +300,7 @@ body.palm-dark .log .log-messages .palm-row.selected.lostFocus
 .log .log-messages .date
 {
 	/* im still not happy with this... */
-	display: none;
+	/*display: none;*/
 	
 	
 	position: absolute;
