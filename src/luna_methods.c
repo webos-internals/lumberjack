@@ -36,9 +36,10 @@ static char file_esc_buffer[MAXBUFLEN];
 typedef struct {
   LSMessage *message;
   FILE *fp;
-} TAIL_DATA;
+} THREAD_DATA;
 
 pthread_t tailMessagesThread = 0;
+pthread_t dbusCaptureThread = 0;
 
 //
 // Escape a string so that it can be used directly in a JSON response.
@@ -404,9 +405,9 @@ bool setLogging_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
 }
 
 void tail_thread_cleanup(void *arg) {
-  TAIL_DATA *data = (TAIL_DATA *)arg;
+  THREAD_DATA *data = (THREAD_DATA *)arg;
 
-  syslog(LOG_DEBUG, "Thread cleanup, closing pipe %p, unref message %p\n", 
+  syslog(LOG_DEBUG, "Tail thread cleanup, closing pipe %p, unref message %p\n", 
       data->fp, data->message);
 
   if (data->fp) pclose(data->fp);
@@ -421,7 +422,7 @@ void *tail_messages(void *ctx) {
   char buffer[MAXBUFLEN];
   char esc_buffer[MAXBUFLEN];
   char command[MAXLINLEN] = "/usr/bin/tail -f /var/log/messages 2>&1";
-  TAIL_DATA data;
+  THREAD_DATA data;
   char line[MAXLINLEN];
   pthread_key_t key;
 
@@ -435,7 +436,7 @@ void *tail_messages(void *ctx) {
   pthread_setspecific(key, &data);
 
   data.fp = popen(command, "r");
-  syslog(LOG_DEBUG, "pipe fp %p\n", data.fp);
+  syslog(LOG_DEBUG, "tail pipe fp %p\n", data.fp);
 
   if (!data.fp) {
     if (!LSMessageReply(lshandle, data.message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
@@ -478,24 +479,24 @@ bool tailMessages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   LSErrorInit(&lserror);
 
   if (tailMessagesThread) {
-    syslog(LOG_NOTICE, "Thread already running\n");
+    syslog(LOG_NOTICE, "Tail thread already running\n");
     if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
     return true;
   }
 
-  syslog(LOG_DEBUG, "Create thread, ref message %p\n", message);
+  syslog(LOG_DEBUG, "Create tail thread, ref message %p\n", message);
 
   // Ref and save the message for use in tail thread
   LSMessageRef(message);
 
   if (pthread_create(&tailMessagesThread, NULL, tail_messages, (void*)message)) {
-    syslog(LOG_ERR, "Creating thread failed (0x%x)\n", tailMessagesThread);
-    // Report that the update operaton was not able to start
+    syslog(LOG_ERR, "Creating tail thread failed (0x%x)\n", tailMessagesThread);
+    // Report that the tail operation was not able to start
     if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"errorCode\": -1, \"errorText\": \"Unable to start tail thread\"}", &lserror)) goto error;
   }
   else {
-    syslog(LOG_DEBUG, "Created thread successfully (0x%x)\n", tailMessagesThread);
-    // Report that the update operaton has begun
+    syslog(LOG_DEBUG, "Created tail thread successfully (0x%x)\n", tailMessagesThread);
+    // Report that the tail operation has begun
     if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"stage\": \"start\"}", &lserror)) goto error;
   }
 
@@ -508,22 +509,157 @@ bool tailMessages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
 }
 
 //
-// Kill the currently running command
+// Kill the currently running tail
 //
-bool killCommand_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
+bool killTailMessages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   LSError lserror;
   LSErrorInit(&lserror);
 
   if (!tailMessagesThread) {
-    syslog(LOG_NOTICE, "Thread 0x%x not running\n", tailMessagesThread);
+    syslog(LOG_NOTICE, "Tail thread 0x%x not running\n", tailMessagesThread);
     if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
     return true;
   }
 
-  syslog(LOG_DEBUG, "Killing thread 0x%x\n", tailMessagesThread);
+  syslog(LOG_DEBUG, "Killing tail thread 0x%x\n", tailMessagesThread);
   
   pthread_cancel(tailMessagesThread);
   tailMessagesThread = 0;
+
+  if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"stage\": \"completed\"}", &lserror)) goto error;
+
+  return true;
+ error:
+  LSErrorPrint(&lserror, stderr);
+  LSErrorFree(&lserror);
+ end:
+  return false;
+}
+
+void dbus_thread_cleanup(void *arg) {
+  THREAD_DATA *data = (THREAD_DATA *)arg;
+
+  syslog(LOG_DEBUG, "DBus thread cleanup, closing pipe %p, unref message %p\n", 
+      data->fp, data->message);
+
+  if (data->fp) pclose(data->fp);
+  if (data->message) LSMessageUnref(data->message);
+}
+
+
+void *dbus_capture(void *ctx) {
+  LSError lserror;
+  LSErrorInit(&lserror);
+  LSHandle* lshandle = pub_serviceHandle;
+  char buffer[MAXBUFLEN];
+  char esc_buffer[MAXBUFLEN];
+  char command[MAXLINLEN] = "/usr/bin/dbus-util --capture 2>&1";
+  THREAD_DATA data;
+  char line[MAXLINLEN];
+  pthread_key_t key;
+
+  if (ctx) 
+    data.message = (LSMessage *)ctx;
+  else
+    return NULL;
+
+  // Create thread key/value
+  pthread_key_create(&key, dbus_thread_cleanup);
+  pthread_setspecific(key, &data);
+
+  data.fp = popen(command, "r");
+  syslog(LOG_DEBUG, "dbus pipe fp %p\n", data.fp);
+
+  if (!data.fp) {
+    if (!LSMessageReply(lshandle, data.message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
+    return NULL;
+  }
+
+  // Loop through the output lines
+  while (fgets(line, sizeof line, data.fp)) {
+    // Chomp the newline
+    char *nl = strchr(line,'\n'); if (nl) *nl = 0;
+
+    // Have status updates been requested?
+    if (lshandle && data.message) {
+
+      if (!strstr(line, "ouroboros")) {
+
+	// Send it as a status message.
+	strcpy(buffer, "{\"returnValue\": true, \"ouroboros\": true, \"stage\": \"status\", \"status\": \"");
+	strcat(buffer, json_escape_str(line, esc_buffer));
+	strcat(buffer, "\"}");
+
+	// %%% Should we break out of the loop here, or just ignore the error? %%%
+	if (!LSMessageReply(lshandle, data.message, buffer, &lserror)) goto error;
+
+      }
+    }
+  }
+
+  goto end;
+
+ error:
+  LSErrorPrint(&lserror, stderr);
+  LSErrorFree(&lserror);
+ end:
+  return NULL;
+}
+
+//
+// Run dbus-util --capture and provide the output back to Mojo
+//
+bool dbusCapture_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
+  LSError lserror;
+  LSErrorInit(&lserror);
+
+  if (dbusCaptureThread) {
+    syslog(LOG_NOTICE, "DBus thread already running\n");
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
+    return true;
+  }
+
+  syslog(LOG_DEBUG, "Create dbus thread, ref message %p\n", message);
+
+  // Ref and save the message for use in dbus thread
+  LSMessageRef(message);
+
+  if (pthread_create(&dbusCaptureThread, NULL, dbus_capture, (void*)message)) {
+    syslog(LOG_ERR, "Creating dbus thread failed (0x%x)\n", dbusCaptureThread);
+    // Report that the dbus operation was not able to start
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"errorCode\": -1, \"errorText\": \"Unable to start dbus thread\"}", &lserror)) goto error;
+  }
+  else {
+    syslog(LOG_DEBUG, "Created dbus thread successfully (0x%x)\n", dbusCaptureThread);
+    // Report that the dbus operation has begun
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"stage\": \"start\"}", &lserror)) goto error;
+  }
+
+  return true;
+ error:
+  LSErrorPrint(&lserror, stderr);
+  LSErrorFree(&lserror);
+ end:
+  return false;
+}
+
+//
+// Kill the currently running commands
+//
+bool killDBusCapture_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
+  LSError lserror;
+  LSErrorInit(&lserror);
+
+  if (!dbusCaptureThread) {
+    syslog(LOG_NOTICE, "DBus thread 0x%x not running\n", dbusCaptureThread);
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
+    return true;
+  }
+
+  syslog(LOG_DEBUG, "Killing dbus thread 0x%x\n", dbusCaptureThread);
+  
+  pthread_cancel(dbusCaptureThread);
+  dbusCaptureThread = 0;
 
   if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"stage\": \"completed\"}", &lserror)) goto error;
 
@@ -703,9 +839,12 @@ LSMethod luna_methods[] = {
   { "setLogging",	setLogging_method },
 
   { "getMessages",	getMessages_method },
-  { "tailMessages",	tailMessages_method },
 
-  { "killCommand",	killCommand_method },
+  { "tailMessages",	tailMessages_method },
+  { "killTailMessages",	killTailMessages_method },
+
+  { "dbusCapture",	dbusCapture_method },
+  { "killDBusCapture",	killDBusCapture_method },
 
   { "listApps",		listApps_method },
   { "getStats",		getStats_method },
