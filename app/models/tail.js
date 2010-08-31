@@ -327,7 +327,7 @@ tailHandler.prototype.stop = function()
 		this.request.cancel();
 	}
 	
-	this.request = LumberjackService.killCommand(this.stopped.bindAsEventListener(this));
+	this.request = LumberjackService.killTailMessages(this.stopped.bindAsEventListener(this));
 }
 tailHandler.prototype.stopped = function(payload)
 {

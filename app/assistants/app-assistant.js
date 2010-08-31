@@ -8,6 +8,7 @@ var dashStageName = 'lumberjack-dash';
 
 var appsList = $H();
 var tail = new tailHandler();
+var dbus = new dbusHandler();
 
 function AppAssistant() {}
 
@@ -34,6 +35,10 @@ AppAssistant.prototype.handleLaunch = function(params)
 			}
 		}
 		else if (params.source == 'tail-log-message' && params.log)
+		{
+			// NOTHING!
+		}
+		else if (params.source == 'dbus-log-message' && params.log)
 		{
 			// NOTHING!
 		}

@@ -50,6 +50,7 @@ MainAssistant.prototype.setup = function()
     this.versionElement = 	this.controller.get('version');
     this.subTitleElement =	this.controller.get('subTitle');
 	this.filterElement =	this.controller.get('filter');
+	this.dbusButton =		this.controller.get('dbusButton');
 	this.tailButton =		this.controller.get('tailButton');
 	this.getButton =		this.controller.get('getButton');
 	
@@ -59,6 +60,7 @@ MainAssistant.prototype.setup = function()
     // handlers
     this.listAppsHandler =		this.listApps.bindAsEventListener(this);
 	this.appChangedHandler = 	this.appChanged.bindAsEventListener(this);
+    this.dbusTapHandler =		this.dbusTap.bindAsEventListener(this);
     this.tailTapHandler =		this.tailTap.bindAsEventListener(this);
     this.getTapHandler =		this.getTap.bindAsEventListener(this);
 	
@@ -83,6 +85,14 @@ MainAssistant.prototype.setup = function()
 	
 	this.controller.setupWidget
 	(
+		'dbusButton',
+		{},
+		{
+			buttonLabel: $L("Follow DBus Output")
+		}
+	);
+	this.controller.setupWidget
+	(
 		'tailButton',
 		{},
 		{
@@ -98,6 +108,7 @@ MainAssistant.prototype.setup = function()
 		}
 	);
 	
+	this.controller.listen(this.dbusButton, Mojo.Event.tap, this.dbusTapHandler.bindAsEventListener(this));
 	this.controller.listen(this.tailButton, Mojo.Event.tap, this.tailTapHandler.bindAsEventListener(this));
 	this.controller.listen(this.getButton, Mojo.Event.tap, this.getTapHandler.bindAsEventListener(this));
 	
@@ -178,6 +189,10 @@ MainAssistant.prototype.appChanged = function(event)
 	var tmp = prefs.get(true);
 }
 
+MainAssistant.prototype.dbusTap = function(event)
+{
+	dbus.newScene(this, this.filterModel.value, prefs.get().popLog);
+};
 MainAssistant.prototype.tailTap = function(event)
 {
 	tail.newScene(this, this.filterModel.value, prefs.get().popLog);
@@ -269,5 +284,6 @@ MainAssistant.prototype.deactivate = function(event)
 
 MainAssistant.prototype.cleanup = function(event)
 {
+	this.controller.stopListening(this.dbusButton, Mojo.Event.tap, this.dbusRowTapHandler);
 	this.controller.stopListening(this.tailButton, Mojo.Event.tap, this.tailRowTapHandler);
 };

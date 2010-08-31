@@ -50,11 +50,37 @@ LumberjackService.tailMessages = function(callback)
     return request;
 };
 
-LumberjackService.killCommand = function(callback)
+LumberjackService.killTailMessages = function(callback)
 {
     var request = new Mojo.Service.Request(LumberjackService.identifier,
 	{
-	    method: 'killCommand',
+	    method: 'killTailMessages',
+	    onSuccess: callback,
+	    onFailure: callback
+	});
+    return request;
+};
+
+LumberjackService.dbusCapture = function(callback)
+{
+    var request = new Mojo.Service.Request(LumberjackService.identifier,
+	{
+	    method: 'dbusCapture',
+		parameters:
+		{
+			"subscribe":true
+		},
+	    onSuccess: callback,
+	    onFailure: callback
+	});
+    return request;
+};
+
+LumberjackService.killDBusCapture = function(callback)
+{
+    var request = new Mojo.Service.Request(LumberjackService.identifier,
+	{
+	    method: 'killDBusCapture',
 	    onSuccess: callback,
 	    onFailure: callback
 	});

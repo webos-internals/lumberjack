@@ -571,7 +571,7 @@ void *dbus_capture(void *ctx) {
   syslog(LOG_DEBUG, "dbus pipe fp %p\n", data.fp);
 
   if (!data.fp) {
-    if (!LSMessageReply(lshandle, data.message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
+    if (!LSMessageReply(lshandle, data.message, "{\"returnValue\": false, \"ouroboros\": true, \"stage\": \"failed\"}", &lserror)) goto error;
     return NULL;
   }
 
@@ -615,7 +615,7 @@ bool dbusCapture_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
 
   if (dbusCaptureThread) {
     syslog(LOG_NOTICE, "DBus thread already running\n");
-    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"ouroboros\": true, \"stage\": \"failed\"}", &lserror)) goto error;
     return true;
   }
 
@@ -627,12 +627,12 @@ bool dbusCapture_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   if (pthread_create(&dbusCaptureThread, NULL, dbus_capture, (void*)message)) {
     syslog(LOG_ERR, "Creating dbus thread failed (0x%x)\n", dbusCaptureThread);
     // Report that the dbus operation was not able to start
-    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"errorCode\": -1, \"errorText\": \"Unable to start dbus thread\"}", &lserror)) goto error;
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"ouroboros\": true, \"errorCode\": -1, \"errorText\": \"Unable to start dbus thread\"}", &lserror)) goto error;
   }
   else {
     syslog(LOG_DEBUG, "Created dbus thread successfully (0x%x)\n", dbusCaptureThread);
     // Report that the dbus operation has begun
-    if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"stage\": \"start\"}", &lserror)) goto error;
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"ouroboros\": true, \"stage\": \"start\"}", &lserror)) goto error;
   }
 
   return true;
@@ -652,7 +652,7 @@ bool killDBusCapture_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
 
   if (!dbusCaptureThread) {
     syslog(LOG_NOTICE, "DBus thread 0x%x not running\n", dbusCaptureThread);
-    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"ouroboros\": true, \"stage\": \"failed\"}", &lserror)) goto error;
     return true;
   }
 
@@ -661,7 +661,7 @@ bool killDBusCapture_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   pthread_cancel(dbusCaptureThread);
   dbusCaptureThread = 0;
 
-  if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"stage\": \"completed\"}", &lserror)) goto error;
+  if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"ouroboros\": true, \"stage\": \"completed\"}", &lserror)) goto error;
 
   return true;
  error:
