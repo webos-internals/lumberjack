@@ -2,7 +2,8 @@ function DbusLogAssistant(filter, popped)
 {
 	this.autoScroll =	true;
 	
-	this.filter =		(filter ? filter : 'allapps');
+	this.filter =		(filter.filter ? filter.filter : 'allapps');
+	this.custom =		(filter.custom ? filter.custom : '');
 	this.popped =		popped;
 	
 	this.unregister =	true;

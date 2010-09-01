@@ -1,6 +1,7 @@
 function GetLogAssistant(filter)
 {
-	this.filter =			(filter ? filter : 'allapps');
+	this.filter =			(filter.filter ? filter.filter : 'allapps');
+	this.custom =			(filter.custom ? filter.custom : '');
 	
 	this.request =			false;
 	this.contents =			'';

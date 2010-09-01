@@ -63,6 +63,7 @@ MainAssistant.prototype.setup = function()
     // handlers
     this.listAppsHandler =		this.listApps.bindAsEventListener(this);
 	this.appChangedHandler = 	this.appChanged.bindAsEventListener(this);
+	this.customTextHandler = 	this.customTextChanged.bindAsEventListener(this);
     this.dbusTapHandler =		this.dbusTap.bindAsEventListener(this);
     this.tailTapHandler =		this.tailTap.bindAsEventListener(this);
     this.getTapHandler =		this.getTap.bindAsEventListener(this);
@@ -85,22 +86,23 @@ MainAssistant.prototype.setup = function()
 		}
 	);
 	
-	this.controller.listen('filter', Mojo.Event.propertyChange, this.appChangedHandler);
+	this.controller.listen(this.filterElement, Mojo.Event.propertyChange, this.appChangedHandler);
 	
 	this.controller.setupWidget
 	(
 		'customText',
 		{
-			autoFocus: false,
-			focus: false,
 			multiline: false,
 			enterSubmits: false,
+			changeOnKeyPress: true,
 			textCase: Mojo.Widget.steModeLowerCase
 		},
 		{
 			value: prefs.get().lastLogCustom
 		}
 	);
+	
+	this.controller.listen(this.customTextElement, Mojo.Event.propertyChange, this.customTextHandler);
 	
 	if (prefs.get().lastLog == 'custom')
 	{
@@ -135,9 +137,9 @@ MainAssistant.prototype.setup = function()
 		}
 	);
 	
-	this.controller.listen(this.getButton,  Mojo.Event.tap, this.getTapHandler.bindAsEventListener(this));
-	this.controller.listen(this.tailButton, Mojo.Event.tap, this.tailTapHandler.bindAsEventListener(this));
-	this.controller.listen(this.dbusButton, Mojo.Event.tap, this.dbusTapHandler.bindAsEventListener(this));
+	this.controller.listen(this.getButton,  Mojo.Event.tap, this.getTapHandler);
+	this.controller.listen(this.tailButton, Mojo.Event.tap, this.tailTapHandler);
+	this.controller.listen(this.dbusButton, Mojo.Event.tap, this.dbusTapHandler);
 	
 	this.request = LumberjackService.listApps(this.listAppsHandler);
 };
@@ -241,18 +243,26 @@ MainAssistant.prototype.appChanged = function(event)
 		this.customTextElement.mojo.blur();
 	}
 }
-
-MainAssistant.prototype.dbusTap = function(event)
+MainAssistant.prototype.customTextChanged = function(event)
 {
-	dbus.newScene(this, this.filterModel.value, prefs.get().popLog);
+	var cookie = new preferenceCookie();
+	var tprefs = cookie.get();
+	tprefs.lastLogCustom = event.value;
+	cookie.put(tprefs);
+	var tmp = prefs.get(true);
+}
+
+MainAssistant.prototype.getTap = function(event)
+{
+	this.controller.stageController.pushScene('get-log', {filter: this.filterModel.value, custom: this.customTextElement.mojo.getValue()});
 };
 MainAssistant.prototype.tailTap = function(event)
 {
-	tail.newScene(this, this.filterModel.value, prefs.get().popLog);
+	tail.newScene(this, {filter: this.filterModel.value, custom: this.customTextElement.mojo.getValue()}, prefs.get().popLog);
 };
-MainAssistant.prototype.getTap = function(event)
+MainAssistant.prototype.dbusTap = function(event)
 {
-	this.controller.stageController.pushScene('get-log', this.filterModel.value);
+	dbus.newScene(this, {filter: this.filterModel.value, custom: this.customTextElement.mojo.getValue()}, prefs.get().popLog);
 };
    
 MainAssistant.prototype.getRandomSubTitle = function()
@@ -337,4 +347,7 @@ MainAssistant.prototype.deactivate = function(event)
 
 MainAssistant.prototype.cleanup = function(event)
 {
+	this.controller.stopListening(this.getButton,  Mojo.Event.tap, this.getTapHandler);
+	this.controller.stopListening(this.tailButton, Mojo.Event.tap, this.tailTapHandler);
+	this.controller.stopListening(this.dbusButton, Mojo.Event.tap, this.dbusTapHandler);
 };

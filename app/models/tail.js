@@ -27,7 +27,7 @@ tailHandler.prototype.newScene = function(assistant, log, popit)
 	{
 		if (this.logging) Mojo.Log.info('(START) newScene: ', log);
 		
-		var stageName = 'tail-'+log;
+		var stageName = 'tail-'+log.filter;
 		var stageController = Mojo.Controller.appController.getStageController(stageName);
 		
         if (stageController && stageController.activeScene().sceneName == 'tail-log')
