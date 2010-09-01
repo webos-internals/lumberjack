@@ -437,8 +437,10 @@ body.palm-dark .log .log-messages .showapp .app
 	background-position-x: center;
 	background-position-y: center;
 }
-.log .log-messages .palm-row-wrapper.call .apps .arrow { background-image: url(../images/log-right-arrow.png); }
-.log .log-messages .palm-row-wrapper.return .apps .arrow { background-image: url(../images/log-left-arrow.png);	 }
+.log .log-messages .palm-row-wrapper.call .apps .arrow { background-image: url(../images/palm-default/log-right-arrow.png);		}
+.log .log-messages .palm-row-wrapper.return .apps .arrow { background-image: url(../images/palm-default/log-left-arrow.png);	}
+body.palm-dark .log .log-messages .palm-row-wrapper.call .apps .arrow { background-image: url(../images/palm-dark/log-right-arrow.png);		}
+body.palm-dark .log .log-messages .palm-row-wrapper.return .apps .arrow { background-image: url(../images/palm-dark/log-left-arrow.png);	}
 
 
 
