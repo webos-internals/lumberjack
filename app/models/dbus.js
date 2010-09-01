@@ -174,10 +174,22 @@ dbusHandler.prototype.handleMessages = function(payload)
 				var scene = this.scenes.get(keys[k]);
 				if (scene.status)
 				{
-					if (keys[k] == 'every')
+					if (keys[k] == 'every' || keys[k] == 'custom')
 					{
 						if (!everyMsg) everyMsg = dbusHandler.parseEvery(payload.status);
 						if (scene.assistant)
+							scene.assistant.addMessage(everyMsg);
+					}
+					else
+					{
+						if (!everyMsg) everyMsg = dbusHandler.parseEvery(payload.status);
+						var push = false;
+						if (everyMsg)
+						{
+							if (everyMsg.leftid.include(keys[k]))  push = true;
+							if (everyMsg.rightid.include(keys[k])) push = true;
+						}
+						if (scene.assistant && push)
 							scene.assistant.addMessage(everyMsg);
 					}
 				}
