@@ -47,12 +47,15 @@ MainAssistant.prototype.setup = function()
     this.controller.setupWidget(Mojo.Menu.appMenu, { omitDefaultItems: true }, this.menuModel);
 	
     // get elements
-    this.versionElement = 	this.controller.get('version');
-    this.subTitleElement =	this.controller.get('subTitle');
-	this.filterElement =	this.controller.get('filter');
-	this.dbusButton =		this.controller.get('dbusButton');
-	this.tailButton =		this.controller.get('tailButton');
-	this.getButton =		this.controller.get('getButton');
+    this.versionElement = 		this.controller.get('version');
+    this.subTitleElement =		this.controller.get('subTitle');
+	this.filterContainer =		this.controller.get('filterContainer');
+	this.filterElement =		this.controller.get('filter');
+	this.customContainer =		this.controller.get('customContainer');
+	this.customTextElement =	this.controller.get('customText');
+	this.dbusButton =			this.controller.get('dbusButton');
+	this.tailButton =			this.controller.get('tailButton');
+	this.getButton =			this.controller.get('getButton');
 	
     this.versionElement.innerHTML = "v" + Mojo.Controller.appInfo.version;
     this.subTitleElement.innerHTML = this.getRandomSubTitle();
@@ -75,7 +78,8 @@ MainAssistant.prototype.setup = function()
 			[
 				{label:$L('Everything'),       value:'every'},
 				{label:$L('Alerts'),  		   value:'alert'},
-				{label:$L('Mojo.Logs')},
+				{label:$L('Custom...'),  	   value:'custom'},
+				{label:$L('Applications')},
 				{label:$L('All Applications'), value:'allapps'}
 			]
 		}
@@ -85,10 +89,31 @@ MainAssistant.prototype.setup = function()
 	
 	this.controller.setupWidget
 	(
-		'dbusButton',
+		'customText',
+		{
+			autoFocus: false,
+			focus: false,
+			multiline: false,
+			enterSubmits: false,
+			textCase: Mojo.Widget.steModeLowerCase
+		},
+		{
+			value: prefs.get().lastLogCustom
+		}
+	);
+	
+	if (prefs.get().lastLog == 'custom')
+	{
+		this.filterContainer.className = 'palm-row first';
+		this.customContainer.style.display = '';
+	}
+	
+	this.controller.setupWidget
+	(
+		'getButton',
 		{},
 		{
-			buttonLabel: $L("Follow DBus Output")
+			buttonLabel: $L("Retrieve Log")
 		}
 	);
 	this.controller.setupWidget
@@ -96,21 +121,23 @@ MainAssistant.prototype.setup = function()
 		'tailButton',
 		{},
 		{
-			buttonLabel: $L("Follow Log Output")
+			buttonLabel: $L("Follow Log")
 		}
 	);
 	this.controller.setupWidget
 	(
-		'getButton',
+		'dbusButton',
 		{},
+		this.dbusButtonModel =
 		{
-			buttonLabel: $L("Retrieve Logs")
+			buttonLabel: $L("DBus Capture"),
+			disabled: (prefs.get().lastLog == 'alert' ? true : false)
 		}
 	);
 	
-	this.controller.listen(this.dbusButton, Mojo.Event.tap, this.dbusTapHandler.bindAsEventListener(this));
+	this.controller.listen(this.getButton,  Mojo.Event.tap, this.getTapHandler.bindAsEventListener(this));
 	this.controller.listen(this.tailButton, Mojo.Event.tap, this.tailTapHandler.bindAsEventListener(this));
-	this.controller.listen(this.getButton, Mojo.Event.tap, this.getTapHandler.bindAsEventListener(this));
+	this.controller.listen(this.dbusButton, Mojo.Event.tap, this.dbusTapHandler.bindAsEventListener(this));
 	
 	this.request = LumberjackService.listApps(this.listAppsHandler);
 };
@@ -140,10 +167,12 @@ MainAssistant.prototype.listApps = function(payload)
 		
 		this.filterModel.choices.push({label:$L('Everything'),		 value:'every'});
 		this.filterModel.choices.push({label:$L('Alerts'), 			 value:'alert'});
+		this.filterModel.choices.push({label:$L('Custom...'), 		 value:'custom'});
 		appsList.set('every', 1);
 		appsList.set('alert', 1);
+		appsList.set('custom', 1);
 		
-		this.filterModel.choices.push({label:$L('Mojo.Logs')});
+		this.filterModel.choices.push({label:$L('Applications')});
 		this.filterModel.choices.push({label:$L('All Applications'), value:'allapps'});
 		appsList.set('allapps', 1);
 		
@@ -187,6 +216,30 @@ MainAssistant.prototype.appChanged = function(event)
 	tprefs.lastLog = event.value;
 	cookie.put(tprefs);
 	var tmp = prefs.get(true);
+	
+	if (event.value == 'alert')
+	{
+		this.dbusButtonModel.disabled = true;
+		this.controller.modelChanged(this.dbusButtonModel);
+	}
+	else
+	{
+		this.dbusButtonModel.disabled = false;
+		this.controller.modelChanged(this.dbusButtonModel);
+	}
+	
+	if (event.value == 'custom')
+	{
+		this.filterContainer.className = 'palm-row first';
+		this.customContainer.style.display = '';
+		this.customTextElement.mojo.focus();
+	}
+	else
+	{
+		this.filterContainer.className = 'palm-row single';
+		this.customContainer.style.display = 'none';
+		this.customTextElement.mojo.blur();
+	}
 }
 
 MainAssistant.prototype.dbusTap = function(event)
@@ -201,7 +254,7 @@ MainAssistant.prototype.getTap = function(event)
 {
 	this.controller.stageController.pushScene('get-log', this.filterModel.value);
 };
-    
+   
 MainAssistant.prototype.getRandomSubTitle = function()
 {
 	// loop to get total weight value
@@ -284,6 +337,4 @@ MainAssistant.prototype.deactivate = function(event)
 
 MainAssistant.prototype.cleanup = function(event)
 {
-	this.controller.stopListening(this.dbusButton, Mojo.Event.tap, this.dbusRowTapHandler);
-	this.controller.stopListening(this.tailButton, Mojo.Event.tap, this.tailRowTapHandler);
 };
