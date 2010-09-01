@@ -97,7 +97,7 @@ DbusLogAssistant.prototype.setup = function()
 		(
 			'messages',
 			{
-				itemTemplate: "log/message-row",
+				itemTemplate: "log/dbus-row",
 				swipeToDelete: false,
 				reorderable: false,
 				renderLimit: 50,

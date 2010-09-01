@@ -202,6 +202,54 @@ body.palm-dark .scene-fade-bottom
 
 
 
+/*
+ * Dbus Scene Styles
+ */
+.dbus #dbus-log-title
+{
+	float: left;
+	display: block;
+	width: 150px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+.dbus #followToggle
+{
+	position: absolute;
+	right: -24px;
+	top: -1px;
+}
+.dbus #popButton
+{
+	position: absolute;
+	right: -16px;
+	bottom: 7px;
+	height: 35px;
+	width: 38px;
+	border-width: 0px 16px 0px 16px;
+	-webkit-box-sizing: border-box;
+	-webkit-border-image: url(../images/header-button-press.png);
+	-webkit-border-image: url(../images/header-button.png) 0 16 0 16 stretch stretch;
+}
+.dbus #popButton.selected
+{
+	-webkit-border-image: url(../images/header-button-press.png) 0 16 0 16 stretch stretch;
+}
+.dbus #popButton .icon
+{
+	margin: 0px;
+	padding: 0px;
+	margin-top: 5px;
+	margin-left: -8px;
+	width: 21px;
+	height: 23px;
+	background: url(../images/pop-icon.png) center center no-repeat;
+}
+
+
+
+
 
 
 /*
@@ -287,7 +335,8 @@ body.palm-dark .log .log-messages .palm-row.selected.lostFocus
 {
 	padding-bottom: 8px;
 }
-.log .log-messages .type
+.log .log-messages .type,
+.log .log-messages .apps
 {
 	float: left;
 	font-weight: bold;
@@ -370,7 +419,17 @@ body.palm-dark .log .log-messages .showapp .app
 .log .log-messages .palm-row-wrapper.err,
 .log .log-messages .palm-row-wrapper.emerg,
 .log .log-messages .palm-row-wrapper.crit	{ background-image: url(../images/log-error-bg.png);	}
-
+.log .log-messages .palm-row-wrapper .apps .arrow
+{
+	display: inline-block;
+	width: 24px;
+	height: 10px;
+	background-repeat: no-repeat;
+	background-position-x: center;
+	background-position-y: center;
+}
+.log .log-messages .palm-row-wrapper.call .apps .arrow { background-image: url(../images/log-right-arrow.png); }
+.log .log-messages .palm-row-wrapper.return .apps .arrow { background-image: url(../images/log-left-arrow.png);	 }
 
 
 

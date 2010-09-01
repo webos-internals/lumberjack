@@ -209,30 +209,30 @@ dbusHandler.parseEvery = function(msg)
 
 	var match = dbusHandler.LogRegExpEvery.exec(msg);
 	if (match) {
+		
+		//alert('============= MATCH');
+		//for (var m = 0; m < match.length; m++) alert(m+': '+match[m]);
+		
 	    if (match[3] == 'call') {
 		l =
 		{
-			app: match[6],
-			id: match[6],
-			date: match[1] + '/' + match[4],
-			type: match[7],
-			rowClass: 'notice',
-			message: formatForHtml(match[8]),
-			raw: msg,
-			copy: "%%%FIXME%%%"
+			leftid:   match[7],
+			rightid:  match[6],
+			rowClass: match[3],
+			message:  formatForHtml(match[8]),
+			raw:      msg,
+			copy:     "%%%FIXME%%%"
 		};
 	    }
 	    else if (match[3] == 'return') {
 		l =
 		{
-			app: match[6],
-			id: match[6],
-			date: match[1] + '/' + match[4],
-			type: match[7],
-			rowClass: 'warning',
-			message: formatForHtml(match[8]),
-			raw: msg,
-			copy: "%%%FIXME%%%"
+			leftid:   match[6],
+			rightid:  match[7],
+			rowClass: match[3],
+			message:  formatForHtml(match[8]),
+			raw:      msg,
+			copy:     "%%%FIXME%%%"
 		};
 	    }
 	}
