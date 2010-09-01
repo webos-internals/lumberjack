@@ -345,6 +345,13 @@ body.palm-dark .log .log-messages .palm-row.selected.lostFocus
 	background-repeat: no-repeat;
 	background-position-x: 7px;
 	background-position-y: 4px;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+}
+.log .log-messages .apps
+{
+	padding-left: 7px;
 }
 .log .log-messages .date
 {
@@ -422,7 +429,7 @@ body.palm-dark .log .log-messages .showapp .app
 .log .log-messages .palm-row-wrapper .apps .arrow
 {
 	display: inline-block;
-	width: 24px;
+	width: 20px;
 	height: 10px;
 	background-repeat: no-repeat;
 	background-position-x: center;
