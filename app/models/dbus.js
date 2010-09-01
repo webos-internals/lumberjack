@@ -230,8 +230,8 @@ dbusHandler.parseEvery = function(msg)
 		l =
 		{
 			seq:      match[4],
-			leftid:   match[7],
-			rightid:  match[6],
+			leftid:   match[6],
+			rightid:  match[7],
 			rowClass: match[3],
 			message:  formatForHtml(match[8]),
 			raw:      msg,
@@ -242,8 +242,8 @@ dbusHandler.parseEvery = function(msg)
 		l =
 		{
 			seq:      match[4],
-			leftid:   match[6],
-			rightid:  match[7],
+			leftid:   match[7],
+			rightid:  match[6],
 			rowClass: match[3],
 			message:  formatForHtml(match[8]),
 			raw:      msg,
