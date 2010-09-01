@@ -216,6 +216,7 @@ dbusHandler.parseEvery = function(msg)
 	    if (match[3] == 'call') {
 		l =
 		{
+			seq:      match[4],
 			leftid:   match[7],
 			rightid:  match[6],
 			rowClass: match[3],
@@ -227,6 +228,7 @@ dbusHandler.parseEvery = function(msg)
 	    else if (match[3] == 'return') {
 		l =
 		{
+			seq:      match[4],
 			leftid:   match[6],
 			rightid:  match[7],
 			rowClass: match[3],
