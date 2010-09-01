@@ -128,7 +128,7 @@ TailLogAssistant.prototype.toggleChanged = function(event)
 TailLogAssistant.prototype.popButtonPressed = function(event)
 {
 	this.unregister = false;
-	tail.newScene(this, this.filter, true);
+	tail.newScene(this, {filter: this.filter, custom: this.custom}, true);
 	this.controller.stageController.popScene();
 }
 

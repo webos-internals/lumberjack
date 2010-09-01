@@ -127,7 +127,7 @@ DbusLogAssistant.prototype.toggleChanged = function(event)
 DbusLogAssistant.prototype.popButtonPressed = function(event)
 {
 	this.unregister = false;
-	dbus.newScene(this, this.filter, true);
+	dbus.newScene(this, {filter: this.filter, custom: this.custom}, true);
 	this.controller.stageController.popScene();
 }
 
