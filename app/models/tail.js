@@ -28,6 +28,7 @@ tailHandler.prototype.newScene = function(assistant, log, popit)
 		if (this.logging) Mojo.Log.info('(START) newScene: ', log);
 		
 		var stageName = 'tail-'+log.filter;
+		if (log.filter == 'custom') stageName += Math.random();
 		var stageController = Mojo.Controller.appController.getStageController(stageName);
 		
         if (stageController && stageController.activeScene().sceneName == 'tail-log')
@@ -180,7 +181,7 @@ tailHandler.prototype.handleMessages = function(payload)
 				var scene = this.scenes.get(keys[k]);
 				if (scene.status)
 				{
-					if (keys[k] == 'every')
+					if (keys[k] == 'every' || keys[k] == 'custom')
 					{
 						if (!everyMsg) everyMsg = tailHandler.parseEvery(payload.status);
 						if (scene.assistant)

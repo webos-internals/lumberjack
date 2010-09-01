@@ -53,21 +53,13 @@ TailLogAssistant.prototype.setup = function()
         Mojo.Event.listen(this.documentElement, Mojo.Event.stageActivate, this.visibleWindowHandler);
         Mojo.Event.listen(this.documentElement, Mojo.Event.stageDeactivate, this.invisibleWindowHandler);
 		
-		if (this.filter == 'allapps')
+		switch(this.filter)
 		{
-			this.titleElement.update('All Applications');
-		}
-		else if (this.filter == 'every')
-		{
-			this.titleElement.update('Everything');
-		}
-		else if (this.filter == 'alert')
-		{
-			this.titleElement.update('Alert()s');
-		}
-		else
-		{
-			this.titleElement.update((appsList.get(this.filter) ? appsList.get(this.filter) : this.filter));
+			case 'allapps':	this.titleElement.update('All Applications'); break;
+			case 'every':	this.titleElement.update('Everything'); break;
+			case 'alert':	this.titleElement.update('Alert()s'); break;
+			case 'custom':	this.titleElement.update('Custom'); break;
+			default:		this.titleElement.update((appsList.get(this.filter) ? appsList.get(this.filter) : this.filter)); break;
 		}
 		
 		if (this.popped)
@@ -238,29 +230,38 @@ TailLogAssistant.prototype.addMessage = function(theMsg)
 {
 	if (theMsg)
 	{
+		var push = true;
 		var msg = Object.clone(theMsg);
 		msg.select = '';
-		if (this.filter == 'allapps' || this.filter == 'every') msg.rowClass += ' showapp';
-		this.listModel.items.push(msg);
-		var start = this.messagesElement.mojo.getLength();
-		this.messagesElement.mojo.noticeUpdatedItems(start, [msg]);
-		this.messagesElement.mojo.setLength(start + 1);
-		this.revealBottom();
-		
-		if (!this.isVisible && this.lastFocusMessage && !this.lastFocusMessage.hasClassName('lostFocus'))
+		if (this.filter == 'allapps' || this.filter == 'every' || this.filter == 'custom') msg.rowClass += ' showapp';
+		if (this.filter == 'custom')
 		{
-			if (this.lastFocusMarker && this.lastFocusMarker.hasClassName('lostFocus'))
+			push = false;
+			if (msg.raw.include(this.custom)) push = true;
+		}
+		if (push)
+		{
+			this.listModel.items.push(msg);
+			var start = this.messagesElement.mojo.getLength();
+			this.messagesElement.mojo.noticeUpdatedItems(start, [msg]);
+			this.messagesElement.mojo.setLength(start + 1);
+			this.revealBottom();
+			
+			if (!this.isVisible && this.lastFocusMessage && !this.lastFocusMessage.hasClassName('lostFocus'))
 			{
-				this.lastFocusMarker.removeClassName('lostFocus');
-				this.lastFocusMarker = false;
+				if (this.lastFocusMarker && this.lastFocusMarker.hasClassName('lostFocus'))
+				{
+					this.lastFocusMarker.removeClassName('lostFocus');
+					this.lastFocusMarker = false;
+				}
+				this.lastFocusMessage.addClassName('lostFocus');
+	        }
+			
+			if (!this.isVisible && this.showBanners)
+			{
+				Mojo.Controller.appController.removeBanner('tail-log-message');
+				Mojo.Controller.getAppController().showBanner({messageText: theMsg.type+': '+theMsg.message, icon: 'icon.png'}, {source: 'tail-log-message', log: this.filter});
 			}
-			this.lastFocusMessage.addClassName('lostFocus');
-        }
-		
-		if (!this.isVisible && this.showBanners)
-		{
-			Mojo.Controller.appController.removeBanner('tail-log-message');
-			Mojo.Controller.getAppController().showBanner({messageText: theMsg.type+': '+theMsg.message, icon: 'icon.png'}, {source: 'tail-log-message', log: this.filter});
 		}
 	}
 }

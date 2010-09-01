@@ -21,6 +21,7 @@ dbusHandler.prototype.newScene = function(assistant, log, popit)
 		if (this.logging) Mojo.Log.info('(START) newScene: ', log);
 		
 		var stageName = 'dbus-'+log.filter;
+		if (log.filter == 'custom') stageName += Math.random();
 		var stageController = Mojo.Controller.appController.getStageController(stageName);
 		
         if (stageController && stageController.activeScene().sceneName == 'dbus-log')

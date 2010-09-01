@@ -56,21 +56,13 @@ GetLogAssistant.prototype.setup = function()
 		
 		this.controller.setupWidget('spinner', {spinnerSize: 'large'}, {spinning: false});
 		
-		if (this.filter == 'allapps')
+		switch(this.filter)
 		{
-			this.titleElement.update('All Applications');
-		}
-		else if (this.filter == 'every')
-		{
-			this.titleElement.update('Everything');
-		}
-		else if (this.filter == 'alert')
-		{
-			this.titleElement.update('Alert()s');
-		}
-		else
-		{
-			this.titleElement.update((appsList.get(this.filter) ? appsList.get(this.filter) : this.filter));
+			case 'allapps':	this.titleElement.update('All Applications'); break;
+			case 'every':	this.titleElement.update('Everything'); break;
+			case 'alert':	this.titleElement.update('Alert()s'); break;
+			case 'custom':	this.titleElement.update('Custom'); break;
+			default:		this.titleElement.update((appsList.get(this.filter) ? appsList.get(this.filter) : this.filter)); break;
 		}
 		
 		this.controller.listen(this.reloadButtonElement, Mojo.Event.tap, this.reloadButtonPressed);
@@ -343,7 +335,7 @@ GetLogAssistant.prototype.parseMessages = function(data)
 		{
 			for (var a = 0; a < ary.length; a++)
 			{
-				if (this.filter == 'every')
+				if (this.filter == 'every' || this.filter == 'custom')
 				{
 					var everyMsg = tailHandler.parseEvery(ary[a]);
 					this.addMessage(everyMsg);
@@ -368,9 +360,15 @@ GetLogAssistant.prototype.addMessage = function(msg)
 {
 	if (msg)
 	{
+		var push = true;
 		msg.select = '';
-		if (this.filter == 'allapps' || this.filter == 'every') msg.rowClass += ' showapp';
-		this.listModel.items.push(msg);
+		if (this.filter == 'allapps' || this.filter == 'every' || this.filter == 'custom') msg.rowClass += ' showapp';
+		if (this.filter == 'custom')
+		{
+			push = false;
+			if (msg.raw.include(this.custom)) push = true;
+		}
+		if (push) this.listModel.items.push(msg);
 	}
 }
 
