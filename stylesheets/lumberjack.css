@@ -420,12 +420,14 @@ body.palm-dark .log .log-messages .showapp .app
 .log .log-messages .crit .type				{ color: #f10000; background-image: url(../images/log-error-icon.png);	}
 .log .log-messages .palm-row-wrapper.info,
 .log .log-messages .palm-row-wrapper.debug,
-.log .log-messages .palm-row-wrapper.notice	{ background-image: url(../images/log-info-bg.png);		}
+.log .log-messages .palm-row-wrapper.call,
+.log .log-messages .palm-row-wrapper.notice	{ background-image: url(../images/log-blue-bg.png);		}
 .log .log-messages .palm-row-wrapper.alert,
-.log .log-messages .palm-row-wrapper.warning{ background-image: url(../images/log-warning-bg.png);	}
+.log .log-messages .palm-row-wrapper.warning{ background-image: url(../images/log-yellow-bg.png);	}
 .log .log-messages .palm-row-wrapper.err,
 .log .log-messages .palm-row-wrapper.emerg,
-.log .log-messages .palm-row-wrapper.crit	{ background-image: url(../images/log-error-bg.png);	}
+.log .log-messages .palm-row-wrapper.crit	{ background-image: url(../images/log-red-bg.png);		}
+.log .log-messages .palm-row-wrapper.return	{ background-image: url(../images/log-green-bg.png);	}
 .log .log-messages .palm-row-wrapper .apps .arrow
 {
 	display: inline-block;
