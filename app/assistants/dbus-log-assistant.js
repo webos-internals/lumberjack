@@ -20,7 +20,13 @@ function DbusLogAssistant(filter, popped)
 	this.menuModel =
 	{
 		visible: true,
-		items: []
+		items: 
+		[
+			{
+				label: $L("Help"),
+				command: 'do-help'
+			}
+		]
 	}
 	
 }
@@ -328,12 +334,6 @@ DbusLogAssistant.prototype.updateAppMenu = function(skipUpdate)
     this.menuModel.items = [];
     
 	/*
-	this.menuModel.items.push({
-		label: $L("Log Crap"),
-		command: 'do-logcrap'
-	});
-	*/
-	
 	if (this.showBanners)
 	{
 		this.menuModel.items.push({
@@ -348,6 +348,7 @@ DbusLogAssistant.prototype.updateAppMenu = function(skipUpdate)
 			command: 'do-banner-on'
 		});
 	}
+	*/
 	
 	this.menuModel.items.push({
 		label: $L("Help"),
@@ -393,13 +394,6 @@ DbusLogAssistant.prototype.handleCommand = function(event)
 			
 			case 'do-help':
 				this.controller.stageController.pushScene('help');
-				break;
-				
-			case 'do-logcrap':
-				alert('Test Alert Message');
-				Mojo.Log.info('Test Info Message');
-				Mojo.Log.warn('Test Warn Message');
-				Mojo.Log.error('Test Error Message');
 				break;
 		}
 	}
