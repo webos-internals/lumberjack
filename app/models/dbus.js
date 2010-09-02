@@ -235,7 +235,7 @@ dbusHandler.parseEvery = function(msg)
 			rowClass: match[3],
 			message:  formatForHtml(match[8]),
 			raw:      msg,
-			copy:     "%%%FIXME%%%"
+			copy:     '[' + match[4] + '] ' + match[6] + ' -> ' + match[7] + ': ' + match[8]
 		};
 	    }
 	    else if (match[3] == 'return') {
@@ -247,7 +247,7 @@ dbusHandler.parseEvery = function(msg)
 			rowClass: match[3],
 			message:  formatForHtml(match[8]),
 			raw:      msg,
-			copy:     "%%%FIXME%%%"
+			copy:     '[' + match[4] + '] ' + match[6] + ' -> ' + match[7] + ': ' + match[8]
 		};
 	    }
 	}
