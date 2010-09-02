@@ -352,6 +352,11 @@ TailLogAssistant.prototype.updateAppMenu = function(skipUpdate)
 	}
 	
 	this.menuModel.items.push({
+		label: $L("Clear"),
+		command: 'do-clear'
+	});
+	
+	this.menuModel.items.push({
 		label: $L("Help"),
 		command: 'do-help'
 	});
@@ -391,6 +396,14 @@ TailLogAssistant.prototype.handleCommand = function(event)
 			case 'do-banner-off':
 				this.showBanners = false;
 				this.updateAppMenu();
+				break;
+				
+			case 'do-clear':
+			    this.lastFocusMarker =	false;
+			    this.lastFocusMessage =	false;
+				this.listModel.items = [];
+				this.messagesElement.mojo.setLength(0);
+				this.revealBottom();
 				break;
 			
 			case 'do-help':
