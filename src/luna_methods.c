@@ -671,6 +671,141 @@ bool killDBusCapture_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   return false;
 }
 
+void ls2_thread_cleanup(void *arg) {
+  THREAD_DATA *data = (THREAD_DATA *)arg;
+
+  syslog(LOG_DEBUG, "Ls2 thread cleanup, closing pipe %p, unref message %p\n", 
+      data->fp, data->message);
+
+  if (data->fp) pclose(data->fp);
+  if (data->message) LSMessageUnref(data->message);
+}
+
+
+void *ls2_monitor(void *ctx) {
+  LSError lserror;
+  LSErrorInit(&lserror);
+  LSHandle* lshandle = pub_serviceHandle;
+  char buffer[MAXBUFLEN];
+  char esc_buffer[MAXBUFLEN];
+  char command[MAXLINLEN] = "/usr/bin/ls-monitor 2>&1";
+  THREAD_DATA data;
+  char line[MAXLINLEN];
+  pthread_key_t key;
+
+  if (ctx) 
+    data.message = (LSMessage *)ctx;
+  else
+    return NULL;
+
+  // Create thread key/value
+  pthread_key_create(&key, ls2_thread_cleanup);
+  pthread_setspecific(key, &data);
+
+  data.fp = popen(command, "r");
+  syslog(LOG_DEBUG, "ls2 pipe fp %p\n", data.fp);
+
+  if (!data.fp) {
+    if (!LSMessageReply(lshandle, data.message, "{\"returnValue\": false, \"ouroboros\": true, \"stage\": \"failed\"}", &lserror)) goto error;
+    return NULL;
+  }
+
+  // Loop through the output lines
+  while (fgets(line, sizeof line, data.fp)) {
+    // Chomp the newline
+    char *nl = strchr(line,'\n'); if (nl) *nl = 0;
+
+    // Have status updates been requested?
+    if (lshandle && data.message) {
+
+      if (!strstr(line, "ouroboros")) {
+
+	// Send it as a status message.
+	strcpy(buffer, "{\"returnValue\": true, \"ouroboros\": true, \"stage\": \"status\", \"status\": \"");
+	strcat(buffer, json_escape_str(line, esc_buffer));
+	strcat(buffer, "\"}");
+
+	// %%% Should we break out of the loop here, or just ignore the error? %%%
+	if (!LSMessageReply(lshandle, data.message, buffer, &lserror)) goto error;
+
+      }
+    }
+  }
+
+  goto end;
+
+ error:
+  LSErrorPrint(&lserror, stderr);
+  LSErrorFree(&lserror);
+ end:
+  return NULL;
+}
+
+//
+// Run ls-monitor --capture and provide the output back to Mojo
+//
+bool ls2Monitor_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
+  LSError lserror;
+  LSErrorInit(&lserror);
+
+  if (ls2MonitorThread) {
+    syslog(LOG_NOTICE, "Ls2 thread already running\n");
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"ouroboros\": true, \"stage\": \"failed\"}", &lserror)) goto error;
+    return true;
+  }
+
+  syslog(LOG_DEBUG, "Create ls2 thread, ref message %p\n", message);
+
+  // Ref and save the message for use in ls2 thread
+  LSMessageRef(message);
+
+  if (pthread_create(&ls2MonitorThread, NULL, ls2_monitor, (void*)message)) {
+    syslog(LOG_ERR, "Creating ls2 thread failed (0x%x)\n", ls2MonitorThread);
+    // Report that the ls2 operation was not able to start
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"ouroboros\": true, \"errorCode\": -1, \"errorText\": \"Unable to start ls2 thread\"}", &lserror)) goto error;
+  }
+  else {
+    syslog(LOG_DEBUG, "Created ls2 thread successfully (0x%x)\n", ls2MonitorThread);
+    // Report that the ls2 operation has begun
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"ouroboros\": true, \"stage\": \"start\"}", &lserror)) goto error;
+  }
+
+  return true;
+ error:
+  LSErrorPrint(&lserror, stderr);
+  LSErrorFree(&lserror);
+ end:
+  return false;
+}
+
+//
+// Kill the currently running commands
+//
+bool killLs2Monitor_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
+  LSError lserror;
+  LSErrorInit(&lserror);
+
+  if (!ls2MonitorThread) {
+    syslog(LOG_NOTICE, "Ls2 thread 0x%x not running\n", ls2MonitorThread);
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"ouroboros\": true, \"stage\": \"failed\"}", &lserror)) goto error;
+    return true;
+  }
+
+  syslog(LOG_DEBUG, "Killing ls2 thread 0x%x\n", ls2MonitorThread);
+  
+  pthread_cancel(ls2MonitorThread);
+  ls2MonitorThread = 0;
+
+  if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"ouroboros\": true, \"stage\": \"completed\"}", &lserror)) goto error;
+
+  return true;
+ error:
+  LSErrorPrint(&lserror, stderr);
+  LSErrorFree(&lserror);
+ end:
+  return false;
+}
+
 static bool read_file(LSHandle* lshandle, LSMessage *message, char *filename, bool subscribed) {
   LSError lserror;
   LSErrorInit(&lserror);
@@ -845,6 +980,9 @@ LSMethod luna_methods[] = {
 
   { "dbusCapture",	dbusCapture_method },
   { "killDBusCapture",	killDBusCapture_method },
+
+  { "ls2Monitor",	ls2Monitor_method },
+  { "killLs2Monitor",	killLs2Monitor_method },
 
   { "listApps",		listApps_method },
   { "getStats",		getStats_method },

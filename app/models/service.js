@@ -87,6 +87,32 @@ LumberjackService.killDBusCapture = function(callback)
     return request;
 };
 
+LumberjackService.ls2Monitor = function(callback)
+{
+    var request = new Mojo.Service.Request(LumberjackService.identifier,
+	{
+	    method: 'ls2Monitor',
+		parameters:
+		{
+			"subscribe":true
+		},
+	    onSuccess: callback,
+	    onFailure: callback
+	});
+    return request;
+};
+
+LumberjackService.killLs2Monitor = function(callback)
+{
+    var request = new Mojo.Service.Request(LumberjackService.identifier,
+	{
+	    method: 'killLs2Monitor',
+	    onSuccess: callback,
+	    onFailure: callback
+	});
+    return request;
+};
+
 LumberjackService.listApps = function(callback)
 {
     var request = new Mojo.Service.Request(LumberjackService.identifier,
