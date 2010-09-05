@@ -1,0 +1,14 @@
+{
+  "role": {
+     "exeName":"/var/usr/sbin/org.webosinternals.lumberjack",
+     "type": "regular",
+     "allowedNames": ["org.webosinternals.lumberjack"]
+  },
+  "permissions": [
+    {
+      "service":"org.webosinternals.lumberjack",
+      "inbound":["*"],
+      "outbound":["*"]
+    }
+  ]
+}

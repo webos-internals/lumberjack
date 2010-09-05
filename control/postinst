@@ -1,28 +1,49 @@
 #!/bin/sh                                                                                       
 
-PID="org.webosinternals.lumberjack"
+SID="org.webosinternals.lumberjack"
 
 APPS=/media/cryptofs/apps
 
 [ -d $APPS ] || { echo "Requires webOS 1.3.5 or later" ; exit 1 ; }
 
-# Install the upstart script
-rm -f /var/palm/event.d/${PID}
-[ -d /var/palm/event.d ] || exit 1
-cp $APPS/usr/palm/applications/${PID}/upstart/${PID} /var/palm/event.d/${PID}
+# Remove the service executable
+rm -f /var/usr/sbin/${SID}
 
-# Stop any existing service
-/sbin/stop ${PID} || true
+# Remove the dbus service
+rm -f /var/palm/system-services/${SID}.service
 
-# Install the executable
-rm -f /var/usr/sbin/${PID}
+# Remove the ls2 roles
+rm -f /var/palm/ls2/roles/prv/${SID}.json
+rm -f /var/palm/ls2/roles/pub/${SID}.json
+
+# Stop the service if running
+/sbin/stop ${SID} || true
+/usr/bin/killall -9 ${SID} || true
+
+# Remove the upstart script
+rm -f /etc/event.d/${SID} /var/palm/event.d/${SID}
+
+# Install the service executable
 mkdir -p /var/usr/sbin/
-install -m 755 $APPS/usr/palm/applications/${PID}/bin/${PID} /var/usr/sbin/${PID}
+install -m 755 $APPS/usr/palm/applications/${SID}/bin/${SID} /var/usr/sbin/${SID}
+
+# Install the dbus service
+mkdir -p /var/palm/system-services
+cp $APPS/usr/palm/applications/${SID}/dbus/${SID}.service /var/palm/system-services/${SID}.service
+
+# Install the ls2 roles
+if [ -d /var/palm/ls2/roles ] ; then
+  mkdir -p /var/palm/ls2/roles/prv /var/palm/ls2/roles/pub
+  cp $APPS/usr/palm/applications/${SID}/dbus/${SID}.json /var/palm/ls2/roles/prv/${SID}.json
+  cp $APPS/usr/palm/applications/${SID}/dbus/${SID}.json /var/palm/ls2/roles/pub/${SID}.json
+  /usr/bin/ls-control scan-services || true
+fi
+
+# Install the upstart script
+mkdir -p /var/palm/event.d
+cp $APPS/usr/palm/applications/${SID}/upstart/${SID} /var/palm/event.d/${SID}
 
 # Start the service
-/sbin/start ${PID}
-
-# Check the upstart script is installed
-[ -f /var/palm/event.d/${PID} ] || exit 1
+/sbin/start ${SID}
 
 exit 0

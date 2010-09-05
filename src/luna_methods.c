@@ -374,7 +374,7 @@ bool setLogging_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   char command[MAXLINLEN];
 
   // Extract the context argument from the message
-  json_t *object = LSMessageGetPayloadJSON(message);
+  json_t *object = json_parse_document(LSMessageGetPayload(message));
   json_t *context = json_find_first_label(object, "context");
   if (!context || (context->child->type != JSON_STRING) || (strspn(context->child->text, ALLOWED_CHARS) != strlen(context->child->text))) {
     if (!LSMessageReply(lshandle, message,
