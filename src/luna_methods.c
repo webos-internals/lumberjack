@@ -439,7 +439,7 @@ void *tail_messages(void *ctx) {
   syslog(LOG_DEBUG, "tail pipe fp %p\n", data.fp);
 
   if (!data.fp) {
-    if (!LSMessageReply(lshandle, data.message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
+    if (!LSMessageReply(lshandle, data.message, "{\"returnValue\": false, \"ouroboros\": true, \"stage\": \"failed\"}", &lserror)) goto error;
     return NULL;
   }
 
@@ -452,7 +452,7 @@ void *tail_messages(void *ctx) {
     if (lshandle && data.message) {
 
       // Send it as a status message.
-      strcpy(buffer, "{\"returnValue\": true, \"stage\": \"status\", \"status\": \"");
+      strcpy(buffer, "{\"returnValue\": true, \"ouroboros\": true, \"stage\": \"status\", \"status\": \"");
       strcat(buffer, json_escape_str(line, esc_buffer));
       strcat(buffer, "\"}");
 
@@ -480,7 +480,7 @@ bool tailMessages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
 
   if (tailMessagesThread) {
     syslog(LOG_NOTICE, "Tail thread already running\n");
-    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"ouroboros\": true, \"stage\": \"failed\"}", &lserror)) goto error;
     return true;
   }
 
@@ -492,12 +492,12 @@ bool tailMessages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   if (pthread_create(&tailMessagesThread, NULL, tail_messages, (void*)message)) {
     syslog(LOG_ERR, "Creating tail thread failed (0x%x)\n", tailMessagesThread);
     // Report that the tail operation was not able to start
-    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"errorCode\": -1, \"errorText\": \"Unable to start tail thread\"}", &lserror)) goto error;
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"ouroboros\": true, \"errorCode\": -1, \"errorText\": \"Unable to start tail thread\"}", &lserror)) goto error;
   }
   else {
     syslog(LOG_DEBUG, "Created tail thread successfully (0x%x)\n", tailMessagesThread);
     // Report that the tail operation has begun
-    if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"stage\": \"start\"}", &lserror)) goto error;
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"ouroboros\": true, \"stage\": \"start\"}", &lserror)) goto error;
   }
 
   return true;
@@ -517,7 +517,7 @@ bool killTailMessages_method(LSHandle* lshandle, LSMessage *message, void *ctx) 
 
   if (!tailMessagesThread) {
     syslog(LOG_NOTICE, "Tail thread 0x%x not running\n", tailMessagesThread);
-    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"stage\": \"failed\"}", &lserror)) goto error;
+    if (!LSMessageReply(lshandle, message, "{\"returnValue\": false, \"ouroboros\": true, \"stage\": \"failed\"}", &lserror)) goto error;
     return true;
   }
 
@@ -526,7 +526,7 @@ bool killTailMessages_method(LSHandle* lshandle, LSMessage *message, void *ctx) 
   pthread_cancel(tailMessagesThread);
   tailMessagesThread = 0;
 
-  if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"stage\": \"completed\"}", &lserror)) goto error;
+  if (!LSMessageReply(lshandle, message, "{\"returnValue\": true, \"ouroboros\": true, \"stage\": \"completed\"}", &lserror)) goto error;
 
   return true;
  error:

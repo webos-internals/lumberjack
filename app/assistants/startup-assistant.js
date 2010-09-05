@@ -8,6 +8,7 @@ function StartupAssistant()
     // on new version start
     this.newMessages =
 	[
+		{ version: '0.3.1', log: [ 'Exclude logging messages from dbus capture' ] },
 		{ version: '0.3.0', log: [ 'Added DBus Capture for debugging services'
 								 , 'Type-to-Search in get-log scene'
 								 , 'More log level preferences' ] },
