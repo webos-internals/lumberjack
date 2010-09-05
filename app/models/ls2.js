@@ -11,7 +11,7 @@ function ls2Handler()
 };
 
 // (every)
-ls2Handler.LogRegExpEvery =	new RegExp(/^([^\s]+)\t(PUB|PRV)\t(call|return)\t(\d+)\t([^\s]*)\t([^\s]+)\t([^\s]+)(.*)$/);
+ls2Handler.LogRegExpEvery =	new RegExp(/^([^\s]+)\t\[(PUB|PRV)\]\t(call|return)\t(\d+)\t+([^\s]+) \([^\)]+\)\t+([^\s]+) \([^\)]+\)(.*)$/);
 
 
 ls2Handler.prototype.newScene = function(assistant, log, popit)
@@ -223,35 +223,40 @@ ls2Handler.parseEvery = function(msg)
 	var match = ls2Handler.LogRegExpEvery.exec(msg);
 	if (match) {
 		
-		//alert('============= MATCH');
-		//for (var m = 0; m < match.length; m++) alert(m+': '+match[m]);
+	    alert('============= MATCH');
+	    for (var m = 0; m < match.length; m++) alert(m+': '+match[m]);
 		
 	    if (match[3] == 'call') {
 		l =
 		{
 			seq:      match[4],
-			leftid:   match[6],
-			rightid:  match[7],
+			leftid:   match[5],
+			rightid:  match[6],
 			rowClass: match[3],
-			message:  formatForHtml(match[8]),
+			message:  formatForHtml(match[7]),
 			raw:      msg,
-			copy:     '[' + match[4] + '] ' + match[6] + ' -> ' + match[7] + ': ' + match[8]
+			copy:     '[' + match[4] + '] ' + match[5] + ' -> ' + match[6] + ': ' + match[7]
 		};
 	    }
 	    else if (match[3] == 'return') {
 		l =
 		{
 			seq:      match[4],
-			leftid:   match[7],
-			rightid:  match[6],
+			leftid:   match[6],
+			rightid:  match[5],
 			rowClass: match[3],
-			message:  formatForHtml(match[8]),
+			message:  formatForHtml(match[7]),
 			raw:      msg,
-			copy:     '[' + match[4] + '] ' + match[6] + ' -> ' + match[7] + ': ' + match[8]
+			copy:     '[' + match[4] + '] ' + match[5] + ' -> ' + match[6] + ': ' + match[7]
 		};
 	    }
 	}
 	
+	else {
+	    alert('============= NO MATCH');
+	    alert(msg);
+	}
+
 	return l;
 }
 

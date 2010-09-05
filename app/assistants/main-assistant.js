@@ -128,7 +128,7 @@ MainAssistant.prototype.setup = function()
 			buttonLabel: $L("Follow Log")
 		}
 	);
-	this.controller.setupWidget
+        this.controller.setupWidget
 	(
 		'dbusButton',
 		{},
