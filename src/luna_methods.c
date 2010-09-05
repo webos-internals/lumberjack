@@ -40,6 +40,7 @@ typedef struct {
 
 pthread_t tailMessagesThread = 0;
 pthread_t dbusCaptureThread = 0;
+pthread_t ls2MonitorThread = 0;
 
 //
 // Escape a string so that it can be used directly in a JSON response.

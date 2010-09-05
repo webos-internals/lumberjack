@@ -2,6 +2,7 @@
     {"source": "app/models/service.js"},
     {"source": "app/models/tail.js"},
     {"source": "app/models/dbus.js"},
+    {"source": "app/models/ls2.js"},
     {"source": "app/models/functions.js"},
     {"source": "app/models/cookies.js"},
     {"source": "app/assistants/app-assistant.js"},
@@ -20,6 +21,10 @@
     {
         "scenes": "dbus-log",
         "source": "app/assistants/dbus-log-assistant.js"
+    },
+    {
+        "scenes": "ls2-log",
+        "source": "app/assistants/ls2-log-assistant.js"
     },
     {
         "scenes": "get-log",
