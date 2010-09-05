@@ -248,6 +248,52 @@ body.palm-dark .scene-fade-bottom
 }
 
 
+/*
+ * Ls2 Scene Styles
+ */
+.ls2 #ls2-log-title
+{
+	float: left;
+	display: block;
+	width: 150px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+.ls2 #followToggle
+{
+	position: absolute;
+	right: -24px;
+	top: -1px;
+}
+.ls2 #popButton
+{
+	position: absolute;
+	right: -16px;
+	bottom: 7px;
+	height: 35px;
+	width: 38px;
+	border-width: 0px 16px 0px 16px;
+	-webkit-box-sizing: border-box;
+	-webkit-border-image: url(../images/header-button-press.png);
+	-webkit-border-image: url(../images/header-button.png) 0 16 0 16 stretch stretch;
+}
+.ls2 #popButton.selected
+{
+	-webkit-border-image: url(../images/header-button-press.png) 0 16 0 16 stretch stretch;
+}
+.ls2 #popButton .icon
+{
+	margin: 0px;
+	padding: 0px;
+	margin-top: 5px;
+	margin-left: -8px;
+	width: 21px;
+	height: 23px;
+	background: url(../images/pop-icon.png) center center no-repeat;
+}
+
+
 
 
 
