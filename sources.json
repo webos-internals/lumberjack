@@ -1,6 +1,7 @@
 [
     {"source": "app/models/service.js"},
     {"source": "app/models/tail.js"},
+    {"source": "app/models/worm.js"},
     {"source": "app/models/dbus.js"},
     {"source": "app/models/ls2.js"},
     {"source": "app/models/functions.js"},
@@ -15,8 +16,16 @@
         "source": "app/assistants/main-assistant.js"
     },
     {
+        "scenes": "get-log",
+        "source": "app/assistants/get-log-assistant.js"
+    },
+    {
         "scenes": "tail-log",
         "source": "app/assistants/tail-log-assistant.js"
+    },
+    {
+        "scenes": "worm",
+        "source": "app/assistants/worm-assistant.js"
     },
     {
         "scenes": "dbus-log",
@@ -25,10 +34,6 @@
     {
         "scenes": "ls2-log",
         "source": "app/assistants/ls2-log-assistant.js"
-    },
-    {
-        "scenes": "get-log",
-        "source": "app/assistants/get-log-assistant.js"
     },
     {
         "scenes": "preferences",

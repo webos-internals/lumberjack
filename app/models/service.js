@@ -120,6 +120,16 @@ LumberjackService.listApps = function(callback)
 	});
     return request;
 };
+LumberjackService.getStats = function(callback)
+{
+    var request = new Mojo.Service.Request(LumberjackService.identifier,
+	{
+	    method: 'getStats',
+	    onSuccess: callback,
+	    onFailure: callback
+	});
+    return request;
+};
 
 LumberjackService.setLogging = function(callback, context, level)
 {

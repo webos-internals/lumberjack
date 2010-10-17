@@ -10,6 +10,7 @@ var appsList = $H();
 var tail = new tailHandler();
 var dbus = new dbusHandler();
 var ls2  = new ls2Handler();
+var worm = new wormHandler();
 
 function AppAssistant() {}
 

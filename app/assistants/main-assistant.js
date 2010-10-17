@@ -311,7 +311,7 @@ MainAssistant.prototype.tailTap = function(event)
 };
 MainAssistant.prototype.wormTap = function(event)
 {
-	//worm.newScene(this, {filter: this.filterModel.value, custom: this.customTextElement.mojo.getValue()}, prefs.get().popLog);
+	worm.newScene(this, {filter: this.filterModel.value, custom: this.customTextElement.mojo.getValue()}, prefs.get().popLog);
 };
 MainAssistant.prototype.dbusTap = function(event)
 {
