@@ -3,7 +3,7 @@ function StartupAssistant()
     // on first start, this message is displayed, along with the current version message from below
     this.firstMessage = $L('Here are some tips for first-timers:<ul><li>Lumberjack has no tips yet</li></ul>');
 	
-    this.secondMessage = $L('We hope you enjoy chopping down trees, skipping and jumping, and wearing high heels. Oh, and watching your logs too.<br>Please consider making a <a href=http://www.webos-internals.org/wiki/WebOS_Internals:Site_support>donation</a> if you wish to show your appreciation.');
+    this.secondMessage = $L('We hope you enjoy chopping down trees, skipping and jumping, and wearing high heels, and watching your logs.<br>Please consider making a <a href=http://www.webos-internals.org/wiki/WebOS_Internals:Site_support>donation</a> if you wish to show your appreciation.');
 	
     // on new version start
     this.newMessages =

@@ -49,7 +49,6 @@ LumberjackService.tailMessages = function(callback)
 	});
     return request;
 };
-
 LumberjackService.killTailMessages = function(callback)
 {
     var request = new Mojo.Service.Request(LumberjackService.identifier,
@@ -75,7 +74,6 @@ LumberjackService.dbusCapture = function(callback)
 	});
     return request;
 };
-
 LumberjackService.killDBusCapture = function(callback)
 {
     var request = new Mojo.Service.Request(LumberjackService.identifier,
@@ -101,7 +99,6 @@ LumberjackService.ls2Monitor = function(callback)
 	});
     return request;
 };
-
 LumberjackService.killLs2Monitor = function(callback)
 {
     var request = new Mojo.Service.Request(LumberjackService.identifier,
