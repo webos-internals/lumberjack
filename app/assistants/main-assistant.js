@@ -120,8 +120,6 @@ MainAssistant.prototype.setup = function()
 			buttonLabel: $L("Retrieve Log")
 		}
 	);
-	this.controller.listen(this.getButton,  Mojo.Event.tap, this.getTapHandler);
-	
 	this.controller.setupWidget
 	(
 		'tailButton',
@@ -130,36 +128,38 @@ MainAssistant.prototype.setup = function()
 			buttonLabel: $L("Follow Log")
 		}
 	);
+	this.controller.setupWidget
+	(
+		'ls2Button',
+		{},
+		this.ls2ButtonModel =
+		{
+			buttonLabel: $L("Ls2 Monitor"),
+			disabled: (prefs.get().lastLog == 'alert' ? true : false)
+		}
+	);
+	this.controller.setupWidget
+	(
+		'dbusButton',
+		{},
+		this.dbusButtonModel =
+		{
+			buttonLabel: $L("DBus Capture"),
+			disabled: (prefs.get().lastLog == 'alert' ? true : false)
+		}
+	);
+	
+	this.controller.listen(this.getButton,  Mojo.Event.tap, this.getTapHandler);
 	this.controller.listen(this.tailButton, Mojo.Event.tap, this.tailTapHandler);
+	this.controller.listen(this.ls2Button, Mojo.Event.tap, this.ls2TapHandler);
+	this.controller.listen(this.dbusButton, Mojo.Event.tap, this.dbusTapHandler);
     
 	if (Mojo.Environment.DeviceInfo.platformVersionMajor == 1)
 	{
-		this.controller.setupWidget
-		(
-			'dbusButton',
-			{},
-			this.dbusButtonModel =
-			{
-				buttonLabel: $L("DBus Capture"),
-				disabled: (prefs.get().lastLog == 'alert' ? true : false)
-			}
-		);
-		this.controller.listen(this.dbusButton, Mojo.Event.tap, this.dbusTapHandler);
 		this.ls2Button.hide();
 	}
 	else if (Mojo.Environment.DeviceInfo.platformVersionMajor == 2)
 	{
-		this.controller.setupWidget
-		(
-			'ls2Button',
-			{},
-			this.ls2ButtonModel =
-			{
-				buttonLabel: $L("Ls2 Monitor"),
-				disabled: (prefs.get().lastLog == 'alert' ? true : false)
-			}
-		);
-		this.controller.listen(this.ls2Button, Mojo.Event.tap, this.ls2TapHandler);
 		this.dbusButton.hide();
 	}
 	
