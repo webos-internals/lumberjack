@@ -55,6 +55,7 @@ MainAssistant.prototype.setup = function()
 	this.customTextElement =	this.controller.get('customText');
 	this.dbusButton =			this.controller.get('dbusButton');
 	this.ls2Button =			this.controller.get('ls2Button');
+	this.wormButton =			this.controller.get('wormButton');
 	this.tailButton =			this.controller.get('tailButton');
 	this.getButton =			this.controller.get('getButton');
 	
@@ -67,6 +68,7 @@ MainAssistant.prototype.setup = function()
 	this.customTextHandler = 	this.customTextChanged.bindAsEventListener(this);
     this.dbusTapHandler =		this.dbusTap.bindAsEventListener(this);
     this.ls2TapHandler =		this.ls2Tap.bindAsEventListener(this);
+    this.wormTapHandler =		this.wormTap.bindAsEventListener(this);
     this.tailTapHandler =		this.tailTap.bindAsEventListener(this);
     this.getTapHandler =		this.getTap.bindAsEventListener(this);
 	
@@ -130,6 +132,16 @@ MainAssistant.prototype.setup = function()
 	);
 	this.controller.setupWidget
 	(
+		'wormButton',
+		{},
+		this.wormButtonModel =
+		{
+			buttonLabel: $L("Resource Monitor"),
+			disabled: (prefs.get().lastLog == 'every' || prefs.get().lastLog == 'alert' || prefs.get().lastLog == 'allapps' ? true : false)
+		}
+	);
+	this.controller.setupWidget
+	(
 		'ls2Button',
 		{},
 		this.ls2ButtonModel =
@@ -151,7 +163,8 @@ MainAssistant.prototype.setup = function()
 	
 	this.controller.listen(this.getButton,  Mojo.Event.tap, this.getTapHandler);
 	this.controller.listen(this.tailButton, Mojo.Event.tap, this.tailTapHandler);
-	this.controller.listen(this.ls2Button, Mojo.Event.tap, this.ls2TapHandler);
+	this.controller.listen(this.wormButton, Mojo.Event.tap, this.wormTapHandler);
+	this.controller.listen(this.ls2Button,  Mojo.Event.tap, this.ls2TapHandler);
 	this.controller.listen(this.dbusButton, Mojo.Event.tap, this.dbusTapHandler);
     
 	if (Mojo.Environment.DeviceInfo.platformVersionMajor == 1)
@@ -241,6 +254,16 @@ MainAssistant.prototype.appChanged = function(event)
 	cookie.put(tprefs);
 	var tmp = prefs.get(true);
 	
+	if (event.value == 'every' || event.value == 'alert' || event.value == 'allapps')
+	{
+		this.wormButtonModel.disabled = true;
+		this.controller.modelChanged(this.wormButtonModel);
+	}
+	else
+	{
+		this.wormButtonModel.disabled = false;
+		this.controller.modelChanged(this.wormButtonModel);
+	}
 	if (event.value == 'alert')
 	{
 		this.dbusButtonModel.disabled = true;
@@ -285,6 +308,10 @@ MainAssistant.prototype.getTap = function(event)
 MainAssistant.prototype.tailTap = function(event)
 {
 	tail.newScene(this, {filter: this.filterModel.value, custom: this.customTextElement.mojo.getValue()}, prefs.get().popLog);
+};
+MainAssistant.prototype.wormTap = function(event)
+{
+	//worm.newScene(this, {filter: this.filterModel.value, custom: this.customTextElement.mojo.getValue()}, prefs.get().popLog);
 };
 MainAssistant.prototype.dbusTap = function(event)
 {

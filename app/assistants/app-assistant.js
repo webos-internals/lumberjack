@@ -9,7 +9,7 @@ var dashStageName = 'lumberjack-dash';
 var appsList = $H();
 var tail = new tailHandler();
 var dbus = new dbusHandler();
-var ls2 = new ls2Handler();
+var ls2  = new ls2Handler();
 
 function AppAssistant() {}
 
