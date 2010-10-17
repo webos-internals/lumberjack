@@ -6,6 +6,9 @@ function WormAssistant(filter, popped)
 	this.custom =		(filter.custom ? filter.custom : '');
 	this.popped =		popped;
 	
+	this.graphs = 		{nodes: false, handles: false};
+	this.data = 		[];
+	
 	this.unregister =	true;
 	
 	this.showBanners =	false;
@@ -78,7 +81,30 @@ WormAssistant.prototype.setup = function()
 		
 		this.controller.listen('onToggle', Mojo.Event.propertyChange, this.toggleChangeHandler);
 		
-		
+		this.graphs.nodes = new lineGraph
+		(
+			this.controller.get('nodesCanvas'),
+			{
+				renderWidth: 320,
+				renderHeight: 190,
+				yaxis:
+				{
+					min: 0
+				}
+			}
+		);
+		this.graphs.handles = new lineGraph
+		(
+			this.controller.get('handlesCanvas'),
+			{
+				renderWidth: 320,
+				renderHeight: 190,
+				yaxis:
+				{
+					min: 0
+				}
+			}
+		);
 		
 		// register scene!
 		worm.registerScene(this.filter, this);
@@ -117,7 +143,25 @@ WormAssistant.prototype.start = function()
 }
 WormAssistant.prototype.addStats = function(handles, nodes)
 {
-	alert(handles+'/'+nodes);
+	this.data.push({handles: handles, nodes: nodes});
+	var nData = [];
+	var hData = [];
+	
+	this.graphs.nodes.clearLines();
+	this.graphs.handles.clearLines();
+	
+	for (var d = 0; d < this.data.length; d++)
+	{
+		nData.push({x: d, y: this.data[d].nodes});
+		hData.push({x: d, y: this.data[d].handles});
+	}
+	
+	this.graphs.nodes.addLine({data: nData});
+	this.graphs.handles.addLine({data: hData});
+	
+	this.graphs.nodes.render();
+	this.graphs.handles.render();
+	
 }
 WormAssistant.prototype.stop = function()
 {
@@ -186,7 +230,7 @@ WormAssistant.prototype.handleCommand = function(event)
 		switch (event.command)
 		{
 			case 'do-clear':
-				// TODO
+				this.data = [];
 				break;
 			
 			case 'do-help':
@@ -207,10 +251,12 @@ WormAssistant.prototype.activate = function(event)
 		this.start();
 	}
 	
+	/*
 	if (this.controller.stageController.setWindowOrientation)
 	{
     	this.controller.stageController.setWindowOrientation("free");
 	}
+	*/
 	
 	this.alreadyActivated = true;
 }

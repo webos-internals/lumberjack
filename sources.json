@@ -4,6 +4,7 @@
     {"source": "app/models/worm.js"},
     {"source": "app/models/dbus.js"},
     {"source": "app/models/ls2.js"},
+    {"source": "app/models/line-graph.js"},
     {"source": "app/models/functions.js"},
     {"source": "app/models/cookies.js"},
     {"source": "app/assistants/app-assistant.js"},
