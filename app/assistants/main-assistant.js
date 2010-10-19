@@ -6,8 +6,8 @@ function MainAssistant()
 		{weight: 30, text: $L('Always Watching The Log')},
 		{weight: 20, text: $L('Sleep All Night, Work All Day')},
 		{weight: 20, text: $L('Hack Through Your Logs')},
-		{weight: 10, text: $L("<a href=\"http://www.webos-internals.org/wiki/WebOS_Internals:Site_support\">Donated</a> To WebOS Internals Lately?")},
 		{weight: 10, text: $L('I\'m OK')},
+		{weight: 5,  text: $L("<a href=\"http://www.webos-internals.org/wiki/WebOS_Internals:Site_support\">Donated</a> To WebOS Internals Lately?")},
 		{weight: 1,  text: $L('Is A Logger... Get it?')}
 	];
 	
@@ -35,7 +35,7 @@ MainAssistant.prototype.setup = function()
 {
 	
     // set theme because this can be the first scene pushed
-    this.controller.document.body.className = prefs.get().theme;
+    this.controller.document.body.className = prefs.get().theme + ' ' + prefs.get().fontSize;
 	
 	// set loglevel if they want it
 	if (prefs.get().setLogLevel) LumberjackService.setLogging(function(p){}, 'LunaSysMgrJS', prefs.get().setLogLevel);

@@ -436,6 +436,12 @@ body.palm-dark .log .log-messages .palm-row.selected.lostFocus
 	overflow: hidden;
 	white-space: nowrap;
 }
+body.font-large .log .log-messages .type,
+body.font-large .log .log-messages .apps
+{
+	background-position-y: 6px;
+	font-size: 16px;
+}
 .log .log-messages .apps
 {
 	padding-left: 7px;
@@ -460,6 +466,10 @@ body.palm-dark .log .log-messages .palm-row.selected.lostFocus
 	padding-left: 2px;
 	height: 4px;
 }
+body.font-large .log .log-messages .date
+{
+	font-size: 13px;
+}
 body.palm-dark .log .log-messages .date
 {
 	color: #ccc;
@@ -472,6 +482,10 @@ body.palm-dark .log .log-messages .date
 	padding-left: 7px;
 	padding-right: 7px;
 	word-wrap: break-word !important;
+}
+body.font-large .log .log-messages .message
+{
+	font-size: 17px;
 }
 .log .log-messages .app
 {
@@ -491,6 +505,10 @@ body.palm-default .log .log-messages .palm-row.selected .app
 	padding-right: 8px;
 	color: #666;
 	margin-top: -1px;
+}
+body.font-large .log .log-messages .showapp .app
+{
+	font-size: 16px;
 }
 body.palm-dark .log .log-messages .showapp .app
 {

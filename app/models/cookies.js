@@ -24,6 +24,7 @@ preferenceCookie.prototype.get = function(reload)
 				popLog: false,
 				
 				// Log Group
+				fontSize: 'font-norm',
 				copyStyle: 'clean'
 				
 			};

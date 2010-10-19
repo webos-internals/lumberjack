@@ -25,10 +25,10 @@ function PreferencesAssistant()
 
 PreferencesAssistant.prototype.setup = function()
 {
-		this.controller.get('preferences-title').innerHTML = $L('Preferences');
-		this.controller.get('preferences-global').innerHTML = $L('Global');
-		this.controller.get('secret-stuff').innerHTML = $L('Secret Stuff');
-		this.controller.get('secret-options').innerHTML = $L('This version has no secret options.');
+	this.controller.get('preferences-title').innerHTML = $L('Preferences');
+	this.controller.get('preferences-global').innerHTML = $L('Global');
+	this.controller.get('secret-stuff').innerHTML = $L('Secret Stuff');
+	this.controller.get('secret-options').innerHTML = $L('This version has no secret options.');
 
 	try
 	{
@@ -87,7 +87,7 @@ PreferencesAssistant.prototype.setup = function()
 			this.prefs
 		);
 		
-		this.controller.listen('theme', Mojo.Event.propertyChange, this.themeChanged.bindAsEventListener(this));
+		this.controller.listen('theme', 	  Mojo.Event.propertyChange, this.themeChanged.bindAsEventListener(this));
 		this.controller.listen('setLogLevel', Mojo.Event.propertyChange, this.logLevelChanged.bindAsEventListener(this));
 		
 		
@@ -128,6 +128,20 @@ PreferencesAssistant.prototype.setup = function()
 		// Logs Group
 		this.controller.setupWidget
 		(
+			'fontSize',
+			{
+				label: $L('Font Size'),
+				choices:
+				[
+					{label:$L('Normal'), 		value:'font-norm'},
+					{label:$L('Paul Bunyan'),	value:'font-large'}
+				],
+				modelProperty: 'fontSize'
+			},
+			this.prefs
+		);
+		this.controller.setupWidget
+		(
 			'copyStyle',
 			{
 				label: $L('Copy Format'),
@@ -142,6 +156,7 @@ PreferencesAssistant.prototype.setup = function()
 			this.prefs
 		);
 		
+		this.controller.listen('fontSize', 	Mojo.Event.propertyChange, this.themeChanged.bindAsEventListener(this));
 		this.controller.listen('copyStyle', Mojo.Event.propertyChange, this.listChangedHandler);
 		
 		
@@ -165,18 +180,56 @@ PreferencesAssistant.prototype.themeChanged = function(event)
 	this.cookie.put(this.prefs);
 	
 	// set the theme right away with the body class
-	this.controller.document.body.className = event.value;
+	// prefs is only accessable from the main scene, so its always this one
+	this.controller.document.body.className = this.prefs.theme + ' ' + this.prefs.fontSize;
 	
-	var keys = appsList.keys();
+	// these get all the other child scenes and sets them up
+	var keys = tail.scenes.keys();
 	if (keys.length > 0)
 	{
 		for (var k = 0; k < keys.length; k++)
 		{
-			try
+			var scene = tail.scenes.get(keys[k]);
+			if (scene.assistant)
 			{
-				Mojo.Controller.appController.getStageController('tail-'+keys[k]).activeScene().assistant.controller.document.body.className = event.value;
+				scene.assistant.controller.document.body.className = this.prefs.theme + ' ' + this.prefs.fontSize;
 			}
-			catch (e) {}
+		}
+	}
+	var keys = dbus.scenes.keys();
+	if (keys.length > 0)
+	{
+		for (var k = 0; k < keys.length; k++)
+		{
+			var scene = dbus.scenes.get(keys[k]);
+			if (scene.assistant)
+			{
+				scene.assistant.controller.document.body.className = this.prefs.theme + ' ' + this.prefs.fontSize;
+			}
+		}
+	}
+	var keys = ls2.scenes.keys();
+	if (keys.length > 0)
+	{
+		for (var k = 0; k < keys.length; k++)
+		{
+			var scene = ls2.scenes.get(keys[k]);
+			if (scene.assistant)
+			{
+				scene.assistant.controller.document.body.className = this.prefs.theme + ' ' + this.prefs.fontSize;
+			}
+		}
+	}
+	var keys = worm.scenes.keys();
+	if (keys.length > 0)
+	{
+		for (var k = 0; k < keys.length; k++)
+		{
+			var scene = worm.scenes.get(keys[k]);
+			if (scene.assistant)
+			{
+				scene.assistant.controller.document.body.className = this.prefs.theme + ' ' + this.prefs.fontSize;
+			}
 		}
 	}
 }

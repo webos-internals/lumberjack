@@ -33,7 +33,7 @@ WormAssistant.prototype.setup = function()
 	try
 	{
 	    // set theme because this can be the first scene pushed
-	    this.controller.document.body.className = prefs.get().theme;
+    	this.controller.document.body.className = prefs.get().theme + ' ' + prefs.get().fontSize;
 		
 		// setup menu
         this.updateAppMenu(true);
