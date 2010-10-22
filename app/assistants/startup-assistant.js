@@ -1,5 +1,7 @@
-function StartupAssistant()
+function StartupAssistant(changelog)
 {
+	this.justChangelog = changelog;
+	
     // on first start, this message is displayed, along with the current version message from below
     this.firstMessage = $L('Here are some tips for first-timers:<ul><li>Lumberjack has no tips yet</li></ul>');
 	
@@ -8,7 +10,10 @@ function StartupAssistant()
     // on new version start
     this.newMessages =
 	[
-		{ version: '0.4.0', log: [ 'Something something something...' ] },
+		{ version: '0.4.0', log: [ 'Added Ls2 Monitor',
+								   'Added Resource Monitor',
+								   'Added font size preference',
+								   'Added a way to get back to this changelog from the help scene' ] },
 		{ version: '0.3.1', log: [ 'Exclude logging messages from dbus capture' ] },
 		{ version: '0.3.0', log: [ 'Added DBus Capture for debugging services'
 								 , 'Type-to-Search in get-log scene'
@@ -56,32 +61,62 @@ StartupAssistant.prototype.setup = function()
     this.dataContainer =  this.controller.get('data');
 	
     // set title
-    if (vers.isFirst)
+	if (this.justChangelog)
 	{
-		this.titleContainer.innerHTML = $L('Welcome To Lumberjack');
-    }
-    else if (vers.isNew)
+		this.titleContainer.innerHTML = $L('Changelog');
+	}
+	else
 	{
-		this.titleContainer.innerHTML = $L('Lumberjack Changelog');
-    }
+	    if (vers.isFirst)
+		{
+			this.titleContainer.innerHTML = $L('Welcome To Lumberjack');
+	    }
+	    else if (vers.isNew)
+		{
+			this.titleContainer.innerHTML = $L('Lumberjack Changelog');
+	    }
+	}
 	
 	
     // build data
     var html = '';
-    if (vers.isFirst) {
-	html += '<div class="text">' + this.firstMessage + '</div>';
-    }
-    if (vers.isNew) {
-	html += '<div class="text">' + this.secondMessage + '</div>';
-	for (var m = 0; m < this.newMessages.length; m++) {
-	    html += Mojo.View.render({object: {title: 'v' + this.newMessages[m].version}, template: 'startup/changeLog'});
-	    html += '<ul>';
-	    for (var l = 0; l < this.newMessages[m].log.length; l++) {
-		html += '<li>' + this.newMessages[m].log[l] + '</li>';
-	    }
-	    html += '</ul>';
+	if (this.justChangelog)
+	{
+		for (var m = 0; m < this.newMessages.length; m++) 
+		{
+		    html += Mojo.View.render({object: {title: 'v' + this.newMessages[m].version}, template: 'startup/changeLog'});
+		    html += '<ul>';
+		    for (var l = 0; l < this.newMessages[m].log.length; l++)
+			{
+				html += '<li>' + this.newMessages[m].log[l] + '</li>';
+		    }
+		    html += '</ul>';
+		}
 	}
-    }
+	else
+	{
+		if (vers.isFirst)
+		{
+			html += '<div class="text">' + this.firstMessage + '</div>';
+		}
+	    if (vers.isNew)
+		{
+			if (!this.justChangelog)
+			{
+				html += '<div class="text">' + this.secondMessage + '</div>';
+			}
+			for (var m = 0; m < this.newMessages.length; m++) 
+			{
+			    html += Mojo.View.render({object: {title: 'v' + this.newMessages[m].version}, template: 'startup/changeLog'});
+			    html += '<ul>';
+			    for (var l = 0; l < this.newMessages[m].log.length; l++)
+				{
+					html += '<li>' + this.newMessages[m].log[l] + '</li>';
+			    }
+			    html += '</ul>';
+			}
+	    }
+	}
     
     // set data
     this.dataContainer.innerHTML = html;
@@ -90,8 +125,11 @@ StartupAssistant.prototype.setup = function()
     // setup menu
     this.controller.setupWidget(Mojo.Menu.appMenu, { omitDefaultItems: true }, this.menuModel);
 	
-    // set command menu
-    this.controller.setupWidget(Mojo.Menu.commandMenu, { menuClass: 'no-fade' }, this.cmdMenuModel);
+	if (!this.justChangelog)
+	{
+	    // set command menu
+	    this.controller.setupWidget(Mojo.Menu.commandMenu, { menuClass: 'no-fade' }, this.cmdMenuModel);
+	}
 	
     // set this scene's default transition
     this.controller.setDefaultTransition(Mojo.Transition.zoomFade);
@@ -111,19 +149,21 @@ StartupAssistant.prototype.showContinue = function()
 
 StartupAssistant.prototype.handleCommand = function(event)
 {
-    if (event.type == Mojo.Event.command) {
-	switch (event.command) {
-	case 'do-continue':
-	this.controller.stageController.swapScene({name: 'main', transition: Mojo.Transition.crossFade});
-	break;
-			
-	case 'do-prefs':
-	this.controller.stageController.pushScene('preferences');
-	break;
-			
-	case 'do-help':
-	this.controller.stageController.pushScene('help');
-	break;
-	}
+    if (event.type == Mojo.Event.command)
+	{
+		switch (event.command)
+		{
+			case 'do-continue':
+				this.controller.stageController.swapScene({name: 'main', transition: Mojo.Transition.crossFade});
+				break;
+					
+			case 'do-prefs':
+				this.controller.stageController.pushScene('preferences');
+				break;
+					
+			case 'do-help':
+				this.controller.stageController.pushScene('help');
+				break;
+		}
     }
 }
