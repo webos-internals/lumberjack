@@ -10,8 +10,7 @@ function StartupAssistant(changelog)
     // on new version start
     this.newMessages =
 	[
-		{ version: '0.4.0', log: [ 'Added Ls2 Monitor',
-								   'Added Resource Monitor',
+		{ version: '0.4.0', log: [ 'Added Resource Monitor',
 								   'Added font size preference',
 								   'Added a way to get back to this changelog from the help scene' ] },
 		{ version: '0.3.1', log: [ 'Exclude logging messages from dbus capture' ] },
@@ -166,4 +165,8 @@ StartupAssistant.prototype.handleCommand = function(event)
 				break;
 		}
     }
-}
+};
+
+// Local Variables:
+// tab-width: 4
+// End:
