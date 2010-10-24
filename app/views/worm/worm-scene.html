@@ -10,8 +10,25 @@
 	
 	<div class="palm-header-spacer" style="height: 56px;"></div>
 	
-	<canvas id="nodesCanvas" width="320" height="190"></canvas>
-	<canvas id="handlesCanvas" width="320" height="190"></canvas>
+	<table class="palm-divider labeled">
+		<tr>
+			<td class="left"></td>
+			<td class="label" id="nodes-label">DOM Nodes</td>
+			<td class="right"></td>
+			<td class="bubble"><div id="nodesCurrent">0</div></td>
+		</tr>
+	</table>
+	<canvas id="nodesCanvas" width="320" height="161"></canvas>
+	
+	<table class="palm-divider labeled">
+		<tr>
+			<td class="left"></td>
+			<td class="label" id="handles-label">Service Handles</td>
+			<td class="right"></td>
+			<td class="bubble"><div id="handlesCurrent">0</div></td>
+		</tr>
+	</table>
+	<canvas id="handlesCanvas" width="320" height="161"></canvas>
 	
 	<div class="scene-fade-bottom" x-mojo-scroll-fade="bottom"></div>
 	

@@ -241,6 +241,26 @@ body.palm-dark .scene-fade-bottom
 	height: 23px;
 	background: url(../images/pop-icon.png) center center no-repeat;
 }
+.worm table.palm-divider tr td.bubble > div
+{
+	color: #ffffff;
+	text-shadow: #646454 0px 1px 0px;
+	font-size: 16px;
+	line-height: 24px;
+	text-align: center;
+	font-weight: bold;
+	position: relative;
+	text-transform: uppercase;
+	-webkit-border-image: url(../images/palm-default/divider-bubble.png) 0 16 0 16 stretch stretch;
+	-webkit-box-sizing: border-box;
+	border-width: 0px 16px 0px 16px;
+}
+body.palm-dark .worm table.palm-divider tr td.bubble > div
+{
+	margin-top: 1px;
+	-webkit-border-image: url(../images/palm-dark/divider-bubble.png) 0 16 0 16 stretch stretch;
+}
+
 
 
 /*

@@ -44,6 +44,8 @@ WormAssistant.prototype.setup = function()
 		this.titleElement =				this.controller.get('worm-title');
 		this.onToggle = 				this.controller.get('onToggle');
 		this.popButtonElement =			this.controller.get('popButton');
+		this.nodesCurrentElement =		this.controller.get('nodesCurrent');
+		this.handlesCurrentElement =	this.controller.get('handlesCurrent');
         this.visibleWindowHandler =		this.visibleWindow.bindAsEventListener(this);
         this.invisibleWindowHandler =	this.invisibleWindow.bindAsEventListener(this);
 		this.toggleChangeHandler =		this.toggleChanged.bindAsEventListener(this);
@@ -86,7 +88,7 @@ WormAssistant.prototype.setup = function()
 			this.controller.get('nodesCanvas'),
 			{
 				renderWidth: 320,
-				renderHeight: 190,
+				renderHeight: 160,
 				yaxis:
 				{
 					min: 0
@@ -98,7 +100,7 @@ WormAssistant.prototype.setup = function()
 			this.controller.get('handlesCanvas'),
 			{
 				renderWidth: 320,
-				renderHeight: 190,
+				renderHeight: 160,
 				yaxis:
 				{
 					min: 0
@@ -143,6 +145,9 @@ WormAssistant.prototype.start = function()
 }
 WormAssistant.prototype.addStats = function(handles, nodes)
 {
+	this.nodesCurrentElement.update(nodes);
+	this.handlesCurrentElement.update(handles);
+	
 	this.data.push({handles: handles, nodes: nodes});
 	var nData = [];
 	var hData = [];
