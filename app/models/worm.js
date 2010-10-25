@@ -152,11 +152,13 @@ wormHandler.prototype.stopScene = function(log)
 
 wormHandler.prototype.start = function()
 {
-	if (this.logging) Mojo.Log.info('*** start');
+	if (this.logging) Mojo.Log.info('*** start 1');
 	this.request = LumberjackService.getStats(this.handleStats.bindAsEventListener(this));
+	if (this.logging) Mojo.Log.info('*** start 2');
 }
 wormHandler.prototype.handleStats = function(payload)
 {
+	if (this.logging) Mojo.Log.info('*** STAT');
 	if (payload.documents)
 	{
 		this.status = true;
@@ -249,10 +251,6 @@ wormHandler.prototype.stop = function()
 	{
 		this.request.cancel();
 	}
-}
-wormHandler.prototype.stopped = function(payload)
-{
-	if (this.logging) Mojo.Log.info('*** stopped');
 	this.status = false;
 	var keys = this.scenes.keys();
 	if (keys.length > 0)
@@ -266,4 +264,5 @@ wormHandler.prototype.stopped = function(payload)
 			}
 		}
 	}
+	if (this.logging) Mojo.Log.info('*** stopped');
 }

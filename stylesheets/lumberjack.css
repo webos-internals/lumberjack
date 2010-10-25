@@ -250,6 +250,7 @@ body.palm-dark .scene-fade-bottom
 	text-align: center;
 	font-weight: bold;
 	position: relative;
+	margin-top: 1px;
 	text-transform: uppercase;
 	-webkit-border-image: url(../images/palm-default/divider-bubble.png) 0 16 0 16 stretch stretch;
 	-webkit-box-sizing: border-box;
@@ -257,7 +258,6 @@ body.palm-dark .scene-fade-bottom
 }
 body.palm-dark .worm table.palm-divider tr td.bubble > div
 {
-	margin-top: 1px;
 	-webkit-border-image: url(../images/palm-dark/divider-bubble.png) 0 16 0 16 stretch stretch;
 }
 .worm .graph
