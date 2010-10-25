@@ -185,16 +185,16 @@ WormAssistant.prototype.render = function()
 	this.graphs.nodes.addLine(
 	{
 		data: nData,
-		stroke:	(prefs.get().theme == 'palm-dark' ? "rgba(255, 255, 255, .5)" : "rgba(112, 174, 227, .5)"),
-		fill:	(prefs.get().theme == 'palm-dark' ? "rgba(255, 255, 255, .1)" : "rgba(112, 174, 227, .1)"),
+		stroke:	(prefs.get().theme == 'palm-dark' ? "rgba(232, 232, 232, .5)" : "rgba(112, 174, 227, .5)"),
+		fill:	(prefs.get().theme == 'palm-dark' ? "rgba(232, 232, 232, .1)" : "rgba(112, 174, 227, .1)"),
 		//stroke:	(prefs.get().theme == 'palm-dark' ? "rgba(255, 255, 255, .5)" : "rgba(0, 0, 0, .5)"),
 		//fill:	(prefs.get().theme == 'palm-dark' ? "rgba(255, 255, 255, .1)" : "rgba(0, 0, 0, .1)"),
 	});
 	this.graphs.handles.addLine(
 	{
 		data: hData,
-		stroke:	(prefs.get().theme == 'palm-dark' ? "rgba(255, 255, 255, .5)" : "rgba(112, 174, 227, .5)"),
-		fill:	(prefs.get().theme == 'palm-dark' ? "rgba(255, 255, 255, .1)" : "rgba(112, 174, 227, .1)"),
+		stroke:	(prefs.get().theme == 'palm-dark' ? "rgba(232, 232, 232, .5)" : "rgba(112, 174, 227, .5)"),
+		fill:	(prefs.get().theme == 'palm-dark' ? "rgba(232, 232, 232, .1)" : "rgba(112, 174, 227, .1)"),
 	});
 	
 	this.graphs.nodes.render();
