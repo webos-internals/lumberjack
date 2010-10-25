@@ -29,10 +29,14 @@ function lineGraph(element, options, labels)
 		yaxis:
 		{
 			min:		null,
-			max:		null
+			max:		null,
+			tics:		false,
+			ticStroke:	"rgba(0, 0, 0, .5)",
+			ticWidth:	1
 		},
 		padding:
 		{
+			clear:		false,
 			top:		0,
 			bottom:		0,
 			left:		0,
@@ -118,23 +122,44 @@ lineGraph.prototype.prepareLines = function()
 	this.xScale = this.drawWidth / (this.xaxis.max - this.xaxis.min);
 	this.yScale = this.drawHeight / (this.yaxis.max - this.yaxis.min);
 };
-lineGraph.prototype.prepareLabels = function()
+lineGraph.prototype.renderTics = function()
 {
+	
+	this.canvas.strokeStyle = this.options.yaxis.ticStroke;
+	this.canvas.lineWidth =   this.options.yaxis.ticWidth;
+	
 	var html = '';
 	
-	var ticsEvery = Math.round((this.yaxis.max-this.yaxis.min)/4);
-	var ticsGap = Math.round(this.drawHeight/4);
+	var ticsEvery = Math.round((this.yaxis.max-this.yaxis.min)/(this.options.yaxis.tics-1));
+	var ticsGap = Math.round(this.drawHeight/(this.options.yaxis.tics-1));
 	
+	// this would be 0...
 	html += '<div style="top: '+this.drawHeight+'px;">'+this.yaxis.min+'</div>';
+	this.canvas.beginPath();
+	this.canvas.moveTo(this.options.padding.left, this.options.padding.top + this.drawHeight);
+	this.canvas.lineTo(this.options.padding.left + this.drawWidth, this.options.padding.top + this.drawHeight);
+	this.canvas.stroke();
+	this.canvas.closePath();
 	
-	for (var t = 1; t < 4; t++)
+	for (var t = 1; t < (this.options.yaxis.tics-1); t++)
 	{
-		var label = t*ticsEvery;
-		var top = this.drawHeight - ((t)*ticsGap);
-		html += '<div style="top: '+top+'px;">'+label+'</div>';
+		var v = t*ticsEvery;
+		var y = this.getY(v);
+		html += '<div style="top: '+y+'px;">'+v+'</div>';
+		
+		this.canvas.beginPath();
+		this.canvas.moveTo(this.options.padding.left, y);
+		this.canvas.lineTo(this.options.padding.left + this.drawWidth, y);
+		this.canvas.stroke();
+		this.canvas.closePath();
 	}
 	
 	html += '<div style="top: '+this.options.padding.top+'px;">'+this.yaxis.max+'</div>';
+	this.canvas.beginPath();
+	this.canvas.moveTo(this.options.padding.left, this.options.padding.top);
+	this.canvas.lineTo(this.options.padding.left + this.drawWidth, this.options.padding.top);
+	this.canvas.stroke();
+	this.canvas.closePath();
 	
 	this.labels.update(html);
 }
@@ -154,7 +179,11 @@ lineGraph.prototype.render = function()
 	this.canvas.save();
 	
 	this.prepareLines();
-	this.prepareLabels();
+	
+	if (this.options.yaxis.tics !== false)
+	{
+		this.renderTics();
+	}
 	
 	this.lines.each(function(l)
 	{
@@ -188,13 +217,14 @@ lineGraph.prototype.render = function()
 			this.canvas.lineTo(this.getX(first.x), this.options.renderHeight);
 			this.canvas.fill();
 		}
+		this.canvas.closePath();
 		
 		//this.canvas.globalCompositeOperation = 'destination-out';
 		
 	}.bind(this));
 	
 	
-	if (this.options.padding.top || this.options.padding.bottom || this.options.padding.left || this.options.padding.right)
+	if (this.options.padding.clear && (this.options.padding.top || this.options.padding.bottom || this.options.padding.left || this.options.padding.right))
 	{
 		this.canvas.clearRect(0, 0, this.options.renderWidth, this.options.padding.top);
 		this.canvas.clearRect(0, 0, this.options.padding.left, this.options.renderHeight);

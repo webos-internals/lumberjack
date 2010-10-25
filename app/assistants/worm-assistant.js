@@ -91,7 +91,13 @@ WormAssistant.prototype.setup = function()
 				renderHeight: 160,
 				yaxis:
 				{
-					min: 0
+					min:		0,
+					tics:		5,
+					ticStroke:	"rgba(125, 125, 125, .3)"
+				},
+				padding:
+				{
+					top:		1
 				}
 			},
 			this.controller.get('nodesLabels')
@@ -104,7 +110,13 @@ WormAssistant.prototype.setup = function()
 				renderHeight: 160,
 				yaxis:
 				{
-					min: 0
+					min:		0,
+					tics:		5,
+					ticStroke:	"rgba(125, 125, 125, .5)"
+				},
+				padding:
+				{
+					top:		1
 				}
 			},
 			this.controller.get('handlesLabels')
@@ -150,7 +162,14 @@ WormAssistant.prototype.addStats = function(handles, nodes)
 	this.nodesCurrentElement.update(nodes);
 	this.handlesCurrentElement.update(handles);
 	
+	if (this.data.length > 99) this.data.shift();
+	
 	this.data.push({handles: handles, nodes: nodes});
+	
+	this.render();
+}
+WormAssistant.prototype.render = function()
+{
 	var nData = [];
 	var hData = [];
 	
@@ -163,12 +182,23 @@ WormAssistant.prototype.addStats = function(handles, nodes)
 		hData.push({x: d, y: this.data[d].handles});
 	}
 	
-	this.graphs.nodes.addLine({data: nData});
-	this.graphs.handles.addLine({data: hData});
+	this.graphs.nodes.addLine(
+	{
+		data: nData,
+		stroke:	(prefs.get().theme == 'palm-dark' ? "rgba(255, 255, 255, .5)" : "rgba(112, 174, 227, .5)"),
+		fill:	(prefs.get().theme == 'palm-dark' ? "rgba(255, 255, 255, .1)" : "rgba(112, 174, 227, .1)"),
+		//stroke:	(prefs.get().theme == 'palm-dark' ? "rgba(255, 255, 255, .5)" : "rgba(0, 0, 0, .5)"),
+		//fill:	(prefs.get().theme == 'palm-dark' ? "rgba(255, 255, 255, .1)" : "rgba(0, 0, 0, .1)"),
+	});
+	this.graphs.handles.addLine(
+	{
+		data: hData,
+		stroke:	(prefs.get().theme == 'palm-dark' ? "rgba(255, 255, 255, .5)" : "rgba(112, 174, 227, .5)"),
+		fill:	(prefs.get().theme == 'palm-dark' ? "rgba(255, 255, 255, .1)" : "rgba(112, 174, 227, .1)"),
+	});
 	
 	this.graphs.nodes.render();
 	this.graphs.handles.render();
-	
 }
 WormAssistant.prototype.stop = function()
 {
