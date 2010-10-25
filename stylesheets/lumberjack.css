@@ -260,6 +260,34 @@ body.palm-dark .worm table.palm-divider tr td.bubble > div
 	margin-top: 1px;
 	-webkit-border-image: url(../images/palm-dark/divider-bubble.png) 0 16 0 16 stretch stretch;
 }
+.worm .graph
+{
+	position: relative;
+}
+.worm .graph canvas
+{
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+.worm .graph .labels
+{
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+.worm .graph .labels div
+{
+	position: absolute;
+	top: 0px;
+	left: 3px;
+	font-size: 12px;
+	margin-top: -5px;
+	height: 10px;
+	line-height: 10px;
+	vertical-align: middle;
+	color: #666;
+}
 
 
 

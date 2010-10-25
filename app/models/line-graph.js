@@ -10,10 +10,11 @@
 
 */
 
-function lineGraph(element, options)
+function lineGraph(element, options, labels)
 {
 	this.element = element;
-	this.canvas = this.element.getContext('2d');
+	this.labels  = labels;
+	this.canvas  = this.element.getContext('2d');
 	this.options = options || {};
 	
 	this.options = this.merge(options,
@@ -117,6 +118,26 @@ lineGraph.prototype.prepareLines = function()
 	this.xScale = this.drawWidth / (this.xaxis.max - this.xaxis.min);
 	this.yScale = this.drawHeight / (this.yaxis.max - this.yaxis.min);
 };
+lineGraph.prototype.prepareLabels = function()
+{
+	var html = '';
+	
+	var ticsEvery = Math.round((this.yaxis.max-this.yaxis.min)/4);
+	var ticsGap = Math.round(this.drawHeight/4);
+	
+	html += '<div style="top: '+this.drawHeight+'px;">'+this.yaxis.min+'</div>';
+	
+	for (var t = 1; t < 4; t++)
+	{
+		var label = t*ticsEvery;
+		var top = this.drawHeight - ((t)*ticsGap);
+		html += '<div style="top: '+top+'px;">'+label+'</div>';
+	}
+	
+	html += '<div style="top: '+this.options.padding.top+'px;">'+this.yaxis.max+'</div>';
+	
+	this.labels.update(html);
+}
 
 lineGraph.prototype.getX = function(x)
 {
@@ -133,7 +154,7 @@ lineGraph.prototype.render = function()
 	this.canvas.save();
 	
 	this.prepareLines();
-	
+	this.prepareLabels();
 	
 	this.lines.each(function(l)
 	{

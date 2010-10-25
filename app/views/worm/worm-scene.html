@@ -8,7 +8,7 @@
 		<div class="title" id="worm-title"></div>
 	</div>
 	
-	<div class="palm-header-spacer" style="height: 56px;"></div>
+	<div class="palm-header-spacer" style="height: 50px;"></div>
 	
 	<table class="palm-divider labeled">
 		<tr>
@@ -18,7 +18,10 @@
 			<td class="bubble"><div id="nodesCurrent">0</div></td>
 		</tr>
 	</table>
-	<canvas id="nodesCanvas" width="320" height="161"></canvas>
+	<div class="graph" style="height: 160px;">
+		<div id="nodesLabels" class="labels"></div>
+		<canvas id="nodesCanvas" width="320" height="161"></canvas>
+	</div>
 	
 	<table class="palm-divider labeled">
 		<tr>
@@ -28,7 +31,10 @@
 			<td class="bubble"><div id="handlesCurrent">0</div></td>
 		</tr>
 	</table>
-	<canvas id="handlesCanvas" width="320" height="161"></canvas>
+	<div class="graph" style="height: 160px;">
+		<div id="handlesLabels" class="labels"></div>
+		<canvas id="handlesCanvas" width="320" height="161"></canvas>
+	</div>
 	
 	<div class="scene-fade-bottom" x-mojo-scroll-fade="bottom"></div>
 	

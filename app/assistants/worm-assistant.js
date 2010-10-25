@@ -93,7 +93,8 @@ WormAssistant.prototype.setup = function()
 				{
 					min: 0
 				}
-			}
+			},
+			this.controller.get('nodesLabels')
 		);
 		this.graphs.handles = new lineGraph
 		(
@@ -105,7 +106,8 @@ WormAssistant.prototype.setup = function()
 				{
 					min: 0
 				}
-			}
+			},
+			this.controller.get('handlesLabels')
 		);
 		
 		// register scene!
