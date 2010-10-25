@@ -382,7 +382,7 @@ MainAssistant.prototype.handleCommand = function(event)
 				break;
 				
 			case 'do-clear':
-				this.request = LumberjackService.clearMessages(function(pl){alert('-----');alert(pl);for(var p in pl){alert(p+': '+pl[p]);}});
+				this.request = LumberjackService.clearMessages(function(p){});
 				break;
 	
 			case 'do-help':
