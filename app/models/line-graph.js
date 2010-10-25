@@ -127,13 +127,12 @@ lineGraph.prototype.renderTics = function()
 	this.canvas.strokeStyle = this.options.yaxis.ticStroke;
 	this.canvas.lineWidth =   this.options.yaxis.ticWidth;
 	
-	this.yaxis.max = this.getBetterY(this.yaxis.max);
+	this.yaxis.max = this.getBetterMaxY(this.yaxis.max);
 	this.yScale = this.drawHeight / (this.yaxis.max - this.yaxis.min);
 	
 	var html = '';
 	
-	var ticsEvery = Math.round((this.yaxis.max-this.yaxis.min)/(this.options.yaxis.tics-1));
-	var ticsGap = Math.round(this.drawHeight/(this.options.yaxis.tics-1));
+	var ticsEvery = Math.ceil(this.yaxis.max-this.yaxis.min)/(this.options.yaxis.tics-1);
 	
 	// this would be 0...
 	html += '<div style="top: '+this.drawHeight+'px;">'+this.yaxis.min+'</div>';
@@ -143,37 +142,30 @@ lineGraph.prototype.renderTics = function()
 	this.canvas.stroke();
 	this.canvas.closePath();
 	
-	for (var t = 1; t < (this.options.yaxis.tics-1); t++)
+	for (var t = 1; t < this.options.yaxis.tics; t++)
 	{
 		var v = t*ticsEvery;
 		var y = this.getY(v);
-		html += '<div style="top: '+y+'px;">'+v+'</div>';
-		
-		this.canvas.beginPath();
-		this.canvas.moveTo(this.options.padding.left, y);
-		this.canvas.lineTo(this.options.padding.left + this.drawWidth, y);
-		this.canvas.stroke();
-		this.canvas.closePath();
+		if (y >= (0-this.options.padding.top))
+		{
+			html += '<div style="top: '+y+'px;">'+v+'</div>';
+			
+			this.canvas.beginPath();
+			this.canvas.moveTo(this.options.padding.left, y);
+			this.canvas.lineTo(this.options.padding.left + this.drawWidth, y);
+			this.canvas.stroke();
+			this.canvas.closePath();
+		}
 	}
-	
-	html += '<div style="top: '+this.options.padding.top+'px;">'+this.yaxis.max+'</div>';
-	this.canvas.beginPath();
-	this.canvas.moveTo(this.options.padding.left, this.options.padding.top);
-	this.canvas.lineTo(this.options.padding.left + this.drawWidth, this.options.padding.top);
-	this.canvas.stroke();
-	this.canvas.closePath();
 	
 	this.labels.update(html);
 }
-lineGraph.prototype.getBetterY = function(y)
+lineGraph.prototype.getBetterMaxY = function(y)
 {
-	if (y < 100)
+	while (y%(this.options.yaxis.tics-1))
 	{
-		return Math.ceil((this.yaxis.max-this.yaxis.min)/(this.options.yaxis.tics-1) * this.options.yaxis.tics-1);
+		y++;
 	}
-	if (y > 1000) return Math.ceil(y / 100) * 100;
-	if (y > 100)  return Math.ceil(y / 10) * 10;
-	
 	return y;
 }
 
