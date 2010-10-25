@@ -36,7 +36,7 @@ wormHandler.prototype.newScene = function(assistant, log, popit)
 		
 		if (!popit)
 		{
-			assistant.controller.stageController.pushScene('worm', log, false);
+			assistant.controller.stageController.pushScene({name: 'worm', disableSceneScroller: true}, log, false);
 		}
 		else
 		{
@@ -52,7 +52,7 @@ wormHandler.prototype.newScene = function(assistant, log, popit)
 }
 wormHandler.prototype.newSceneCallback = function(log, popped, controller)
 {
-	controller.pushScene('worm', log, popped);
+	controller.pushScene({name: 'worm', disableSceneScroller: true}, log, popped);
 }
 
 wormHandler.prototype.registerScene = function(log, assistant)
