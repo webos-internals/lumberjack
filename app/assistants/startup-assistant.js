@@ -11,7 +11,8 @@ function StartupAssistant(changelog)
     this.newMessages =
 	[
 		{ version: '0.4.1', log: [ 'Better graphs for resource monitor',
-								   'Added Clear Log File to main scene and get log scene for clearing the /var/log/messages file' ] },
+								   'Added Clear Log File to main scene and get log scene for clearing the /var/log/messages file',
+								   'Fixed bug where resource monitor would fail to start a second time' ] },
 		{ version: '0.4.0', log: [ 'Added Resource Monitor',
 								   'Added font size preference',
 								   'Added a way to get back to this changelog from the help scene' ] },

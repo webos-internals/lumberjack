@@ -124,9 +124,11 @@ lineGraph.prototype.prepareLines = function()
 };
 lineGraph.prototype.renderTics = function()
 {
-	
 	this.canvas.strokeStyle = this.options.yaxis.ticStroke;
 	this.canvas.lineWidth =   this.options.yaxis.ticWidth;
+	
+	this.yaxis.max = this.getBetterY(this.yaxis.max);
+	this.yScale = this.drawHeight / (this.yaxis.max - this.yaxis.min);
 	
 	var html = '';
 	
@@ -162,6 +164,17 @@ lineGraph.prototype.renderTics = function()
 	this.canvas.closePath();
 	
 	this.labels.update(html);
+}
+lineGraph.prototype.getBetterY = function(y)
+{
+	if (y < 100)
+	{
+		return Math.ceil((this.yaxis.max-this.yaxis.min)/(this.options.yaxis.tics-1) * this.options.yaxis.tics-1);
+	}
+	if (y > 1000) return Math.ceil(y / 100) * 100;
+	if (y > 100)  return Math.ceil(y / 10) * 10;
+	
+	return y;
 }
 
 lineGraph.prototype.getX = function(x)
