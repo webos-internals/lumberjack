@@ -883,6 +883,23 @@ static bool read_file(LSHandle* lshandle, LSMessage *message, char *filename, bo
   return false;
 }
 
+bool clearMessages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
+  LSError lserror;
+  LSErrorInit(&lserror);
+
+  char command[MAXLINLEN];
+
+  sprintf(command, "rm -rf /var/log/messages 2>&1");
+
+  return simple_command(lshandle, message, command);
+
+ error:
+  LSErrorPrint(&lserror, stderr);
+  LSErrorFree(&lserror);
+ end:
+  return false;
+}
+
 bool getMessages_method(LSHandle* lshandle, LSMessage *message, void *ctx) {
   LSError lserror;
   LSErrorInit(&lserror);
@@ -974,6 +991,7 @@ LSMethod luna_methods[] = {
   { "getLogging",	getLogging_method },
   { "setLogging",	setLogging_method },
 
+  { "clearMessages",	clearMessages_method },
   { "getMessages",	getMessages_method },
 
   { "tailMessages",	tailMessages_method },

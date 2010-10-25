@@ -24,6 +24,10 @@ function MainAssistant()
 				command: 'do-prefs'
 			},
 			{
+				label: $L("Clear Log File"),
+				command: 'do-clear'
+			},
+			{
 				label: $L("Help"),
 				command: 'do-help'
 			}
@@ -375,6 +379,10 @@ MainAssistant.prototype.handleCommand = function(event)
 		{
 			case 'do-prefs':
 				this.controller.stageController.pushScene('preferences');
+				break;
+				
+			case 'do-clear':
+				this.request = LumberjackService.clearMessages(function(pl){alert('-----');alert(pl);for(var p in pl){alert(p+': '+pl[p]);}});
 				break;
 	
 			case 'do-help':

@@ -24,6 +24,16 @@ LumberjackService.version = function(callback)
     return request;
 };
 
+LumberjackService.clearMessages = function(callback)
+{
+    var request = new Mojo.Service.Request(LumberjackService.identifier,
+	{
+	    method: 'clearMessages',
+	    onSuccess: callback,
+	    onFailure: callback
+	});
+    return request;
+};
 LumberjackService.getMessages = function(callback)
 {
     var request = new Mojo.Service.Request(LumberjackService.identifier,
