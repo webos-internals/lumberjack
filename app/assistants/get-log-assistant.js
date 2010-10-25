@@ -21,6 +21,10 @@ function GetLogAssistant(filter)
 		items:
 		[
 			{
+				label: $L("Clear Log File"),
+				command: 'do-clear'
+			},
+			{
 				label: $L("Help"),
 				command: 'do-help'
 			}
@@ -467,6 +471,10 @@ GetLogAssistant.prototype.handleCommand = function(event)
 				this.searchElement.mojo.setValue('');
 				this.messageHighlight(-1, 'highlight');
 				this.searchDelay({value: ''});
+				break;
+				
+			case 'do-clear':
+				this.request = LumberjackService.clearMessages(function(p){});
 				break;
 			
 			case 'do-help':
