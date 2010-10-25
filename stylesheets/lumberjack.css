@@ -241,6 +241,10 @@ body.palm-dark .scene-fade-bottom
 	height: 23px;
 	background: url(../images/pop-icon.png) center center no-repeat;
 }
+.worm table.palm-divider
+{
+	margin-top: 3px;
+}
 .worm table.palm-divider tr td.bubble > div
 {
 	color: #ffffff;
