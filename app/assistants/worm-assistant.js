@@ -164,7 +164,7 @@ WormAssistant.prototype.addStats = function(handles, nodes)
 	this.nodesCurrentElement.update(nodes);
 	this.handlesCurrentElement.update(handles);
 	
-	if (this.data.length > 99) this.data.shift();
+	if (this.data.length > 60) this.data.shift();
 	
 	this.data.push({handles: handles, nodes: nodes});
 	
@@ -184,19 +184,22 @@ WormAssistant.prototype.render = function()
 		hData.push({x: d, y: this.data[d].handles});
 	}
 	
+	this.graphs.nodes.options.yaxis.ticFill = (this.controller.document.body.hasClassName('palm-dark') ? "rgba(0, 0, 0, .08)" : "rgba(125, 125, 125, .08)");
+	this.graphs.handles.options.yaxis.ticFill = (this.controller.document.body.hasClassName('palm-dark') ? "rgba(0, 0, 0, .08)" : "rgba(125, 125, 125, .08)");
+	
 	this.graphs.nodes.addLine(
 	{
 		data: nData,
-		stroke:	(this.controller.document.body.hasClassName('palm-dark') ? "rgba(232, 232, 232, .5)" : "rgba(112, 174, 227, .5)"),
-		fill:	(this.controller.document.body.hasClassName('palm-dark') ? "rgba(232, 232, 232, .1)" : "rgba(112, 174, 227, .1)"),
+		stroke:	(this.controller.document.body.hasClassName('palm-dark') ? "rgba(170, 170, 170, .5)" : "rgba(112, 174, 227, .5)"),
+		fill:	(this.controller.document.body.hasClassName('palm-dark') ? "rgba(170, 170, 170, .1)" : "rgba(112, 174, 227, .1)"),
 		//stroke:	(prefs.get().theme == 'palm-dark' ? "rgba(255, 255, 255, .5)" : "rgba(0, 0, 0, .5)"),
 		//fill:	(prefs.get().theme == 'palm-dark' ? "rgba(255, 255, 255, .1)" : "rgba(0, 0, 0, .1)"),
 	});
 	this.graphs.handles.addLine(
 	{
 		data: hData,
-		stroke:	(this.controller.document.body.hasClassName('palm-dark') ? "rgba(232, 232, 232, .5)" : "rgba(112, 174, 227, .5)"),
-		fill:	(this.controller.document.body.hasClassName('palm-dark') ? "rgba(232, 232, 232, .1)" : "rgba(112, 174, 227, .1)"),
+		stroke:	(this.controller.document.body.hasClassName('palm-dark') ? "rgba(170, 170, 170, .5)" : "rgba(112, 174, 227, .5)"),
+		fill:	(this.controller.document.body.hasClassName('palm-dark') ? "rgba(170, 170, 170, .1)" : "rgba(112, 174, 227, .1)"),
 	});
 	
 	this.graphs.nodes.render();
@@ -271,6 +274,7 @@ WormAssistant.prototype.handleCommand = function(event)
 		{
 			case 'do-clear':
 				this.data = [];
+				this.render();
 				break;
 			
 			case 'do-help':
