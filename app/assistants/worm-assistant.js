@@ -93,8 +93,8 @@ WormAssistant.prototype.setup = function()
 				{
 					min:		0,
 					tics:		6,
-					ticStroke:	"rgba(125, 125, 125, .3)"
-					//ticFill:	"rgba(125, 125, 125, .08)"
+					ticStroke:	false, //"rgba(125, 125, 125, .3)"
+					ticFill:	"rgba(125, 125, 125, .08)"
 				},
 				padding:
 				{
@@ -113,8 +113,8 @@ WormAssistant.prototype.setup = function()
 				{
 					min:		0,
 					tics:		6,
-					ticStroke:	"rgba(125, 125, 125, .3)"
-					//ticFill:	"rgba(125, 125, 125, .08)"
+					ticStroke:	false, //"rgba(125, 125, 125, .3)"
+					ticFill:	"rgba(125, 125, 125, .08)"
 				},
 				padding:
 				{
