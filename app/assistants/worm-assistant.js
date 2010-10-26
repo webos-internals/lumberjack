@@ -92,8 +92,9 @@ WormAssistant.prototype.setup = function()
 				yaxis:
 				{
 					min:		0,
-					tics:		5,
+					tics:		6,
 					ticStroke:	"rgba(125, 125, 125, .3)"
+					//ticFill:	"rgba(125, 125, 125, .08)"
 				},
 				padding:
 				{
@@ -111,8 +112,9 @@ WormAssistant.prototype.setup = function()
 				yaxis:
 				{
 					min:		0,
-					tics:		5,
-					ticStroke:	"rgba(125, 125, 125, .5)"
+					tics:		6,
+					ticStroke:	"rgba(125, 125, 125, .3)"
+					//ticFill:	"rgba(125, 125, 125, .08)"
 				},
 				padding:
 				{

@@ -32,6 +32,7 @@ function lineGraph(element, options, labels)
 			max:		null,
 			tics:		false,
 			ticStroke:	"rgba(0, 0, 0, .5)",
+			ticFill:	false,
 			ticWidth:	1
 		},
 		padding:
@@ -125,6 +126,7 @@ lineGraph.prototype.prepareLines = function()
 lineGraph.prototype.renderTics = function()
 {
 	this.canvas.strokeStyle = this.options.yaxis.ticStroke;
+	this.canvas.fillStyle =   this.options.yaxis.ticFill;
 	this.canvas.lineWidth =   this.options.yaxis.ticWidth;
 	
 	this.yaxis.max = this.getBetterMaxY(this.yaxis.max);
@@ -134,15 +136,7 @@ lineGraph.prototype.renderTics = function()
 	
 	var ticsEvery = Math.ceil(this.yaxis.max-this.yaxis.min)/(this.options.yaxis.tics-1);
 	
-	// this would be 0...
-	html += '<div style="top: '+this.drawHeight+'px;">'+this.yaxis.min+'</div>';
-	this.canvas.beginPath();
-	this.canvas.moveTo(this.options.padding.left, this.options.padding.top + this.drawHeight);
-	this.canvas.lineTo(this.options.padding.left + this.drawWidth, this.options.padding.top + this.drawHeight);
-	this.canvas.stroke();
-	this.canvas.closePath();
-	
-	for (var t = 1; t < this.options.yaxis.tics; t++)
+	for (var t = 0; t < this.options.yaxis.tics; t++)
 	{
 		var v = t*ticsEvery;
 		var y = this.getY(v);
@@ -150,11 +144,19 @@ lineGraph.prototype.renderTics = function()
 		{
 			html += '<div style="top: '+y+'px;">'+v+'</div>';
 			
-			this.canvas.beginPath();
-			this.canvas.moveTo(this.options.padding.left, y);
-			this.canvas.lineTo(this.options.padding.left + this.drawWidth, y);
-			this.canvas.stroke();
-			this.canvas.closePath();
+			if (this.options.yaxis.ticStroke !== false)
+			{
+				this.canvas.beginPath();
+				this.canvas.moveTo(this.options.padding.left, y);
+				this.canvas.lineTo(this.options.padding.left + this.drawWidth, y);
+				this.canvas.stroke();
+				this.canvas.closePath();
+			}
+			if (this.options.yaxis.ticFill !== false && (t%2) && t > 0)
+			{
+				var y2 = this.getY((t-1)*ticsEvery);
+				this.canvas.fillRect(this.options.padding.left, y, this.drawWidth, y2-y);
+			}
 		}
 	}
 	
