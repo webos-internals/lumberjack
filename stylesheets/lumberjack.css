@@ -271,14 +271,23 @@ body.palm-dark .worm table.palm-divider tr td.bubble > div
 .worm .graph canvas
 {
 	position: absolute;
+	z-index: 100;
 	top: 0px;
 	left: 0px;
 }
 .worm .graph .labels
 {
 	position: absolute;
+	z-index: 101;
 	top: 0px;
 	left: 0px;
+	bottom: -2px;
+	right: 0px;
+	background: url(../images/palm-default/fade-left.png) top left repeat-y;
+}
+body.palm-dark .worm .graph .labels
+{
+	background: url(../images/palm-dark/fade-left.png) top left repeat-y;
 }
 .worm .graph .labels div
 {
