@@ -245,6 +245,22 @@ body.palm-dark .scene-fade-bottom
 {
 	margin-top: 5px;
 }
+.worm table.palm-divider.labeled .left
+{
+	background: url(../images/palm-default/palm-divider-line.png) right center no-repeat;
+}
+.worm table.palm-divider.labeled .right
+{
+	background: url(../images/palm-default/palm-divider-line.png) left center no-repeat;
+}
+body.palm-dark .worm table.palm-divider.labeled .left
+{
+	background: url(../images/palm-dark/palm-divider-line.png) right center no-repeat;
+}
+body.palm-dark .worm table.palm-divider.labeled .right
+{
+	background: url(../images/palm-dark/palm-divider-line.png) left center no-repeat;
+}
 .worm table.palm-divider tr td.bubble > div
 {
 	color: #ffffff;
@@ -254,7 +270,6 @@ body.palm-dark .scene-fade-bottom
 	text-align: center;
 	font-weight: bold;
 	position: relative;
-	margin-top: 1px;
 	text-transform: uppercase;
 	-webkit-border-image: url(../images/palm-default/divider-bubble.png) 0 16 0 16 stretch stretch;
 	-webkit-box-sizing: border-box;
