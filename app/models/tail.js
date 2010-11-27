@@ -1,6 +1,6 @@
 function tailHandler()
 {
-	this.scenes = $H();
+	this.scenes = new Hash();
 	this.started = 0;
 	this.status = false;
 	
@@ -14,11 +14,11 @@ function tailHandler()
 tailHandler.LogDateRegExp =		new RegExp(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(.*)$/);
 
 // (every)
-tailHandler.LogRegExpEvery =	new RegExp(/^([^\s]*) \[(.*)\] palm-webos-device ([^\.]*).([^\s]*) ([^:]*): (.*)$/);
+tailHandler.LogRegExpEvery =	new RegExp(/^([^\s]*) \[(.*)\] (?:[^\s]*) ([^\.]*).([^\s]*) ([^:]*): (.*)$/);
 // (alert)					2010-08-15T02:32:37.110778Z [178667] palm-webos-device user.warning LunaSysMgr: {LunaSysMgrJS}: start
-tailHandler.LogRegExpAlert =	new RegExp(/^([^\s]*) \[(.*)\] palm-webos-device user.warning LunaSysMgr: {LunaSysMgrJS}: (.*)$/);
+tailHandler.LogRegExpAlert =	new RegExp(/^([^\s]*) \[(.*)\] (?:[^\s]*) user.warning LunaSysMgr: {LunaSysMgrJS}: (.*)$/);
 // (mojo.log)				2010-08-15T01:47:25.448852Z [175956] palm-webos-device user.notice LunaSysMgr: {LunaSysMgrJS}: org.webosinternals.lumberjack: Info: start, palmInitFramework346:2520
-tailHandler.LogRegExpMojo =		new RegExp(/^([^\s]*) \[(.*)\] palm-webos-device user.([^\s]*) LunaSysMgr: {LunaSysMgrJS}: ([^:]*): ([^:]*): (.*)$/);
+tailHandler.LogRegExpMojo =		new RegExp(/^([^\s]*) \[(.*)\] (?:[^\s]*) user.([^\s]*) LunaSysMgr: {LunaSysMgrJS}: ([^:]*): ([^:]*): (.*)$/);
 
 
 tailHandler.prototype.newScene = function(assistant, log, popit)
