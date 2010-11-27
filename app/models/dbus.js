@@ -174,7 +174,7 @@ dbusHandler.prototype.handleMessages = function(payload)
 				var scene = this.scenes.get(keys[k]);
 				if (scene.status)
 				{
-					if (keys[k] == 'every' || keys[k] == 'custom')
+					if (keys[k] == 'every' || keys[k] == 'allapps' || keys[k] == 'custom')
 					{
 						if (!everyMsg) everyMsg = dbusHandler.parseEvery(payload.status);
 						if (scene.assistant)

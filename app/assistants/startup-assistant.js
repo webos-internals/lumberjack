@@ -11,7 +11,8 @@ function StartupAssistant(changelog)
     this.newMessages =
 	[
 		{ version: '0.4.2', log: [ 'Fixed listApps bug',
-								   'Fixed get/follow log on the Pre2' ] },
+								   'Fixed get/follow log on the Pre2',
+								   'Fixed Ls2 Monitor for webOS 2.0' ] },
 		{ version: '0.4.1', log: [ 'Better graphs for resource monitor',
 								   'Added Clear Log File to main scene and get log scene for clearing the /var/log/messages file',
 								   'Fixed bug where resource monitor would fail to start a second time' ] },

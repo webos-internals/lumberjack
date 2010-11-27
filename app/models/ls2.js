@@ -7,7 +7,7 @@ function ls2Handler()
 	this.request = false;
 	
 	// make truthy to enable heavy logging
-	this.logging = true;
+	this.logging = false;
 };
 
 // (every)
@@ -174,7 +174,7 @@ ls2Handler.prototype.handleMessages = function(payload)
 				var scene = this.scenes.get(keys[k]);
 				if (scene.status)
 				{
-					if (keys[k] == 'every' || keys[k] == 'custom')
+					if (keys[k] == 'every' || keys[k] == 'allapps' || keys[k] == 'custom')
 					{
 						if (!everyMsg) everyMsg = ls2Handler.parseEvery(payload.status);
 						if (scene.assistant)
@@ -219,44 +219,43 @@ ls2Handler.prototype.handleMessages = function(payload)
 ls2Handler.parseEvery = function(msg)
 {
 	var l = false;
-
+	
 	var match = ls2Handler.LogRegExpEvery.exec(msg);
-	if (match) {
-		
-	    alert('============= MATCH');
-	    for (var m = 0; m < match.length; m++) alert(m+': '+match[m]);
-		
-	    if (match[3] == 'call') {
-		l =
+	if (match)
+	{
+	    if (match[3] == 'call')
 		{
-			seq:      match[4],
-			leftid:   match[5],
-			rightid:  match[6],
-			rowClass: match[3],
-			message:  formatForHtml(match[7]),
-			raw:      msg,
-			copy:     '[' + match[4] + '] ' + match[5] + ' -> ' + match[6] + ': ' + match[7]
-		};
+			l =
+			{
+				seq:      match[4],
+				leftid:   match[5],
+				rightid:  match[6],
+				rowClass: match[3],
+				message:  formatForHtml(match[7]),
+				raw:      msg,
+				copy:     '[' + match[4] + '] ' + match[5] + ' -> ' + match[6] + ': ' + match[7]
+			};
 	    }
-	    else if (match[3] == 'return') {
-		l =
+	    else if (match[3] == 'return')
 		{
-			seq:      match[4],
-			leftid:   match[6],
-			rightid:  match[5],
-			rowClass: match[3],
-			message:  formatForHtml(match[7]),
-			raw:      msg,
-			copy:     '[' + match[4] + '] ' + match[5] + ' -> ' + match[6] + ': ' + match[7]
-		};
+			l =
+			{
+				seq:      match[4],
+				leftid:   match[6],
+				rightid:  match[5],
+				rowClass: match[3],
+				message:  formatForHtml(match[7]),
+				raw:      msg,
+				copy:     '[' + match[4] + '] ' + match[5] + ' -> ' + match[6] + ': ' + match[7]
+			};
 	    }
+	}
+	else
+	{
+	    //alert('============= NO MATCH');
+	    //alert(msg);
 	}
 	
-	else {
-	    alert('============= NO MATCH');
-	    alert(msg);
-	}
-
 	return l;
 }
 
