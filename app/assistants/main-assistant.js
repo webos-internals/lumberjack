@@ -171,12 +171,12 @@ MainAssistant.prototype.setup = function()
 	this.controller.listen(this.wormButton, Mojo.Event.tap, this.wormTapHandler);
 	this.controller.listen(this.ls2Button,  Mojo.Event.tap, this.ls2TapHandler);
 	this.controller.listen(this.dbusButton, Mojo.Event.tap, this.dbusTapHandler);
-    
+	
 	if (Mojo.Environment.DeviceInfo.platformVersionMajor == 1)
 	{
 		this.ls2Button.hide();
 	}
-	else if (Mojo.Environment.DeviceInfo.platformVersionMajor == 2)
+	else
 	{
 		this.dbusButton.hide();
 	}
