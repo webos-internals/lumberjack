@@ -48,6 +48,7 @@ TailLogAssistant.prototype.setup = function()
 		this.toggleChangeHandler =		this.toggleChanged.bindAsEventListener(this);
 		this.popButtonPressed =			this.popButtonPressed.bindAsEventListener(this);
 		this.messageTapHandler =		this.messageTap.bindAsEventListener(this);
+		this.messageDeleteHandler =		this.messageDelete.bindAsEventListener(this);
 		
 		Mojo.Event.listen(this.sceneScroller, Mojo.Event.scrollStarting, this.scrollHandler);
         Mojo.Event.listen(this.documentElement, Mojo.Event.stageActivate, this.visibleWindowHandler);
@@ -91,7 +92,8 @@ TailLogAssistant.prototype.setup = function()
 			'messages',
 			{
 				itemTemplate: "log/message-row",
-				swipeToDelete: false,
+				swipeToDelete: true,
+				autoconfirmDelete: true,
 				reorderable: false,
 				renderLimit: 50,
 			},
@@ -103,6 +105,7 @@ TailLogAssistant.prototype.setup = function()
 		this.revealBottom();
 		
 		this.controller.listen(this.messagesElement, Mojo.Event.listTap, this.messageTapHandler);
+		this.controller.listen(this.messagesElement, Mojo.Event.listDelete, this.messageDeleteHandler);
 		
 		// register scene!
 		tail.registerScene(this.filter, this);
@@ -216,6 +219,28 @@ TailLogAssistant.prototype.messageHighlight = function(index)
 		}
 		this.messagesElement.mojo.noticeUpdatedItems(0, this.listModel.items);
 		this.messagesElement.mojo.setLength(this.listModel.items.length);
+	}
+}
+TailLogAssistant.prototype.messageDelete = function(event)
+{
+	if (event.index)
+	{
+		var newData = [];
+		if (this.listModel.items.length > 0) 
+		{
+			for (var i = 0; i < this.listModel.items.length; i++) 
+			{
+				if (i == event.index) 
+				{
+					// ignore
+				}
+				else 
+				{
+					newData.push(this.listModel.items[i]);
+				}
+			}
+		}
+		this.listModel.items = newData;
 	}
 }
 

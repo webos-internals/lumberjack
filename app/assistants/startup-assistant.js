@@ -10,7 +10,8 @@ function StartupAssistant(changelog)
     // on new version start
     this.newMessages =
 	[
-		{ version: '0.4.3', log: [ 'Fixed webOS version check funkyness' ] },
+		{ version: '0.4.3', log: [ 'Fixed webOS version check funkyness',
+								   'Added ability to swipe-delete lines from the Follow Log scene just for Lisa, but everyone else can use it too' ] },
 		{ version: '0.4.2', log: [ 'Fixed listApps bug',
 								   'Fixed get/follow log on the Pre2',
 								   'Fixed Ls2 Monitor for webOS 2.0' ] },
