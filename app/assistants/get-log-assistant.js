@@ -54,6 +54,7 @@ GetLogAssistant.prototype.setup = function()
 		this.spinnerElement =			this.controller.get('spinner');
 		this.reloadButtonPressed =		this.reloadButtonPressed.bindAsEventListener(this);
 		this.messageTapHandler =		this.messageTap.bindAsEventListener(this);
+		this.messageDeleteHandler =		this.messageDelete.bindAsEventListener(this);
 		this.searchDelayHandler =		this.searchDelay.bindAsEventListener(this);
 		this.keyHandler =				this.keyTest.bindAsEventListener(this);
 		this.searchFunction =			this.search.bind(this);
@@ -76,7 +77,8 @@ GetLogAssistant.prototype.setup = function()
 			'messages',
 			{
 				itemTemplate: "log/message-row",
-				swipeToDelete: false,
+				swipeToDelete: true,
+				autoconfirmDelete: true,
 				reorderable: false,
 				renderLimit: 50,
 			},
@@ -88,6 +90,7 @@ GetLogAssistant.prototype.setup = function()
 		this.revealBottom();
 		
 		this.controller.listen(this.messagesElement, Mojo.Event.listTap, this.messageTapHandler);
+		this.controller.listen(this.messagesElement, Mojo.Event.listDelete, this.messageDeleteHandler);
 		
 		this.controller.setupWidget('searchSpinner', {spinnerSize: 'small'}, {spinning: false});
 		
@@ -271,6 +274,28 @@ GetLogAssistant.prototype.messageHighlight = function(index, style)
 		}
 		this.messagesElement.mojo.noticeUpdatedItems(0, this.listModel.items);
 		this.messagesElement.mojo.setLength(this.listModel.items.length);
+	}
+}
+GetLogAssistant.prototype.messageDelete = function(event)
+{
+	if (event.index)
+	{
+		var newData = [];
+		if (this.listModel.items.length > 0) 
+		{
+			for (var i = 0; i < this.listModel.items.length; i++) 
+			{
+				if (i == event.index) 
+				{
+					// ignore
+				}
+				else 
+				{
+					newData.push(this.listModel.items[i]);
+				}
+			}
+		}
+		this.listModel.items = newData;
 	}
 }
 
