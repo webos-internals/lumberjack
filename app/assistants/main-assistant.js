@@ -61,6 +61,7 @@ MainAssistant.prototype.setup = function()
 	this.dbusButton =			this.controller.get('dbusButton');
 	this.ls2Button =			this.controller.get('ls2Button');
 	this.wormButton =			this.controller.get('wormButton');
+	this.timingButton =			this.controller.get('timingButton');
 	this.tailButton =			this.controller.get('tailButton');
 	this.getButton =			this.controller.get('getButton');
 	
@@ -74,6 +75,7 @@ MainAssistant.prototype.setup = function()
     this.dbusTapHandler =		this.dbusTap.bindAsEventListener(this);
     this.ls2TapHandler =		this.ls2Tap.bindAsEventListener(this);
     this.wormTapHandler =		this.wormTap.bindAsEventListener(this);
+    this.timingTapHandler =		this.timingTap.bindAsEventListener(this);
     this.tailTapHandler =		this.tailTap.bindAsEventListener(this);
     this.getTapHandler =		this.getTap.bindAsEventListener(this);
 	
@@ -147,6 +149,16 @@ MainAssistant.prototype.setup = function()
 	);
 	this.controller.setupWidget
 	(
+		'timingButton',
+		{},
+		this.timingButtonModel =
+		{
+			buttonLabel: $L("Scene Timing"),
+			disabled: (prefs.get().lastLog == 'every' || prefs.get().lastLog == 'alert' || prefs.get().lastLog == 'custom' || prefs.get().lastLog == 'allapps' ? true : false)
+		}
+	);
+	this.controller.setupWidget
+	(
 		'ls2Button',
 		{},
 		this.ls2ButtonModel =
@@ -166,11 +178,12 @@ MainAssistant.prototype.setup = function()
 		}
 	);
 	
-	this.controller.listen(this.getButton,  Mojo.Event.tap, this.getTapHandler);
-	this.controller.listen(this.tailButton, Mojo.Event.tap, this.tailTapHandler);
-	this.controller.listen(this.wormButton, Mojo.Event.tap, this.wormTapHandler);
-	this.controller.listen(this.ls2Button,  Mojo.Event.tap, this.ls2TapHandler);
-	this.controller.listen(this.dbusButton, Mojo.Event.tap, this.dbusTapHandler);
+	this.controller.listen(this.getButton,    Mojo.Event.tap, this.getTapHandler);
+	this.controller.listen(this.tailButton,   Mojo.Event.tap, this.tailTapHandler);
+	this.controller.listen(this.wormButton,   Mojo.Event.tap, this.wormTapHandler);
+	this.controller.listen(this.timingButton, Mojo.Event.tap, this.timingTapHandler);
+	this.controller.listen(this.ls2Button,    Mojo.Event.tap, this.ls2TapHandler);
+	this.controller.listen(this.dbusButton,   Mojo.Event.tap, this.dbusTapHandler);
 	
 	if (Mojo.Environment.DeviceInfo.platformVersionMajor == 1)
 	{
@@ -263,11 +276,15 @@ MainAssistant.prototype.appChanged = function(event)
 	{
 		this.wormButtonModel.disabled = true;
 		this.controller.modelChanged(this.wormButtonModel);
+		this.timingButtonModel.disabled = true;
+		this.controller.modelChanged(this.timingButtonModel);
 	}
 	else
 	{
 		this.wormButtonModel.disabled = false;
 		this.controller.modelChanged(this.wormButtonModel);
+		this.timingButtonModel.disabled = false;
+		this.controller.modelChanged(this.timingButtonModel);
 	}
 	if (event.value == 'alert')
 	{
@@ -275,6 +292,8 @@ MainAssistant.prototype.appChanged = function(event)
 		this.controller.modelChanged(this.dbusButtonModel);
 		this.ls2ButtonModel.disabled = true;
 		this.controller.modelChanged(this.ls2ButtonModel);
+		this.timingButtonModel.disabled = true;
+		this.controller.modelChanged(this.timingButtonModel);
 	}
 	else
 	{
@@ -282,6 +301,8 @@ MainAssistant.prototype.appChanged = function(event)
 		this.controller.modelChanged(this.dbusButtonModel);
 		this.ls2ButtonModel.disabled = false;
 		this.controller.modelChanged(this.ls2ButtonModel);
+		this.timingButtonModel.disabled = false;
+		this.controller.modelChanged(this.timingButtonModel);
 	}
 	
 	if (event.value == 'custom')
@@ -289,12 +310,16 @@ MainAssistant.prototype.appChanged = function(event)
 		this.filterContainer.className = 'palm-row first';
 		this.customContainer.style.display = '';
 		this.customTextElement.mojo.focus();
+		this.timingButtonModel.disabled = true;
+		this.controller.modelChanged(this.timingButtonModel);
 	}
 	else
 	{
 		this.filterContainer.className = 'palm-row single';
 		this.customContainer.style.display = 'none';
 		this.customTextElement.mojo.blur();
+		this.timingButtonModel.disabled = false;
+		this.controller.modelChanged(this.timingButtonModel);
 	}
 }
 MainAssistant.prototype.customTextChanged = function(event)
@@ -317,6 +342,10 @@ MainAssistant.prototype.tailTap = function(event)
 MainAssistant.prototype.wormTap = function(event)
 {
 	worm.newScene(this, {filter: this.filterModel.value, custom: this.customTextElement.mojo.getValue()}, prefs.get().popLog);
+};
+MainAssistant.prototype.timingTap = function(event)
+{
+	this.controller.stageController.pushScene('timing', {filter: this.filterModel.value, custom: this.customTextElement.mojo.getValue()});
 };
 MainAssistant.prototype.dbusTap = function(event)
 {

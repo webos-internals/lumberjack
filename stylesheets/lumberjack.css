@@ -338,6 +338,51 @@ body.palm-dark .worm .graph .labels div
 }
 
 
+/*
+ * Timing Scene Styles
+ */
+.timing #timing-title
+{
+	float: left;
+	display: block;
+	width: 250px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+.timing #reloadButton
+{
+	position: absolute;
+	right: -16px;
+	bottom: 7px;
+	height: 35px;
+	width: 38px;
+	border-width: 0px 16px 0px 16px;
+	-webkit-box-sizing: border-box;
+	-webkit-border-image: url(../images/header-button-press.png);
+	-webkit-border-image: url(../images/header-button.png) 0 16 0 16 stretch stretch;
+}
+.timing #reloadButton.selected
+{
+	-webkit-border-image: url(../images/header-button-press.png) 0 16 0 16 stretch stretch;
+}
+.timing #reloadButton .icon
+{
+	margin: 0px;
+	padding: 0px;
+	margin-top: 5px;
+	margin-left: -8px;
+	width: 22px;
+	height: 23px;
+	background: url(../images/reload-icon.png) center center no-repeat;
+}
+.timing #spinner
+{
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 120px;
+}
+
 
 /*
  * Dbus Scene Styles

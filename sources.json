@@ -30,6 +30,10 @@
         "source": "app/assistants/worm-assistant.js"
     },
     {
+        "scenes": "timing",
+        "source": "app/assistants/timing-assistant.js"
+    },
+    {
         "scenes": "dbus-log",
         "source": "app/assistants/dbus-log-assistant.js"
     },
