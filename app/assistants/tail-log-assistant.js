@@ -23,6 +23,7 @@ function TailLogAssistant(filter, popped)
 		items: []
 	}
 	
+	this.currentLevel = (prefs.get().setLogLevel || 'err');
 }
 
 TailLogAssistant.prototype.setup = function()
@@ -36,19 +37,21 @@ TailLogAssistant.prototype.setup = function()
         this.updateAppMenu(true);
 		this.controller.setupWidget(Mojo.Menu.appMenu, { omitDefaultItems: true }, this.menuModel);
 		
-        this.documentElement =			this.controller.stageController.document;
-		this.sceneScroller =			this.controller.sceneScroller;
-		this.titleElement =				this.controller.get('tail-log-title');
-		this.messagesElement =			this.controller.get('messages');
-		this.followToggle = 			this.controller.get('followToggle');
-		this.popButtonElement =			this.controller.get('popButton');
-		this.scrollHandler =			this.onScrollStarted.bindAsEventListener(this);
-        this.visibleWindowHandler =		this.visibleWindow.bindAsEventListener(this);
-        this.invisibleWindowHandler =	this.invisibleWindow.bindAsEventListener(this);
-		this.toggleChangeHandler =		this.toggleChanged.bindAsEventListener(this);
-		this.popButtonPressed =			this.popButtonPressed.bindAsEventListener(this);
-		this.messageTapHandler =		this.messageTap.bindAsEventListener(this);
-		this.messageDeleteHandler =		this.messageDelete.bindAsEventListener(this);
+        this.documentElement =					this.controller.stageController.document;
+		this.sceneScroller =					this.controller.sceneScroller;
+		this.titleElement =						this.controller.get('tail-log-title');
+		this.messagesElement =					this.controller.get('messages');
+		this.followToggle = 					this.controller.get('followToggle');
+		this.popButtonElement =					this.controller.get('popButton');
+		this.scrollHandler =					this.onScrollStarted.bindAsEventListener(this);
+        this.visibleWindowHandler =				this.visibleWindow.bindAsEventListener(this);
+        this.invisibleWindowHandler =			this.invisibleWindow.bindAsEventListener(this);
+		this.toggleChangeHandler =				this.toggleChanged.bindAsEventListener(this);
+		this.popButtonPressed =					this.popButtonPressed.bindAsEventListener(this);
+		this.messageTapHandler =				this.messageTap.bindAsEventListener(this);
+		this.messageDeleteHandler =				this.messageDelete.bindAsEventListener(this);
+		this.updateLogLevelHandler =			this.updateLogLevel.bindAsEventListener(this);
+		this.updateLogLevelResponseHandler =	this.updateLogLevelResponse.bindAsEventListener(this);
 		
 		Mojo.Event.listen(this.sceneScroller, Mojo.Event.scrollStarting, this.scrollHandler);
         Mojo.Event.listen(this.documentElement, Mojo.Event.stageActivate, this.visibleWindowHandler);
@@ -334,6 +337,7 @@ TailLogAssistant.prototype.revealBottom = function()
 TailLogAssistant.prototype.visibleWindow = function(event)
 {
 	Mojo.Controller.appController.removeBanner('tail-log-message');
+	this.updateLogLevel();
     if (!this.isVisible)
 	{
         this.isVisible = true;
@@ -349,6 +353,18 @@ TailLogAssistant.prototype.invisibleWindow = function(event)
     this.lastFocusMessage = this.messagesElement.mojo.getNodeByIndex(this.messagesElement.mojo.getLength() - 1);
 }
 
+TailLogAssistant.prototype.updateLogLevel = function()
+{
+	LumberjackService.getLogging(this.updateLogLevelResponseHandler, 'LunaSysMgrJS');
+}
+TailLogAssistant.prototype.updateLogLevelResponse = function(l)
+{
+	if (l)
+	{
+		this.currentLevel = l;
+		this.updateAppMenu();
+	}
+}
 
 TailLogAssistant.prototype.updateAppMenu = function(skipUpdate)
 {
@@ -364,14 +380,16 @@ TailLogAssistant.prototype.updateAppMenu = function(skipUpdate)
 	if (this.showBanners)
 	{
 		this.menuModel.items.push({
-			label: $L("Turn Off Banners"),
+			label: $L('Banners'),
+			secondaryIcon: 'box checked',
 			command: 'do-banner-off'
 		});
 	}
 	else
 	{
 		this.menuModel.items.push({
-			label: $L("Turn On Banners"),
+			label: $L('Banners'),
+			secondaryIcon: 'box',
 			command: 'do-banner-on'
 		});
 	}
@@ -379,6 +397,16 @@ TailLogAssistant.prototype.updateAppMenu = function(skipUpdate)
 	this.menuModel.items.push({
 		label: $L("Clear"),
 		command: 'do-clear'
+	});
+	
+	this.menuModel.items.push({
+		label: $L("Log Level"),
+		items: [
+			{label:$L('Alert'),		command:'do-loglevel-alert',	secondaryIcon: 'box' + (this.currentLevel == 'alert'	? ' selected' : '')},
+			{label:$L('Error'),		command:'do-loglevel-err',		secondaryIcon: 'box' + (this.currentLevel == 'err'		? ' selected' : '')},
+			{label:$L('Warning'),	command:'do-loglevel-warning',	secondaryIcon: 'box' + (this.currentLevel == 'warning'	? ' selected' : '')},
+			{label:$L('Info'),		command:'do-loglevel-info',		secondaryIcon: 'box' + (this.currentLevel == 'info'		? ' selected' : '')}
+		]
 	});
 	
 	this.menuModel.items.push({
@@ -434,7 +462,12 @@ TailLogAssistant.prototype.handleCommand = function(event)
 			case 'do-help':
 				this.controller.stageController.pushScene('help');
 				break;
-				
+			
+			case 'do-loglevel-alert':	LumberjackService.setLogging(this.updateLogLevelHandler, 'LunaSysMgrJS', 'alert');		break;
+			case 'do-loglevel-err':		LumberjackService.setLogging(this.updateLogLevelHandler, 'LunaSysMgrJS', 'err');		break;
+			case 'do-loglevel-warning':	LumberjackService.setLogging(this.updateLogLevelHandler, 'LunaSysMgrJS', 'warning');	break;
+			case 'do-loglevel-info':	LumberjackService.setLogging(this.updateLogLevelHandler, 'LunaSysMgrJS', 'info');		break;
+			
 			case 'do-logcrap':
 				alert('Test Alert Message');
 				Mojo.Log.info('Test Info Message');

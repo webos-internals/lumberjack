@@ -38,6 +38,20 @@ body.palm-dark .scene-fade-bottom
 	background-image: url(../images/menu-icon-last.png);
 }
 
+#palm-app-menu .palm-popup-icon.left.box
+{
+	margin-top: 1px;
+	width: 20px;
+	background: url(../images/appmenu-box.png) center center no-repeat;
+}
+#palm-app-menu .palm-popup-icon.left.box.checked
+{
+	background: url(../images/appmenu-box-checked.png) center center no-repeat;
+}
+#palm-app-menu .palm-popup-icon.left.box.selected
+{
+	background: url(../images/appmenu-box-selected.png) center center no-repeat;
+}
 
 
 /*

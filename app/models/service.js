@@ -1,5 +1,8 @@
 LumberjackService.identifier = 'palm://org.webosinternals.lumberjack';
 
+//												  Context 'BluetoothMonitor' = debug
+LumberjackService.getLoggingRegExp = new RegExp(/^Context '([^']*)' = (.*)$/);
+
 function LumberjackService() {}
 
 LumberjackService.status = function(callback)
@@ -141,6 +144,35 @@ LumberjackService.getStats = function(callback)
     return request;
 };
 
+LumberjackService.getLogging = function(callback, context)
+{
+    var request = new Mojo.Service.Request(LumberjackService.identifier,
+	{
+	    method: 'getLogging',
+		parameters: {},
+	    onSuccess: LumberjackService.getLoggingHelper.bindAsEventListener(this, callback, context),
+	    onFailure: LumberjackService.getLoggingHelper.bindAsEventListener(this, callback, context)
+	});
+    return request;
+};
+LumberjackService.getLoggingHelper = function(payload, callback, context)
+{
+	var response = false;
+	
+	if (payload.returnValue)
+	{
+		for (var p = 0; p < payload.stdOut.length; p++)
+		{
+			var match = LumberjackService.getLoggingRegExp.exec(payload.stdOut[p]);
+			if (match && match[1] == context)
+			{
+				response = match[2];
+				break;
+			}
+		}
+	}
+	if (callback) callback(response);
+};
 LumberjackService.setLogging = function(callback, context, level)
 {
 	//alert('setLogging: ' + context + ' - ' + level);

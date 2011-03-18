@@ -79,8 +79,7 @@ PreferencesAssistant.prototype.setup = function()
 					{label:$L('Alert'),			value:'alert'},
 					{label:$L('Error'),			value:'err'},
 					{label:$L('Warning'),		value:'warning'},
-					{label:$L('Info'),			value:'info'},
-					{label:$L('Debug'),			value:'debug'}
+					{label:$L('Info'),			value:'info'}
 				],
 				modelProperty: 'setLogLevel'
 			},
