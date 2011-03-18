@@ -10,6 +10,8 @@ function StartupAssistant(changelog)
     // on new version start
     this.newMessages =
 	[
+		{ version: '0.4.5', log: [ 'Added BetterListSelector widget to main scene \'What to look for\' selector',
+								   'Added ability to quickly change the current log level from the app menu in the Follow Log scene' ] },
 		{ version: '0.4.4', log: [ 'Added swipe-delete to the Retrieve Log scene' ] },
 		{ version: '0.4.3', log: [ 'Fixed webOS version check funkyness',
 								   'Added ability to swipe-delete lines from the Follow Log scene just for Lisa, but everyone else can use it too' ] },

@@ -7,6 +7,7 @@
     {"source": "app/models/line-graph.js"},
     {"source": "app/models/functions.js"},
     {"source": "app/models/cookies.js"},
+    {"source": "app/models/widget_betterlistselector.js"},
     {"source": "app/assistants/app-assistant.js"},
     {
         "scenes": "startup",

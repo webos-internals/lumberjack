@@ -1,0 +1,47 @@
+/*
+ * Styles for the "BetterListSelector" custom widget
+ */
+
+.better-list-selector .textfield-group.focused
+{
+	display: none;
+	position: absolute;
+	z-index: 1000;
+	-webkit-border-image: url(../images/betterlistselector/light.png) 15 15 15 15 stretch stretch;
+	width: 100%;
+	margin-top: -8px;
+	margin-left: 8px;
+	padding-right: 2px;
+}
+.better-list-selector .textfield-group.focused input
+{
+	margin-left: 3px;
+}
+body.palm-dark .better-list-selector .textfield-group.focused
+{
+	margin-left: 9px;
+	padding-right: 0px;
+	-webkit-border-image: url(../images/betterlistselector/dark.png) 15 15 15 15 stretch stretch;
+}
+.better-list-selector .filter-spinner
+{
+	position: absolute;
+	z-index: 1001;
+	top: -5px;
+	right: -5px;
+}
+
+.better-list-selector.filtering .textfield-group.focused
+{
+	display: block;
+}
+
+.better-list-selector.filtering .palm-popup-content .palm-list .highlight
+{
+	font-weight: bold;
+	text-decoration: underline;
+}
+.better-list-selector.filtering .palm-popup-content .palm-list
+{
+	padding-top: 44px;
+}
