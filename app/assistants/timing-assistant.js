@@ -170,7 +170,13 @@ TimingAssistant.prototype.considerMessage = function(msg)
 		var match = TimingAssistant.TimingRegExp.exec(msg.message);
 		if (match)
 		{
-			Mojo.Log.error('scene', match[1], 'total time', this.formatMs(match[3]), match[4]);
+			msg.scene		= match[1];
+			msg.layout		= match[2];	// not really sure what layout indicates...
+			msg.totalTime	= match[3];
+			msg.totalTimeF	= this.formatMs(match[3]);
+			msg.count		= match[4];	// or this number either
+			msg.functions	= [];
+			
 			var extra = match[5].split(', ');
 			if (extra)
 			{
@@ -179,21 +185,25 @@ TimingAssistant.prototype.considerMessage = function(msg)
 					var extramatch = TimingAssistant.TimingExtraRegExp.exec(extra[e]);
 					if (extramatch)
 					{
-						Mojo.Log.error('     - ', extramatch[1], 'time', this.formatMs(extramatch[2]), extramatch[3]);
+						msg.functions.push({
+							name:	extramatch[1],
+							time:	extramatch[2],
+							timeF:	this.formatMs(extramatch[2]),
+							count:	extramatch[3] // i only think that one above is count because this seems to be the number of times this function ran
+						});
 					}
 				}
 			}
+			this.addTiming(msg);
 		}
 	}
 }
-TimingAssistant.prototype.addMessage = function(msg)
+TimingAssistant.prototype.addTiming = function(obj)
 {
-	if (msg)
+	if (obj)
 	{
-		var push = true;
-		msg.select = '';
-		if (this.filter == 'allapps' || this.filter == 'every') msg.rowClass += ' showapp';
-		this.listModel.items.push(msg);
+		if (this.filter == 'allapps' || this.filter == 'every') obj.rowClass += ' showapp';
+		this.listModel.items.push(obj);
 	}
 }
 

@@ -276,13 +276,19 @@ MainAssistant.prototype.appChanged = function(event)
 	{
 		this.wormButtonModel.disabled = true;
 		this.controller.modelChanged(this.wormButtonModel);
-		this.timingButtonModel.disabled = true;
-		this.controller.modelChanged(this.timingButtonModel);
 	}
 	else
 	{
 		this.wormButtonModel.disabled = false;
 		this.controller.modelChanged(this.wormButtonModel);
+	}
+	if (event.value == 'every' || event.value == 'alert' || event.value == 'allapps' || event.value == 'custom')
+	{
+		this.timingButtonModel.disabled = true;
+		this.controller.modelChanged(this.timingButtonModel);
+	}
+	else
+	{
 		this.timingButtonModel.disabled = false;
 		this.controller.modelChanged(this.timingButtonModel);
 	}
@@ -292,8 +298,6 @@ MainAssistant.prototype.appChanged = function(event)
 		this.controller.modelChanged(this.dbusButtonModel);
 		this.ls2ButtonModel.disabled = true;
 		this.controller.modelChanged(this.ls2ButtonModel);
-		this.timingButtonModel.disabled = true;
-		this.controller.modelChanged(this.timingButtonModel);
 	}
 	else
 	{
@@ -301,8 +305,6 @@ MainAssistant.prototype.appChanged = function(event)
 		this.controller.modelChanged(this.dbusButtonModel);
 		this.ls2ButtonModel.disabled = false;
 		this.controller.modelChanged(this.ls2ButtonModel);
-		this.timingButtonModel.disabled = false;
-		this.controller.modelChanged(this.timingButtonModel);
 	}
 	
 	if (event.value == 'custom')
@@ -310,16 +312,12 @@ MainAssistant.prototype.appChanged = function(event)
 		this.filterContainer.className = 'palm-row first';
 		this.customContainer.style.display = '';
 		this.customTextElement.mojo.focus();
-		this.timingButtonModel.disabled = true;
-		this.controller.modelChanged(this.timingButtonModel);
 	}
 	else
 	{
 		this.filterContainer.className = 'palm-row single';
 		this.customContainer.style.display = 'none';
 		this.customTextElement.mojo.blur();
-		this.timingButtonModel.disabled = false;
-		this.controller.modelChanged(this.timingButtonModel);
 	}
 }
 MainAssistant.prototype.customTextChanged = function(event)

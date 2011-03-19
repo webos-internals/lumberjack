@@ -339,7 +339,7 @@ body.palm-dark .worm .graph .labels div
 
 
 /*
- * Timing Scene Styles
+ * Scene Timing Scene Styles
  */
 .timing #timing-title
 {
@@ -382,7 +382,59 @@ body.palm-dark .worm .graph .labels div
 	margin-right: auto;
 	margin-top: 120px;
 }
-
+.timing .timing-messages .palm-row-wrapper.notice
+{
+	background-image: url(../images/log-black-bg.png) !important;
+}
+.timing .timing-messages .palm-row-wrapper.notice .scene-fade
+{
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	bottom: 0px;
+	width: 50%;
+	background-repeat: repeat-y;
+	background-position: right;
+	background-image: url(../images/log-black-bg.png);
+}
+.timing .timing-messages .palm-row-wrapper.notice .scene,
+.timing .timing-messages .palm-row-wrapper.notice .time,
+.timing .timing-messages .palm-row-wrapper.notice .count
+{
+	display: inline-block;
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+.timing .timing-messages .palm-row-wrapper.notice .scene
+{
+	width: 50%;
+	padding-left: 8px;
+}
+.timing .timing-messages .palm-row-wrapper.notice .time
+{
+	width: 26%;
+	text-align: center;
+}
+.timing .timing-messages .palm-row-wrapper.notice .count
+{
+	width: 16%;
+	text-align: center;
+	margin-right: 0px;
+}
+.timing .timing-messages .palm-row.selected .scene,
+.timing .timing-messages .palm-row.selected .time,
+.timing .timing-messages .palm-row.selected .count
+{
+	color: #fff;
+}
+body.palm-dark .timing .timing-messages .palm-row-wrapper.notice
+{
+	background-image: url(../images/log-white-bg.png) !important;
+}
+body.palm-dark .timing .timing-messages .palm-row-wrapper.notice .scene-fade
+{
+	background-image: url(../images/log-white-bg.png);
+}
 
 /*
  * Dbus Scene Styles
