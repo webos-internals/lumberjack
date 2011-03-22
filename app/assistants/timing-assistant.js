@@ -38,7 +38,6 @@ TimingAssistant.prototype.setup = function()
 		
 		// setup menus
 		this.controller.setupWidget(Mojo.Menu.appMenu, { omitDefaultItems: true }, this.menuModel);
-		this.controller.setupWidget(Mojo.Menu.commandMenu, { menuClass: 'no-fade' }, this.cmdMenuModel = {items:[]});
 		
 		this.sceneScroller =			this.controller.sceneScroller;
 		this.headerElement =			this.controller.get('logHeader');
@@ -47,6 +46,7 @@ TimingAssistant.prototype.setup = function()
 		this.reloadButtonElement =		this.controller.get('reloadButton');
 		this.spinnerElement =			this.controller.get('spinner');
 		this.reloadButtonPressed =		this.reloadButtonPressed.bindAsEventListener(this);
+		this.timingTapHandler =			this.timingTap.bindAsEventListener(this);
 		
 		this.controller.setupWidget('spinner', {spinnerSize: 'large'}, {spinning: false});
 		
@@ -75,6 +75,8 @@ TimingAssistant.prototype.setup = function()
 		);
 		this.revealBottom();
 		
+		this.controller.listen(this.timingElement, Mojo.Event.listTap, this.timingTapHandler);
+		
 		
 	}
 	catch (e)
@@ -86,6 +88,14 @@ TimingAssistant.prototype.setup = function()
 TimingAssistant.prototype.reloadButtonPressed = function(event)
 {
 	this.get();
+}
+
+TimingAssistant.prototype.timingTap = function(event)
+{
+	if (event.item)
+	{
+		this.controller.stageController.pushScene('timing-func', event.item.scene, event.item.functions);
+	}
 }
 
 TimingAssistant.prototype.get = function()
@@ -170,10 +180,13 @@ TimingAssistant.prototype.considerMessage = function(msg)
 		var match = TimingAssistant.TimingRegExp.exec(msg.message);
 		if (match)
 		{
+			
+			//for (var m in msg) Mojo.Log.error(m+':', msg[m]);
+		
 			msg.scene		= match[1];
 			msg.layout		= match[2];	// not really sure what layout indicates...
 			msg.totalTime	= match[3];
-			msg.totalTimeF	= this.formatMs(match[3]);
+			msg.totalTimeF	= this.formatMs(match[3], true);
 			msg.count		= match[4];	// or this number either
 			msg.functions	= [];
 			
@@ -188,7 +201,7 @@ TimingAssistant.prototype.considerMessage = function(msg)
 						msg.functions.push({
 							name:	extramatch[1],
 							time:	extramatch[2],
-							timeF:	this.formatMs(extramatch[2]),
+							timeF:	this.formatMs(extramatch[2], true),
 							count:	extramatch[3] // i only think that one above is count because this seems to be the number of times this function ran
 						});
 					}
@@ -214,10 +227,18 @@ TimingAssistant.prototype.revealBottom = function()
 	this.sceneScroller.mojo.revealBottom();
 }
 
-TimingAssistant.prototype.formatMs = function(ms)
+TimingAssistant.prototype.formatMs = function(ms, fancy)
 {
-	if (parseInt(ms) > 1000) return (Math.round((ms / 1000) * 100) / 100) + 's';
-	return ms + 'ms';
+	if (!fancy)
+	{
+		if (parseInt(ms) > 1000) return (Math.round((ms / 1000) * 100) / 100) + 's';
+		return ms + 'ms';
+	}
+	else
+	{
+		if (parseInt(ms) > 1000) return (Math.round((ms / 1000) * 100) / 100) + '<span class="unit">s</span>';
+		return ms + '<span class="unit">ms</span>';
+	}
 }
 
 TimingAssistant.prototype.errorMessage = function(msg)

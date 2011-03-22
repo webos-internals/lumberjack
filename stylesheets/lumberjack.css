@@ -53,6 +53,55 @@ body.palm-dark .scene-fade-bottom
 	background: url(../images/appmenu-box-selected.png) center center no-repeat;
 }
 
+/* dividers */
+table.palm-divider
+{
+	margin-top: 5px;
+}
+table.palm-divider.labeled .center
+{
+	width: 100%;
+	background: url(../images/palm-default/palm-divider-line.png) center center no-repeat;
+}
+table.palm-divider.labeled .left
+{
+	background: url(../images/palm-default/palm-divider-line.png) right center no-repeat;
+}
+table.palm-divider.labeled .right
+{
+	background: url(../images/palm-default/palm-divider-line.png) left center no-repeat;
+}
+body.palm-dark table.palm-divider.labeled .center
+{
+	background: url(../images/palm-dark/palm-divider-line.png) center center no-repeat;
+}
+body.palm-dark table.palm-divider.labeled .left
+{
+	background: url(../images/palm-dark/palm-divider-line.png) right center no-repeat;
+}
+body.palm-dark table.palm-divider.labeled .right
+{
+	background: url(../images/palm-dark/palm-divider-line.png) left center no-repeat;
+}
+table.palm-divider tr td.bubble > div
+{
+	color: #ffffff;
+	text-shadow: #646454 0px 1px 0px;
+	font-size: 16px;
+	line-height: 24px;
+	text-align: center;
+	font-weight: bold;
+	position: relative;
+	text-transform: uppercase;
+	-webkit-border-image: url(../images/palm-default/divider-bubble.png) 0 16 0 16 stretch stretch;
+	-webkit-box-sizing: border-box;
+	border-width: 0px 16px 0px 16px;
+}
+body.palm-dark table.palm-divider tr td.bubble > div
+{
+	-webkit-border-image: url(../images/palm-dark/divider-bubble.png) 0 16 0 16 stretch stretch;
+}
+
 
 /*
  * Startup Scene Styles
@@ -255,44 +304,6 @@ body.palm-dark .scene-fade-bottom
 	height: 23px;
 	background: url(../images/pop-icon.png) center center no-repeat;
 }
-.worm table.palm-divider
-{
-	margin-top: 5px;
-}
-.worm table.palm-divider.labeled .left
-{
-	background: url(../images/palm-default/palm-divider-line.png) right center no-repeat;
-}
-.worm table.palm-divider.labeled .right
-{
-	background: url(../images/palm-default/palm-divider-line.png) left center no-repeat;
-}
-body.palm-dark .worm table.palm-divider.labeled .left
-{
-	background: url(../images/palm-dark/palm-divider-line.png) right center no-repeat;
-}
-body.palm-dark .worm table.palm-divider.labeled .right
-{
-	background: url(../images/palm-dark/palm-divider-line.png) left center no-repeat;
-}
-.worm table.palm-divider tr td.bubble > div
-{
-	color: #ffffff;
-	text-shadow: #646454 0px 1px 0px;
-	font-size: 16px;
-	line-height: 24px;
-	text-align: center;
-	font-weight: bold;
-	position: relative;
-	text-transform: uppercase;
-	-webkit-border-image: url(../images/palm-default/divider-bubble.png) 0 16 0 16 stretch stretch;
-	-webkit-box-sizing: border-box;
-	border-width: 0px 16px 0px 16px;
-}
-body.palm-dark .worm table.palm-divider tr td.bubble > div
-{
-	-webkit-border-image: url(../images/palm-dark/divider-bubble.png) 0 16 0 16 stretch stretch;
-}
 .worm .graph
 {
 	position: relative;
@@ -382,6 +393,10 @@ body.palm-dark .worm .graph .labels div
 	margin-right: auto;
 	margin-top: 120px;
 }
+.timing .timing-messages .date
+{
+	display: none;
+}
 .timing .timing-messages .palm-row-wrapper.notice
 {
 	background-image: url(../images/log-black-bg.png) !important;
@@ -392,7 +407,7 @@ body.palm-dark .worm .graph .labels div
 	left: 0px;
 	top: 0px;
 	bottom: 0px;
-	width: 50%;
+	width: 70%; /* 50% when count is not display: none */
 	background-repeat: repeat-y;
 	background-position: right;
 	background-image: url(../images/log-black-bg.png);
@@ -407,25 +422,54 @@ body.palm-dark .worm .graph .labels div
 }
 .timing .timing-messages .palm-row-wrapper.notice .scene
 {
-	width: 50%;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	padding-right: 8px;
+	
+	width: 66%; /* 50% when count is not display: none */
 	padding-left: 8px;
 }
 .timing .timing-messages .palm-row-wrapper.notice .time
 {
+	text-align: right;
+	
+	
+	vertical-align: top;
 	width: 26%;
-	text-align: center;
+	/*text-align: center;*/
 }
 .timing .timing-messages .palm-row-wrapper.notice .count
 {
+	display: none;
+	
+	vertical-align: top;
 	width: 16%;
 	text-align: center;
 	margin-right: 0px;
+}
+.timing .timing-messages .palm-row .time .unit
+{
+	display: inline-block;
+	width: 28px;
+	text-align: left;
+	padding-left: 4px;
+	
+	color: rgba(0, 0, 0, .5);
+}
+body.palm-dark .timing .timing-messages .palm-row .time .unit
+{
+	color: rgba(255, 255, 255, .5);
 }
 .timing .timing-messages .palm-row.selected .scene,
 .timing .timing-messages .palm-row.selected .time,
 .timing .timing-messages .palm-row.selected .count
 {
 	color: #fff;
+}
+.timing .timing-messages .palm-row.selected .time .unit
+{
+	color: rgba(255, 255, 255, .5);
 }
 body.palm-dark .timing .timing-messages .palm-row-wrapper.notice
 {
@@ -435,6 +479,34 @@ body.palm-dark .timing .timing-messages .palm-row-wrapper.notice .scene-fade
 {
 	background-image: url(../images/log-white-bg.png);
 }
+body.palm-dark .timing .timing-messages .palm-row.selected .time .unit
+{
+	color: rgba(255, 255, 255, .5);
+}
+
+/* func list */
+.timing.func .timing-messages .palm-row-wrapper.notice .scene-fade
+{
+	width: 58%;
+}
+.timing.func .timing-messages .palm-row-wrapper.notice .scene
+{
+	width: 56%;
+}
+.timing.func .timing-messages .palm-row-wrapper.notice .time
+{
+	width: 25%;
+	text-align: center;
+}
+.timing.func .timing-messages .palm-row-wrapper.notice .count
+{
+	display: inline-block;
+	width: 8%;
+}
+
+
+
+
 
 /*
  * Dbus Scene Styles
@@ -480,6 +552,7 @@ body.palm-dark .timing .timing-messages .palm-row-wrapper.notice .scene-fade
 	height: 23px;
 	background: url(../images/pop-icon.png) center center no-repeat;
 }
+
 
 
 /*

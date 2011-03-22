@@ -34,6 +34,10 @@
         "source": "app/assistants/timing-assistant.js"
     },
     {
+        "scenes": "timing-func",
+        "source": "app/assistants/timing-func-assistant.js"
+    },
+    {
         "scenes": "dbus-log",
         "source": "app/assistants/dbus-log-assistant.js"
     },
