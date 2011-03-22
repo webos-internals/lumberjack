@@ -261,12 +261,26 @@ TimingAssistant.prototype.handleCommand = function(event)
 		switch (event.command)
 		{
 			case 'do-log-clear':
-				this.request = LumberjackService.clearMessages(function(p){});
-				this.contents = '';
-				this.listModel.items = [];
-				this.timingElement.mojo.noticeUpdatedItems(0, this.listModel.items);
-				this.timingElement.mojo.setLength(this.listModel.items.length);
-				this.revealBottom();
+				this.controller.showAlertDialog(
+				{
+					allowHTMLMessage:	true,
+					preventCancel:		true,
+				    title:				'Lumberjack',
+				    message:			'This will clear the entire /var/log/messages file.<br /><br /><b>Are you sure?</b>',
+				    choices:			[{label:$L("Thats what I want!"), value:'ok', type:'negative'}, {label:$L("Actually, Nevermind"), value:'cancel'}],
+				    onChoose:			function(e)
+					{
+						if (e == 'ok')
+						{
+							this.request = LumberjackService.clearMessages(function(p){});
+							this.contents = '';
+							this.listModel.items = [];
+							this.timingElement.mojo.noticeUpdatedItems(0, this.listModel.items);
+							this.timingElement.mojo.setLength(this.listModel.items.length);
+							this.revealBottom();
+						}
+					}
+			    });
 				break;
 			
 			case 'do-help':

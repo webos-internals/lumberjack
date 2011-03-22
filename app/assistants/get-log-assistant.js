@@ -510,18 +510,32 @@ GetLogAssistant.prototype.handleCommand = function(event)
 				break;
 				
 			case 'do-log-clear':
-				this.request = LumberjackService.clearMessages(function(p){});
-				this.searchText = '';
-				this.searchIndexes = [];
-				this.searchIndex = 0;
-				this.searchElement.mojo.setValue('');
-				this.messageHighlight(-1, 'highlight');
-				this.contents = '';
-				this.listModel.items = [];
-				this.messagesElement.mojo.noticeUpdatedItems(0, this.listModel.items);
-				this.messagesElement.mojo.setLength(this.listModel.items.length);
-				this.revealBottom();
-				this.searchDelay({value: ''});
+				this.controller.showAlertDialog(
+				{
+					allowHTMLMessage:	true,
+					preventCancel:		true,
+				    title:				'Lumberjack',
+				    message:			'This will clear the entire /var/log/messages file.<br /><br /><b>Are you sure?</b>',
+				    choices:			[{label:$L("Thats what I want!"), value:'ok', type:'negative'}, {label:$L("Actually, Nevermind"), value:'cancel'}],
+				    onChoose:			function(e)
+					{
+						if (e == 'ok')
+						{
+							this.request = LumberjackService.clearMessages(function(p){});
+							this.searchText = '';
+							this.searchIndexes = [];
+							this.searchIndex = 0;
+							this.searchElement.mojo.setValue('');
+							this.messageHighlight(-1, 'highlight');
+							this.contents = '';
+							this.listModel.items = [];
+							this.messagesElement.mojo.noticeUpdatedItems(0, this.listModel.items);
+							this.messagesElement.mojo.setLength(this.listModel.items.length);
+							this.revealBottom();
+							this.searchDelay({value: ''});
+						}
+					}
+			    });
 				break;
 			
 			case 'do-log-email':

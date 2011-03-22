@@ -25,7 +25,7 @@ function MainAssistant()
 			},
 			{
 				label: $L("Clear Log File"),
-				command: 'do-clear'
+				command: 'do-log-clear'
 			},
 			{
 				label: $L("Help"),
@@ -408,8 +408,22 @@ MainAssistant.prototype.handleCommand = function(event)
 				this.controller.stageController.pushScene('preferences');
 				break;
 				
-			case 'do-clear':
-				this.request = LumberjackService.clearMessages(function(p){});
+			case 'do-log-clear':
+				this.controller.showAlertDialog(
+				{
+					allowHTMLMessage:	true,
+					preventCancel:		true,
+				    title:				'Lumberjack',
+				    message:			'This will clear the entire /var/log/messages file.<br /><br /><b>Are you sure?</b>',
+				    choices:			[{label:$L("Thats what I want!"), value:'ok', type:'negative'}, {label:$L("Actually, Nevermind"), value:'cancel'}],
+				    onChoose:			function(e)
+					{
+						if (e == 'ok')
+						{
+							this.request = LumberjackService.clearMessages(function(p){});
+						}
+					}
+			    });
 				break;
 	
 			case 'do-help':
