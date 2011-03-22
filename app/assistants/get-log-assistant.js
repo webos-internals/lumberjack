@@ -21,8 +21,15 @@ function GetLogAssistant(filter)
 		items:
 		[
 			{
+				label: $L("Log"),
+				items: [
+					{label:$L('Email'),		command:'do-log-email'},
+					{label:$L('Copy'),		command:'do-log-copy'}
+				]
+			},
+			{
 				label: $L("Clear Log File"),
-				command: 'do-clear'
+				command: 'do-log-clear'
 			},
 			{
 				label: $L("Help"),
@@ -228,7 +235,7 @@ GetLogAssistant.prototype.messageTapListHandler = function(choice, item, index)
 	switch(choice)
 	{
 		case 'copy':
-			this.controller.stageController.setClipboard((prefs.get().copyStyle == 'clean' ? item.copy : item.raw));
+			copyLog((prefs.get().copyStyle == 'clean' ? item.copy : item.raw), this);
 			this.copyStart = -1;
 			this.messageHighlight(-1, 'selected');
 			break;
@@ -253,7 +260,7 @@ GetLogAssistant.prototype.messageTapListHandler = function(choice, item, index)
 				}
 				if (message != '')
 				{
-					this.controller.stageController.setClipboard(message);
+					copyLog(message, this);
 				}
 			}
 			this.copyStart = -1;
@@ -497,14 +504,37 @@ GetLogAssistant.prototype.handleCommand = function(event)
 				this.messageHighlight(-1, 'highlight');
 				this.searchDelay({value: ''});
 				break;
-				
-			case 'do-clear':
-				this.request = LumberjackService.clearMessages(function(p){});
-				break;
 			
 			case 'do-help':
 				this.controller.stageController.pushScene('help');
 				break;
+				
+			case 'do-log-clear':
+				this.request = LumberjackService.clearMessages(function(p){});
+				this.searchText = '';
+				this.searchIndexes = [];
+				this.searchIndex = 0;
+				this.searchElement.mojo.setValue('');
+				this.messageHighlight(-1, 'highlight');
+				this.contents = '';
+				this.listModel.items = [];
+				this.messagesElement.mojo.noticeUpdatedItems(0, this.listModel.items);
+				this.messagesElement.mojo.setLength(this.listModel.items.length);
+				this.revealBottom();
+				this.searchDelay({value: ''});
+				break;
+			
+			case 'do-log-email':
+				var text = 'Here is the log from ' + this.titleElement.innerText +':<br /><br />';
+				for(var i = 0; i < this.listModel.items.length; i++)
+					text += (prefs.get().copyStyle == 'clean' ? this.listModel.items[i].copy : this.listModel.items[i].raw) + '<br />';
+				email('Log for ' + this.titleElement.innerText, text);
+			break;
+			case 'do-log-copy':
+				for(var i = 0; i < this.listModel.items.length; i++)
+					text += (prefs.get().copyStyle == 'clean' ? this.listModel.items[i].copy : this.listModel.items[i].raw) + "\n";
+				copyLog(text, this);
+			break;
 		}
 	}
 }

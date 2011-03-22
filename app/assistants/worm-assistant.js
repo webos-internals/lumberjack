@@ -236,7 +236,7 @@ WormAssistant.prototype.updateAppMenu = function(skipUpdate)
     this.menuModel.items = [];
 	
 	this.menuModel.items.push({
-		label: $L("Clear"),
+		label: $L("Clear Screen"),
 		command: 'do-clear'
 	});
 	

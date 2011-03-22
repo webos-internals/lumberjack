@@ -176,7 +176,7 @@ TailLogAssistant.prototype.messageTapListHandler = function(choice, item, index)
 	switch(choice)
 	{
 		case 'copy':
-			this.controller.stageController.setClipboard((prefs.get().copyStyle == 'clean' ? item.copy : item.raw));
+			copyLog((prefs.get().copyStyle == 'clean' ? item.copy : item.raw), this);
 			this.copyStart = -1;
 			this.messageHighlight(-1);
 			break;
@@ -201,7 +201,7 @@ TailLogAssistant.prototype.messageTapListHandler = function(choice, item, index)
 				}
 				if (message != '')
 				{
-					this.controller.stageController.setClipboard(message);
+					copyLog(message, this);
 				}
 			}
 			this.copyStart = -1;
@@ -395,8 +395,16 @@ TailLogAssistant.prototype.updateAppMenu = function(skipUpdate)
 	}
 	
 	this.menuModel.items.push({
-		label: $L("Clear"),
+		label: $L("Clear Screen"),
 		command: 'do-clear'
+	});
+	
+	this.menuModel.items.push({
+		label: $L("Log"),
+		items: [
+			{label:$L('Email'),		command:'do-log-email'},
+			{label:$L('Copy'),		command:'do-log-copy'}
+		]
 	});
 	
 	this.menuModel.items.push({
@@ -463,6 +471,18 @@ TailLogAssistant.prototype.handleCommand = function(event)
 				this.controller.stageController.pushScene('help');
 				break;
 			
+			case 'do-log-email':
+				var text = 'Here is the log from ' + this.titleElement.innerText +':<br /><br />';
+				for(var i = 0; i < this.listModel.items.length; i++)
+					text += (prefs.get().copyStyle == 'clean' ? this.listModel.items[i].copy : this.listModel.items[i].raw) + '<br />';
+				email('Log for ' + this.titleElement.innerText, text);
+			break;
+			case 'do-log-copy':
+				for(var i = 0; i < this.listModel.items.length; i++)
+					text += (prefs.get().copyStyle == 'clean' ? this.listModel.items[i].copy : this.listModel.items[i].raw) + "\n";
+				copyLog(text, this);
+			break;
+
 			case 'do-loglevel-alert':	LumberjackService.setLogging(this.updateLogLevelHandler, 'LunaSysMgrJS', 'alert');		break;
 			case 'do-loglevel-err':		LumberjackService.setLogging(this.updateLogLevelHandler, 'LunaSysMgrJS', 'err');		break;
 			case 'do-loglevel-warning':	LumberjackService.setLogging(this.updateLogLevelHandler, 'LunaSysMgrJS', 'warning');	break;

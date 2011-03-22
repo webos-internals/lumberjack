@@ -48,6 +48,10 @@ AppAssistant.prototype.handleLaunch = function(params)
 		{
 			// NOTHING!
 		}
+		else if (params.source == 'limbo-copy' && params.log)
+		{
+			// NOTHING!
+		}
     }
     catch (e)
 	{

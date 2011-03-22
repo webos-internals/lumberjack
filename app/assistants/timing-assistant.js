@@ -14,7 +14,7 @@ function TimingAssistant(filter)
 		[
 			{
 				label: $L("Clear Log File"),
-				command: 'do-clear-log'
+				command: 'do-log-clear'
 			},
 			{
 				label: $L("Help"),
@@ -260,7 +260,7 @@ TimingAssistant.prototype.handleCommand = function(event)
 	{
 		switch (event.command)
 		{
-			case 'do-clear-log':
+			case 'do-log-clear':
 				this.request = LumberjackService.clearMessages(function(p){});
 				break;
 			
