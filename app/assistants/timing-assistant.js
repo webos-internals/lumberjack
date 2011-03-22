@@ -262,6 +262,11 @@ TimingAssistant.prototype.handleCommand = function(event)
 		{
 			case 'do-log-clear':
 				this.request = LumberjackService.clearMessages(function(p){});
+				this.contents = '';
+				this.listModel.items = [];
+				this.timingElement.mojo.noticeUpdatedItems(0, this.listModel.items);
+				this.timingElement.mojo.setLength(this.listModel.items.length);
+				this.revealBottom();
 				break;
 			
 			case 'do-help':

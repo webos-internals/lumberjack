@@ -327,22 +327,22 @@ Ls2LogAssistant.prototype.updateAppMenu = function(skipUpdate)
 {
     this.menuModel.items = [];
     
-	/*
 	if (this.showBanners)
 	{
 		this.menuModel.items.push({
-			label: $L("Turn Off Banners"),
+			label: $L('Show Banners'),
+			secondaryIcon: 'box checked',
 			command: 'do-banner-off'
 		});
 	}
 	else
 	{
 		this.menuModel.items.push({
-			label: $L("Turn On Banners"),
+			label: $L('Show Banners'),
+			secondaryIcon: 'box',
 			command: 'do-banner-on'
 		});
 	}
-	*/
 	
 	this.menuModel.items.push({
 		label: $L("Clear Screen"),

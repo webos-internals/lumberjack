@@ -380,7 +380,7 @@ TailLogAssistant.prototype.updateAppMenu = function(skipUpdate)
 	if (this.showBanners)
 	{
 		this.menuModel.items.push({
-			label: $L('Banners'),
+			label: $L('Show Banners'),
 			secondaryIcon: 'box checked',
 			command: 'do-banner-off'
 		});
@@ -388,7 +388,7 @@ TailLogAssistant.prototype.updateAppMenu = function(skipUpdate)
 	else
 	{
 		this.menuModel.items.push({
-			label: $L('Banners'),
+			label: $L('Show Banners'),
 			secondaryIcon: 'box',
 			command: 'do-banner-on'
 		});
