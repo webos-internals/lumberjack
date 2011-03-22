@@ -11,7 +11,7 @@ function StartupAssistant(changelog)
     this.newMessages =
 	[
 		{ version: '0.5.0', log: [ 'Added Scene Timing',
-								   'Added "Email Log" option to app menu (Thanks Tibfib)' ] },
+								   'Added ability to email the visible log in the app menu (Thanks Tibfib)' ] },
 		{ version: '0.4.5', log: [ 'Added BetterListSelector widget to main scene \'What to look for\' selector',
 								   'Added ability to quickly change the current log level from the app menu in the Follow Log scene' ] },
 		{ version: '0.4.4', log: [ 'Added swipe-delete to the Retrieve Log scene' ] },
