@@ -14,7 +14,8 @@ function copyLog(log, assistant)
 
 function email(subject, message)
 {
-	this.controller.serviceRequest("palm://com.palm.applicationManager",
+	
+	var request = new Mojo.Service.Request("palm://com.palm.applicationManager",
 	{
 		method: 'open',
 		parameters:
@@ -27,4 +28,5 @@ function email(subject, message)
 			}
 		}
 	});
+	return request;
 }
