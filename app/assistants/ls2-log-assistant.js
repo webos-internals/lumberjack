@@ -327,6 +327,7 @@ Ls2LogAssistant.prototype.updateAppMenu = function(skipUpdate)
 {
     this.menuModel.items = [];
     
+	/*
 	if (this.showBanners)
 	{
 		this.menuModel.items.push({
@@ -343,6 +344,7 @@ Ls2LogAssistant.prototype.updateAppMenu = function(skipUpdate)
 			command: 'do-banner-on'
 		});
 	}
+	*/
 	
 	this.menuModel.items.push({
 		label: $L("Clear Screen"),
@@ -414,7 +416,7 @@ Ls2LogAssistant.prototype.handleCommand = function(event)
 			case 'do-log-email':
 				var text = 'Here is the log from ' + this.titleElement.innerText +':<br /><br />';
 				for(var i = 0; i < this.listModel.items.length; i++)
-					text += (prefs.get().copyStyle == 'clean' ? this.listModel.items[i].copy : this.listModel.items[i].raw) + '<br />';
+					text += formatForHtml(prefs.get().copyStyle == 'clean' ? this.listModel.items[i].copy : this.listModel.items[i].raw) + '<br />';
 				email('Log for ' + this.titleElement.innerText, text);
 			break;
 			case 'do-log-copy':

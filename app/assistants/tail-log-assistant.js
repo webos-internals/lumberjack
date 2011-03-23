@@ -474,7 +474,7 @@ TailLogAssistant.prototype.handleCommand = function(event)
 			case 'do-log-email':
 				var text = 'Here is the log from ' + this.titleElement.innerText +':<br /><br />';
 				for(var i = 0; i < this.listModel.items.length; i++)
-					text += (prefs.get().copyStyle == 'clean' ? this.listModel.items[i].copy : this.listModel.items[i].raw) + '<br />';
+					text += formatForHtml(prefs.get().copyStyle == 'clean' ? this.listModel.items[i].copy : this.listModel.items[i].raw) + '<br />';
 				email('Log for ' + this.titleElement.innerText, text);
 			break;
 			case 'do-log-copy':
