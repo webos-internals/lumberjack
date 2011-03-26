@@ -94,7 +94,7 @@ TimingAssistant.prototype.timingTap = function(event)
 {
 	if (event.item)
 	{
-		this.controller.stageController.pushScene('timing-func', event.item.scene, event.item.functions);
+		this.controller.stageController.pushScene('timing-func', this.titleElement.innerText + ': ' + event.item.scene, event.item.functions);
 	}
 }
 

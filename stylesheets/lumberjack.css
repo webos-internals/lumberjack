@@ -387,6 +387,23 @@ body.palm-dark .worm .graph .labels div
 	height: 23px;
 	background: url(../images/reload-icon.png) center center no-repeat;
 }
+.timing .palm-page-header.multi-line
+{
+	padding-top: 12px;
+	padding-left: 0px;
+	padding-right: 0px;
+	position: fixed;
+	z-index: 11001;
+	top: 0px;
+	left: 0px;
+	right: 0px;
+	height: 85px;
+}
+.timing .palm-page-header.multi-line .rowHead
+{
+	margin-left: -25px;
+	margin-right: -25px;
+}
 .timing #spinner
 {
 	margin-left: auto;
@@ -448,6 +465,30 @@ body.palm-dark .worm .graph .labels div
 	text-align: center;
 	margin-right: 0px;
 }
+.timing .palm-page-header.multi-line .scene,
+.timing .palm-page-header.multi-line .time,
+.timing .palm-page-header.multi-line .count
+{
+	display: inline-block;
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+.timing .palm-page-header.multi-line .scene
+{
+	padding-right: 8px;
+	padding-left: 8px;
+	width: 66%;
+}
+.timing .palm-page-header.multi-line .time
+{
+	text-align: right;
+	vertical-align: top;
+	width: 26%;
+}
+.timing .palm-page-header.multi-line .count
+{
+	display: none;
+}
 .timing .timing-messages .palm-row .time .unit
 {
 	display: inline-block;
@@ -487,7 +528,21 @@ body.palm-dark .timing .timing-messages .palm-row.selected .time .unit
 /* func list */
 .timing.func .timing-messages .palm-row-wrapper.notice .scene-fade
 {
-	width: 58%;
+	width: 60%;
+}
+.timing.func .palm-page-header.multi-line .scene
+{
+	width: 56%;
+}
+.timing.func .palm-page-header.multi-line .time
+{
+	width: 25%;
+	text-align: center;
+}
+.timing.func .palm-page-header.multi-line .count
+{
+	display: inline-block;
+	width: 8%;
 }
 .timing.func .timing-messages .palm-row-wrapper.notice .scene
 {
