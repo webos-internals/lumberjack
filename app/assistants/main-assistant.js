@@ -7,7 +7,7 @@ function MainAssistant()
 		{weight: 20, text: $L('Sleep All Night, Work All Day')},
 		{weight: 20, text: $L('Hack Through Your Logs')},
 		{weight: 10, text: $L('I\'m OK')},
-		{weight: 5,  text: $L("<a href=\"http://donate.webos-internals.org/\">Donated</a> To WebOS Internals Lately?")},
+		{weight: 5,  text: $L("<a href=\"https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=R3Q2EUA52WJ7A\">Donated</a> To WebOS Internals Lately?")},
 		{weight: 1,  text: $L('Is A Logger... Get it?')}
 	];
 	
